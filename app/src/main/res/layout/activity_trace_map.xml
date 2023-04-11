@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.boredream.koalatrace.ui.trace.TraceMapViewModel" />
+
+        <import type="android.view.View" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.boredream.koalatrace.view.TitleBarView
+            android:id="@+id/title_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:hasBack="true"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:title="我的轨迹" />
+
+        <com.boredream.koalatrace.view.TraceMapView
+            android:id="@+id/map_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:historyTraceList="@{vm.historyTracePointListUiState}"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/title_bar"
+            app:myLocation="@{vm.uiState.myLocation}"
+            app:traceList="@{vm.tracePointListUiState}" />
+
+        <Button
+            android:id="@+id/btn_show_history_trace"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_medium"
+            android:onClick="@{() -> vm.toggleShowHistoryTrace()}"
+            android:text='@{vm.isShowHistoryTrace ? "只显示当前轨迹" : "同时显示历史轨迹"}'
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/title_bar" />
+
+        <Button
+            android:id="@+id/btn_start_trace"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_medium"
+            android:onClick="@{() -> vm.toggleTrace()}"
+            android:text='@{vm.isTracing ? "停止记录轨迹" : "开始记录轨迹"}'
+            android:visibility="@{vm.uiState.myLocation != null ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent" />
+
+        <Button
+            android:id="@+id/btn_follow_me"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_medium"
+            android:onClick="@{() -> vm.locateMe()}"
+            android:text='定位到我'
+            android:visibility="@{vm.uiState.myLocation != null ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

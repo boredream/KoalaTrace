@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.boredream.koalatrace.ui.trace.recorddetail.TraceRecordDetailViewModel" />
+
+        <import type="com.blankj.utilcode.util.TimeUtils" />
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.boredream.koalatrace.view.TitleBarView
+            android:id="@+id/title_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:hasBack="true"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:rightClick="@{() -> vm.commit()}"
+            app:rightText="修改"
+            app:title="轨迹详情" />
+
+        <com.boredream.koalatrace.view.TraceMapView
+            android:id="@+id/map_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:historyTraceList="@{vm.traceListUiState}"
+            app:layout_constraintBottom_toTopOf="@+id/v_bottom_card"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/title_bar"
+            app:myLocation="@{vm.startLocationUiState}"
+            tools:background="@color/divider_gray" />
+
+        <LinearLayout
+            android:id="@+id/v_bottom_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:focusableInTouchMode="true"
+            android:orientation="vertical"
+            android:padding="@dimen/margin_medium"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent">
+
+            <EditText
+                android:id="@+id/et_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="轨迹名称"
+                android:text="@={vm.uiState.name}" />
+
+            <TextView
+                android:id="@+id/tv_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_small"
+                android:text='@{"时间：" + TimeUtils.millis2String(vm.uiState.startTime) + " ~ " + TimeUtils.millis2String(vm.uiState.endTime, "HH:mm:ss") }'
+                tools:text="时间：" />
+
+            <TextView
+                android:id="@+id/tv_distance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_small"
+                android:text='@{"轨迹总长：" + vm.uiState.distance + " 米"}'
+                tools:text="轨迹总长：" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

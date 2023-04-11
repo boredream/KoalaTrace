@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="TitleBarView">
+        <attr name="title" />
+        <attr name="hasBack" format="boolean" />
+        <attr name="rightText" format="string" />
+    </declare-styleable>
+
+
+</resources>
