@@ -7,9 +7,9 @@
 
     <fragment
         android:id="@+id/nav_home"
-        android:name="com.boredream.koalatrace.ui.home.HomeFragment"
+        android:name="com.boredream.koalatrace.ui.trace.recordlist.TraceRecordListFragment"
         android:label="@string/menu_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_trace_record_list" />
 
     <fragment
         android:id="@+id/nav_gallery"
@@ -22,4 +22,10 @@
         android:name="com.boredream.koalatrace.ui.slideshow.SlideshowFragment"
         android:label="@string/menu_slideshow"
         tools:layout="@layout/fragment_slideshow" />
+
+    <fragment
+        android:id="@+id/nav_mine"
+        android:name="com.boredream.koalatrace.ui.mine.MineFragment"
+        android:label="@string/menu_mine"
+        tools:layout="@layout/fragment_mine" />
 </navigation>
