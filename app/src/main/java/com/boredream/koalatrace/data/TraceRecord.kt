@@ -20,6 +20,7 @@ data class TraceRecord(
     var synced: Boolean = false, // 是否已经同步到服务器
     var isDelete: Boolean = false, // 软删除
     var syncTimestamp: Long? = null, // 同步数据的时间
+    var isRecording: Boolean = false, // 正在记录中
     @PrimaryKey var dbId: String = UUID.randomUUID().toString()
 ) : Belong2UserEntity() {
 

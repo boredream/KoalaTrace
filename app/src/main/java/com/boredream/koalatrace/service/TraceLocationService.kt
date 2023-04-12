@@ -97,12 +97,13 @@ class TraceLocationService : Service() {
         intent?.let {
             if (it.hasExtra(BundleKey.TOGGLE_TRACE)) {
                 val start = it.getBooleanExtra(BundleKey.TOGGLE_TRACE, false)
-                if (start) {
-                    traceUseCase.startTrace()
-                } else {
-                    // 打开页面/刷新widget进行询问保存？或者直接进行保存
-                    scope.launch {
-                        traceUseCase.stopAndSaveTrace()
+                scope.launch {
+                    if (start) {
+                        traceUseCase.startTrace()
+                    } else {
+                        // 打开页面/刷新widget进行询问保存？或者直接进行保存
+                        traceUseCase.stopTrace()
+
                     }
                 }
             }
@@ -123,7 +124,12 @@ class TraceLocationService : Service() {
 
     private var onStatusChange: (status: Int) -> Unit = {
         // 定位状态变化
-        LogUtils.i("status = $it")
+        val statusStr = when (it) {
+            LocationRepository.STATUS_TRACE -> "轨迹记录中"
+            LocationRepository.STATUS_LOCATION -> "定位中"
+            else -> it.toString()
+        }
+        LogUtils.i("status = $statusStr")
         if (it == LocationRepository.STATUS_TRACE) {
             AppWidgetUpdater.updateTraceStatus(this, true)
         } else {
@@ -135,6 +141,10 @@ class TraceLocationService : Service() {
         // 定位状态变化
         // println("TraceLocationService allTracePointList $it")
         if (it.size != 0) {
+            scope.launch {
+                traceUseCase.addLocation2currentRecord(it)
+            }
+
             val timeDiff = System.currentTimeMillis() - it[0].time
             val updateWidgetInterval = 30_000 // widget刷新间隔，单位毫秒
             val timeIndex: Int = (timeDiff % updateWidgetInterval + 500).toInt() / 1000

@@ -1,6 +1,7 @@
 package com.boredream.koalatrace.data.repo.source
 
 import androidx.room.Transaction
+import com.amap.api.mapcore.util.it
 import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
@@ -35,17 +36,20 @@ class TraceRecordLocalDataSource @Inject constructor(appDatabase: AppDatabase) :
         if (insert <= 0) {
             return ResponseEntity(null, 500, "数据插入失败")
         }
+        return ResponseEntity.success(data)
+    }
 
-        return try {
-            data.traceList?.let { list ->
-                traceLocationDao.deleteByTraceRecordId(data.dbId)
-                list.forEach { it.traceRecordId = data.dbId }
-                traceLocationDao.insertAll(list)
-            }
-            ResponseEntity.success(data)
+    suspend fun insertOrUpdate(data: TraceLocation): ResponseEntity<TraceLocation> {
+        var insert: Long = -1
+        try {
+            insert = traceLocationDao.insertOrUpdate(data)
         } catch (e: Exception) {
-            ResponseEntity(null, 500, e.toString())
+            //
         }
+        if (insert <= 0) {
+            return ResponseEntity(null, 500, "数据插入失败")
+        }
+        return ResponseEntity.success(data)
     }
 
     suspend fun getTraceRecordByDbId(dbId: String): ResponseEntity<TraceRecord?> {

@@ -1,5 +1,8 @@
 package com.boredream.koalatrace.data.usecase
 
+import com.blankj.utilcode.util.CollectionUtils
+import com.blankj.utilcode.util.LogUtils
+import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.base.BaseUseCase
 import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
@@ -14,7 +17,9 @@ import javax.inject.Singleton
 class TraceUseCase @Inject constructor(
     private val locationRepository: LocationRepository,
     private val traceRecordRepository: TraceRecordRepository,
-): BaseUseCase() {
+) : BaseUseCase() {
+
+    private var currentTraceRecord: TraceRecord? = null
 
     fun getMyLocation() = locationRepository.myLocation
 
@@ -37,45 +42,44 @@ class TraceUseCase @Inject constructor(
     /**
      * 开始追踪轨迹
      */
-    fun startTrace() {
-        // 必须要先开始定位，先清除已有轨迹
-        locationRepository.clearTraceList()
-        locationRepository.startTrace()
+    suspend fun startTrace() {
+        // 开始记录轨迹时，就先创建一个线路
+        val time = System.currentTimeMillis()
+        val timeStr = TimeUtils.millis2String(time)
+        val title = "轨迹 $timeStr"
+        val traceRecord = TraceRecord(title, time, time, 0, isRecording = true)
+        val response = traceRecordRepository.add(traceRecord)
+        if (response.isSuccess()) {
+            // 开始追踪
+            currentTraceRecord = response.getSuccessData()
+            locationRepository.startTrace()
+            LogUtils.i("create traceRecord: ${traceRecord.name}")
+        }
     }
 
-    suspend fun stopAndSaveTrace() {
-        stopTrace()
-        saveTraceRecord()
+    suspend fun addLocation2currentRecord(locationList: ArrayList<TraceLocation>) {
+        if (CollectionUtils.isEmpty(locationList)) return
+        val record = currentTraceRecord ?: return
+        val location = locationList.last()
+        location.traceRecordId = record.dbId
+        traceRecordRepository.insertOrUpdateLocation(location)
     }
 
     /**
-     * 结束追踪轨迹
+     * 结束追踪轨迹，并更新数据
      */
-    fun stopTrace() {
+    suspend fun stopTrace() {
         locationRepository.stopTrace()
-    }
 
-    /**
-     * 保存追踪轨迹
-     */
-    suspend fun saveTraceRecord(): ResponseEntity<Boolean> {
-        val traceList = locationRepository.traceList
-        val title = TraceUtils.getTraceListName(traceList)
-        val startTime = traceList[0].time
-        val endTime = traceList[traceList.lastIndex].time
-        val distance = TraceUtils.calculateDistance(traceList)
-        val traceRecord = TraceRecord(title, startTime, endTime, distance)
-        traceRecord.traceList = traceList
+        val locationList = locationRepository.traceList
+        if (CollectionUtils.isEmpty(locationList)) return
+        val record = currentTraceRecord ?: return
 
-        traceRecordRepository.add(traceRecord)
-        return ResponseEntity.success(true)
-    }
-
-    /**
-     * 清除当前轨迹
-     */
-    fun clearTrace() {
+        record.endTime = locationList[locationList.lastIndex].time
+        record.distance = TraceUtils.calculateDistance(locationList)
+        traceRecordRepository.add(record)
         locationRepository.clearTraceList()
+        LogUtils.i("stop and save traceRecord: ${record.name} , distance = ${record.distance}")
     }
 
     /**
@@ -84,8 +88,11 @@ class TraceUseCase @Inject constructor(
     suspend fun getAllHistoryTraceListRecord(): ResponseEntity<ArrayList<TraceRecord>> {
         val myLocation = getMyLocation() ?: return ResponseEntity.notExistError()
         // TODO: 我的位置不停的变化，变化后如何处理？重新获取？
-        val recordList = traceRecordRepository.getNearHistoryTraceList(myLocation.latitude, myLocation.longitude)
-        if(recordList.isSuccess() && recordList.data != null) {
+        val recordList = traceRecordRepository.getNearHistoryTraceList(
+            myLocation.latitude,
+            myLocation.longitude
+        )
+        if (recordList.isSuccess() && recordList.data != null) {
             recordList.data.forEach {
                 val locationList = traceRecordRepository.getLocationList(it.dbId).data
                 it.traceList = locationList
@@ -98,6 +105,7 @@ class TraceUseCase @Inject constructor(
     fun addLocationSuccessListener(listener: (location: TraceLocation) -> Unit) {
         locationRepository.addLocationSuccessListener(listener)
     }
+
     fun removeLocationSuccessListener(listener: (location: TraceLocation) -> Unit) {
         locationRepository.removeLocationSuccessListener(listener)
     }
@@ -105,6 +113,7 @@ class TraceUseCase @Inject constructor(
     fun addTraceSuccessListener(listener: (allTracePointList: ArrayList<TraceLocation>) -> Unit) {
         locationRepository.addTraceSuccessListener(listener)
     }
+
     fun removeTraceSuccessListener(listener: (allTracePointList: ArrayList<TraceLocation>) -> Unit) {
         locationRepository.removeTraceSuccessListener(listener)
     }
@@ -112,6 +121,7 @@ class TraceUseCase @Inject constructor(
     fun addStatusChangeListener(listener: (status: Int) -> Unit) {
         locationRepository.addStatusChangeListener(listener)
     }
+
     fun removeStatusChangeListener(listener: (status: Int) -> Unit) {
         locationRepository.removeStatusChangeListener(listener)
     }

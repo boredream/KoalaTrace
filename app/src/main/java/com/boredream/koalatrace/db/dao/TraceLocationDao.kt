@@ -1,16 +1,17 @@
 package com.boredream.koalatrace.db.dao
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
 import com.boredream.koalatrace.data.TraceLocation
+import com.boredream.koalatrace.data.TraceRecord
 
 @Dao
 interface TraceLocationDao {
 
     @Query("SELECT * FROM TraceLocation WHERE traceRecordId = :traceRecordDbId")
     suspend fun loadByTraceRecordId(traceRecordDbId: String): List<TraceLocation>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOrUpdate(traceRecord: TraceLocation): Long
 
     @Insert
     suspend fun insertAll(dataList: List<TraceLocation>)

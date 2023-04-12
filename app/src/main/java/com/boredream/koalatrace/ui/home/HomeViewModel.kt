@@ -5,9 +5,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.boredream.koalatrace.base.BaseViewModel
 import com.boredream.koalatrace.common.vmcompose.RequestVMCompose
+import com.boredream.koalatrace.data.TraceLocation
+import com.boredream.koalatrace.data.repo.LocationRepository
 import com.boredream.koalatrace.data.usecase.TraceUseCase
 import com.boredream.koalatrace.vm.SingleLiveEvent
-import com.boredream.koalatrace.data.TraceLocation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -77,15 +78,13 @@ class HomeViewModel @Inject constructor(
      * 切换轨迹跟踪开关
      */
     fun toggleTrace() {
-        if (traceUseCase.isTracing()) {
-            // 停止轨迹跟踪后，提示保存路径
-            viewModelScope.launch {
-                traceUseCase.stopAndSaveTrace()
+        viewModelScope.launch {
+            if (traceUseCase.isTracing()) {
+                traceUseCase.stopTrace()
+            } else {
+                traceUseCase.startTrace()
             }
-        } else {
-            traceUseCase.startTrace()
         }
-        _isTracing.value = traceUseCase.isTracing()
     }
 
     /**
@@ -95,26 +94,11 @@ class HomeViewModel @Inject constructor(
         _uiEvent.value = LocateMe
     }
 
-    /**
-     * 保存当前轨迹
-     */
-    fun saveTrace() {
-        traceUseCase.stopTrace()
-        commitVMCompose.request { traceUseCase.saveTraceRecord() }
-    }
-
-    /**
-     * 放弃当前轨迹
-     */
-    fun abandonTrace() {
-        traceUseCase.clearTrace()
-        // TODO: 刷新地图上轨迹线
-    }
-
     // 页面暂停时，无需刷新 uiState
     fun onPause() {
         traceUseCase.removeLocationSuccessListener(onLocationSuccess)
         traceUseCase.removeTraceSuccessListener(onTraceSuccess)
+        traceUseCase.removeStatusChangeListener(onStatusChange)
     }
 
     fun onResume() {
@@ -124,6 +108,7 @@ class HomeViewModel @Inject constructor(
 
         traceUseCase.addLocationSuccessListener(onLocationSuccess)
         traceUseCase.addTraceSuccessListener(onTraceSuccess)
+        traceUseCase.addStatusChangeListener(onStatusChange)
 
         locateMe()
     }
@@ -135,6 +120,10 @@ class HomeViewModel @Inject constructor(
     private val onTraceSuccess: (allTracePointList: ArrayList<TraceLocation>) -> Unit = {
         // 轨迹成功回调，回调的是整个轨迹列表
         _tracePointListUiState.value = it
+    }
+
+    private val onStatusChange : (status: Int) -> Unit = {
+        _isTracing.value = it == LocationRepository.STATUS_TRACE
     }
 
 }

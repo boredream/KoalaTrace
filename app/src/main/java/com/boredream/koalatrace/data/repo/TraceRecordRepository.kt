@@ -3,6 +3,7 @@ package com.boredream.koalatrace.data.repo
 import com.blankj.utilcode.util.CollectionUtils
 import com.boredream.koalatrace.base.BaseRepository
 import com.boredream.koalatrace.data.ResponseEntity
+import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.CommonConstant
 import com.boredream.koalatrace.data.repo.source.ConfigLocalDataSource
@@ -89,6 +90,8 @@ class TraceRecordRepository @Inject constructor(
         localDataSource.getTraceLocationList(traceRecordDbId)
 
     suspend fun add(data: TraceRecord) = localDataSource.add(data)
+
+    suspend fun insertOrUpdateLocation(data: TraceLocation) = localDataSource.insertOrUpdate(data)
 
     suspend fun pushDataToRemote(data: TraceRecord): ResponseEntity<TraceRecord> {
         val response = if (data.id != null) {

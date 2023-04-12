@@ -75,12 +75,13 @@ class SyncDataService : Service() {
                     ACTION_SYNC -> scope.launch {
                         SyncUtils.isSyncing = true
                         traceRecordRepository.syncDataPull()
-                        traceRecordRepository.syncDataPush()
+                        // TODO: 暂时关闭推送到远程
+//                        traceRecordRepository.syncDataPush()
                         SyncUtils.isSyncing = false
                     }
                     ACTION_PUSH -> scope.launch {
                         SyncUtils.isSyncing = true
-                        traceRecordRepository.syncDataPush()
+//                        traceRecordRepository.syncDataPush()
                         SyncUtils.isSyncing = false
                     }
                     else -> {}

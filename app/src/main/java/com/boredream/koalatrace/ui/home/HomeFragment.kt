@@ -69,7 +69,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding>() {
     }
 
     override fun onDestroyView() {
-        LogUtils.i("map view onDestroy")
+        LogUtils.d("map view onDestroy")
         toggleLocation(false)
         binding.mapView.onDestroy()
         super.onDestroyView()
@@ -77,20 +77,20 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding>() {
 
     override fun onResume() {
         super.onResume()
-        LogUtils.i("map view onResume")
+        LogUtils.d("map view onResume")
         viewModel.onResume()
         binding.mapView.onResume()
     }
 
     override fun onPause() {
-        LogUtils.i("map view onPause")
+        LogUtils.d("map view onPause")
         viewModel.onPause()
         binding.mapView.onPause()
         super.onPause()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        LogUtils.i("map view onSaveInstanceState")
+        LogUtils.d("map view onSaveInstanceState")
         super.onSaveInstanceState(outState)
         try {
             // FIXME: binding NPE?

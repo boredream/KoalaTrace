@@ -1,6 +1,7 @@
 package com.boredream.koalatrace
 
 import android.app.Application
+import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.Utils
 import com.boredream.koalatrace.utils.DataStoreUtils
 import com.scwang.smart.refresh.footer.ClassicsFooter
@@ -16,6 +17,8 @@ class BaseApplication : Application() {
         super.onCreate()
 
         Utils.init(this)
+        LogUtils.getConfig().setBorderSwitch(false)
+
         DataStoreUtils.init(this)
         initRefresh()
     }

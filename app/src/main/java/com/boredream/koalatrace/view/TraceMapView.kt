@@ -52,13 +52,13 @@ class TraceMapView : MapView {
             it.uiSettings.isZoomControlsEnabled = false
             // 高德自定义样式 https://geohub.amap.com/mapstyle
             // TODO: 道路还有箭头？
-            val styleData = FileUtils.readBytesFromAssets(context, "mapstyle/style.data")
-            val styleExtraData = FileUtils.readBytesFromAssets(context, "mapstyle/style_extra.data")
-            val styleOptions = CustomMapStyleOptions()
-                .setEnable(true)
-                .setStyleData(styleData)
-                .setStyleExtraData(styleExtraData)
-            it.setCustomMapStyle(styleOptions)
+//            val styleData = FileUtils.readBytesFromAssets(context, "mapstyle/style.data")
+//            val styleExtraData = FileUtils.readBytesFromAssets(context, "mapstyle/style_extra.data")
+//            val styleOptions = CustomMapStyleOptions()
+//                .setEnable(true)
+//                .setStyleData(styleData)
+//                .setStyleExtraData(styleExtraData)
+//            it.setCustomMapStyle(styleOptions)
             it.addOnCameraChangeListener(object : OnCameraChangeListener {
                 override fun onCameraChange(position: CameraPosition?) {
 

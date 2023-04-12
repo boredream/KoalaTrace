@@ -80,7 +80,7 @@ object AppWidgetUpdater {
 
             views.setTextViewText(R.id.btn_toggle_trace, btnToggleTraceText)
             views.setOnClickPendingIntent(R.id.btn_toggle_trace, pendingIntent)
-            LogUtils.i("toggleTraceAction = $toggleTraceAction")
+            // LogUtils.i("toggleTraceAction = $toggleTraceAction")
         }
 
         // 更新轨迹信息 距离+时间信息

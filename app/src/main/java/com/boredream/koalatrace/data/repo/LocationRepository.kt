@@ -3,6 +3,7 @@ package com.boredream.koalatrace.data.repo
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.model.LatLng
 import com.boredream.koalatrace.data.TraceLocation
+import com.boredream.koalatrace.data.constant.LocationConstant.TRACE_DISTANCE_THRESHOLD
 import com.boredream.koalatrace.data.repo.source.LocationDataSource
 import com.boredream.koalatrace.utils.TraceFilter
 import java.util.*
@@ -18,12 +19,6 @@ class LocationRepository @Inject constructor(
 ) {
 
     companion object {
-
-        /**
-         * 最小计算追踪点，单位米
-         */
-        const val TRACE_DISTANCE_THRESHOLD = 0.5
-
         const val STATUS_IDLE = 0
         const val STATUS_LOCATION = 1
         const val STATUS_TRACE = 2
