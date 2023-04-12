@@ -34,6 +34,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding>() {
         savedInstanceState: Bundle?
     ): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
+        LogUtils.i("map view onCreate")
         binding.mapView.onCreate(savedInstanceState)
         initObserver()
         toggleLocation(true)
@@ -67,25 +68,29 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding>() {
         }
     }
 
-    override fun onDestroy() {
+    override fun onDestroyView() {
+        LogUtils.i("map view onDestroy")
         toggleLocation(false)
         binding.mapView.onDestroy()
-        super.onDestroy()
+        super.onDestroyView()
     }
 
     override fun onResume() {
         super.onResume()
+        LogUtils.i("map view onResume")
         viewModel.onResume()
         binding.mapView.onResume()
     }
 
     override fun onPause() {
+        LogUtils.i("map view onPause")
         viewModel.onPause()
         binding.mapView.onPause()
         super.onPause()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
+        LogUtils.i("map view onSaveInstanceState")
         super.onSaveInstanceState(outState)
         try {
             // FIXME: binding NPE?

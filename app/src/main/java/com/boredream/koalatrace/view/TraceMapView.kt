@@ -90,7 +90,7 @@ class TraceMapView : MapView {
             locateMe()
             isFirstSetMyLocation = false
         }
-        LogUtils.d(map.cameraPosition.target)
+        LogUtils.v(map.cameraPosition.target)
     }
 
     fun locateMe() {
@@ -111,10 +111,10 @@ class TraceMapView : MapView {
         for (i in startDrawIndex until allTracePointList.size) {
             pointList.add(allTracePointList[i].toLatLng())
         }
-        val line = drawLine(pointList)
+        drawLine(pointList)
         // 绘制完成后，更新 startDrawIndex
         val newIndex = allTracePointList.lastIndex
-        println("drawTraceList $startDrawIndex to $newIndex")
+        LogUtils.v("drawTraceList $startDrawIndex to $newIndex")
         startDrawIndex = newIndex
     }
 

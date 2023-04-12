@@ -3,6 +3,7 @@ package com.boredream.koalatrace.ui
 import android.os.Bundle
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.Lifecycle
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -45,19 +46,18 @@ class FragmentController(
     }
 
     fun showFragment(position: Int) {
-        hideFragments()
-        val fragment = fragmentList[position]
         val ft: FragmentTransaction = fm.beginTransaction()
-        ft.show(fragment)
-        ft.commitAllowingStateLoss()
-    }
-
-    fun hideFragments() {
-        val ft: FragmentTransaction = fm.beginTransaction()
-        for (fragment in fragmentList) {
-            ft.hide(fragment)
+        for (i in 0 until fragmentList.size) {
+            val fragment = fragmentList[i]
+            if (i == position) {
+                ft.setMaxLifecycle(fragment, Lifecycle.State.RESUMED)
+                ft.show(fragment)
+            } else {
+                ft.setMaxLifecycle(fragment, Lifecycle.State.STARTED)
+                ft.hide(fragment)
+            }
         }
-        ft.commit()
+        ft.commitAllowingStateLoss()
     }
 
     fun getFragment(position: Int): BaseFragment<*, *> {
