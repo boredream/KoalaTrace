@@ -4,6 +4,7 @@ import android.os.CountDownTimer
 import com.amap.api.location.AMapLocation
 import com.boredream.koalatrace.utils.TraceFilter
 import com.boredream.koalatrace.data.TraceLocation
+import com.boredream.koalatrace.db.AppDatabase
 import javax.inject.Inject
 import kotlin.random.Random
 

@@ -43,6 +43,11 @@ class TraceUseCase @Inject constructor(
         locationRepository.startTrace()
     }
 
+    suspend fun stopAndSaveTrace() {
+        stopTrace()
+        saveTraceRecord()
+    }
+
     /**
      * 结束追踪轨迹
      */

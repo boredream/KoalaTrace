@@ -60,7 +60,7 @@ class GdLocationDataSource @Inject constructor(@ApplicationContext val context: 
         // 设置定位模式为高精度模式，Battery_Saving为低功耗模式，Device_Sensors是仅设备模式
         locationOption.locationMode = AMapLocationClientOption.AMapLocationMode.Hight_Accuracy
         // 设置定位间隔,单位毫秒,默认为2000ms
-        locationOption.interval = LocationConstant.locationInterval
+        locationOption.interval = LocationConstant.LOCATION_INTERVAL
         // 定位同时是否需要返回地址描述。
         locationOption.isNeedAddress = false
         // 4g网络定位精度是500~2000，wifi是5~200。从精度上4g没必要，从场景上wifi没必要。所以只用 Device_Sensors

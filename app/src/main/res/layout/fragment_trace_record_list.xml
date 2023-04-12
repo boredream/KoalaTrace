@@ -44,16 +44,5 @@
             app:layout_constraintTop_toBottomOf="@+id/title_bar"
             app:refreshState="@{vm.refreshListVMCompose.refreshUiState}" />
 
-        <ImageButton
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_margin="@dimen/margin_medium"
-            android:background="@drawable/oval_primary"
-            android:elevation="@dimen/elevation"
-            android:onClick="@{() -> vm.startAdd()}"
-            android:src="@drawable/ic_baseline_add_24"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintRight_toRightOf="parent" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

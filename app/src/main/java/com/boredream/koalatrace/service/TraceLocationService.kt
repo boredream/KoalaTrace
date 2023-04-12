@@ -15,7 +15,7 @@ import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.constant.BundleKey
 import com.boredream.koalatrace.data.repo.LocationRepository
 import com.boredream.koalatrace.data.usecase.TraceUseCase
-import com.boredream.koalatrace.ui.trace.TraceMapActivity
+import com.boredream.koalatrace.ui.main.MainTabActivity
 import com.boredream.koalatrace.widget.AppWidgetUpdater
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -50,7 +50,7 @@ class TraceLocationService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        val intent = Intent(this, TraceMapActivity::class.java)
+        val intent = Intent(this, MainTabActivity::class.java)
         val pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             PendingIntent.getActivity(application, 0, intent, FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
         } else {
@@ -98,26 +98,11 @@ class TraceLocationService : Service() {
             if (it.hasExtra(BundleKey.TOGGLE_TRACE)) {
                 val start = it.getBooleanExtra(BundleKey.TOGGLE_TRACE, false)
                 if (start) {
-                    traceUseCase.startLocation()
                     traceUseCase.startTrace()
                 } else {
                     // 打开页面/刷新widget进行询问保存？或者直接进行保存
-                    traceUseCase.stopTrace()
                     scope.launch {
-                        traceUseCase.saveTraceRecord()
-                    }
-                    traceUseCase.stopLocation()
-                }
-                // LogUtils.i("TOGGLE_TRACE $toggleTraceAction")
-            } else if (it.hasExtra(BundleKey.TOGGLE_LOCATION)) {
-                val start = it.getBooleanExtra(BundleKey.TOGGLE_LOCATION, false)
-                if (start) {
-                    traceUseCase.startLocation()
-                } else {
-                    // 关闭时判断，如果是在追踪中，不可关闭
-                    if (!traceUseCase.isTracing()) {
-                        traceUseCase.stopLocation()
-                        stopSelf()
+                        traceUseCase.stopAndSaveTrace()
                     }
                 }
             }

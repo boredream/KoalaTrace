@@ -1,6 +1,5 @@
 package com.boredream.koalatrace.ui.trace.recordlist
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -15,11 +14,8 @@ import com.boredream.koalatrace.data.event.SyncStatusEvent
 import com.boredream.koalatrace.databinding.FragmentTraceRecordListBinding
 import com.boredream.koalatrace.databinding.ItemTraceRecordBinding
 import com.boredream.koalatrace.service.SyncDataService
-import com.boredream.koalatrace.ui.trace.TraceMapActivity
 import com.boredream.koalatrace.ui.trace.recorddetail.TraceRecordDetailActivity
 import com.boredream.koalatrace.utils.DialogUtils
-import com.boredream.koalatrace.utils.PermissionSettingUtil
-import com.yanzhenjie.permission.AndPermission
 import dagger.hilt.android.AndroidEntryPoint
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -76,7 +72,6 @@ class TraceRecordListFragment :
         binding.syncStatusView.setOnClickListener {
             SyncDataService.startSync(requireContext())
         }
-        viewModel.toDetailEvent.observe(viewLifecycleOwner) { toDetail() }
         SimpleUiStateObserver.setRequestObserver(this, this, viewModel.deleteVMCompose) {
             // 提交成功后，开始推送信息
             SyncDataService.startPush(requireContext())
@@ -91,20 +86,5 @@ class TraceRecordListFragment :
             // 刷新完成后，更新UI
             viewModel.start()
         }
-    }
-
-    private fun toDetail() {
-        AndPermission.with(context)
-            .runtime()
-            .permission(Manifest.permission.ACCESS_FINE_LOCATION)
-            .onGranted {
-                TraceMapActivity.start(requireContext())
-            }
-            .onDenied { permissions ->
-                if (AndPermission.hasAlwaysDeniedPermission(context, permissions)) {
-                    PermissionSettingUtil.showSetting(requireContext(), permissions)
-                }
-            }
-            .start()
     }
 }

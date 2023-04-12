@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed class UIEvent
-object ShowSaveConfirmDialog : UIEvent()
 object LocateMe : UIEvent()
 
 data class UiState(
@@ -80,7 +79,9 @@ class HomeViewModel @Inject constructor(
     fun toggleTrace() {
         if (traceUseCase.isTracing()) {
             // 停止轨迹跟踪后，提示保存路径
-            _uiEvent.value = ShowSaveConfirmDialog
+            viewModelScope.launch {
+                traceUseCase.stopAndSaveTrace()
+            }
         } else {
             traceUseCase.startTrace()
         }
