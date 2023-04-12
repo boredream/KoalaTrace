@@ -47,10 +47,6 @@ class HomeViewModel @Inject constructor(
     val historyTracePointListUiState: LiveData<ArrayList<ArrayList<TraceLocation>>> =
         _historyTracePointListUiState
 
-    // 是否为跟踪模式
-    private val _isFollowing = MutableLiveData(true)
-    val isFollowing: LiveData<Boolean> = _isFollowing
-
     // 是否正在记录轨迹中
     private val _isTracing = MutableLiveData(false)
     val isTracing: LiveData<Boolean> = _isTracing
@@ -96,14 +92,6 @@ class HomeViewModel @Inject constructor(
      */
     fun locateMe() {
         _uiEvent.value = LocateMe
-    }
-
-    /**
-     * 切换跟踪模式
-     */
-    fun toggleFollowingMode() {
-        val old = _isFollowing.value!!
-        _isFollowing.value = !old
     }
 
     /**

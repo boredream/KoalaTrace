@@ -39,7 +39,7 @@ class MineFragment : BaseFragment<MineViewModel, FragmentMineBinding>() {
     }
 
     private fun initList() {
-        getBinding().rvSetting.layoutManager = LinearLayoutManager(activity)
+        binding.rvSetting.layoutManager = LinearLayoutManager(activity)
         dataList.add(SettingItem("另一半", "绑定"))
         dataList.add(SettingItem("关于我们", ""))
         dataList.add(SettingItem("推荐给好友", ""))
@@ -51,7 +51,7 @@ class MineFragment : BaseFragment<MineViewModel, FragmentMineBinding>() {
                 // TODO: click
             }
         }
-        getBinding().rvSetting.adapter = adapter
+        binding.rvSetting.adapter = adapter
     }
 
     private fun toggleBindCp() {

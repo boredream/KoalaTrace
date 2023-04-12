@@ -16,6 +16,7 @@ import com.boredream.koalatrace.utils.FileUtils
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.operation.buffer.BufferOp
 import org.locationtech.jts.operation.buffer.BufferParameters
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier
@@ -130,55 +131,64 @@ class TraceMapView : MapView {
                 traceLineColor = ContextCompat.getColor(context, R.color.colorPrimaryLight)
             )
 
-            var start = System.currentTimeMillis()
-            // 先经纬度转为jts的line对象
-            val factory = GeometryFactory()
-            val coordinateList = arrayListOf<Coordinate>()
-            pointList.forEach { coordinateList.add(Coordinate(it.latitude, it.longitude))}
-            val line = factory.createLineString(coordinateList.toTypedArray())
+//            val simplePointList = simpleLine(pointList)
+//            drawLine(
+//                ArrayList(simplePointList),
+//                traceLineColor = ContextCompat.getColor(context, R.color.txt_oran)
+//            )
 
-            // 简化线的几何形状
-            val tolerance = CommonConstant.ONE_METER_LAT_LNG * 20 // 简化容差
-            val simplifier = DouglasPeuckerSimplifier(line)
-            simplifier.setDistanceTolerance(tolerance)
-            val simplifiedLine: Geometry = simplifier.resultGeometry
-
-            val simplePointList = simplifiedLine.coordinates.map { LatLng(it.x + CommonConstant.ONE_METER_LAT_LNG * 200, it.y) }
-            drawLine(
-                ArrayList(simplePointList),
-                traceLineColor = ContextCompat.getColor(context, R.color.txt_oran)
-            )
-            LogUtils.i("drawMultiFixTraceList simple line duration ${System.currentTimeMillis() - start}")
-
-            // 绘制区域
-            // 计算线的缓冲区
-            val bufferParams = BufferParameters()
-            bufferParams.endCapStyle = BufferParameters.CAP_ROUND
-            bufferParams.joinStyle = BufferParameters.JOIN_ROUND
-            start = System.currentTimeMillis()
-            val bufferOp = BufferOp(simplifiedLine, bufferParams)
-            val width = CommonConstant.ONE_METER_LAT_LNG * 50
-            val polygon  = bufferOp.getResultGeometry(width) as org.locationtech.jts.geom.Polygon
-            LogUtils.i("drawMultiFixTraceList line buffer duration ${System.currentTimeMillis() - start}")
-
-            // 注意环的情况
-            val polygonOptions = PolygonOptions()
-                .addAll(polygon.exteriorRing.coordinates.map { LatLng(it.x, it.y) })
-                .fillColor(Color.argb(150, 255, 0, 0))
-                .strokeWidth(0f)
-
-            if(polygon.numInteriorRing > 0) {
-                // TODO: 环如果过小，可以省略
-                for(index in 0 until polygon.numInteriorRing) {
-                    LogUtils.i("draw polygon hole = $index")
-                    val inter = polygon.getInteriorRingN(index).coordinates.map { LatLng(it.x, it.y) }
-                    polygonOptions.addHoles(PolygonHoleOptions().addAll(inter))
-                }
-            }
-            start = System.currentTimeMillis()
-            map.addPolygon(polygonOptions)
-            LogUtils.i("drawMultiFixTraceList addPolygon duration ${System.currentTimeMillis() - start}")
+            // drawLineBuffer(simplifiedLine)
         }
+    }
+
+    private fun simpleLine(pointList: ArrayList<LatLng>): List<LatLng> {
+        val start = System.currentTimeMillis()
+        // 先经纬度转为jts的line对象
+        val factory = GeometryFactory()
+        val coordinateList = arrayListOf<Coordinate>()
+        pointList.forEach { coordinateList.add(Coordinate(it.latitude, it.longitude)) }
+        val line = factory.createLineString(coordinateList.toTypedArray())
+
+        // 简化线的几何形状
+        val tolerance = CommonConstant.ONE_METER_LAT_LNG * 20 // 简化容差
+        val simplifier = DouglasPeuckerSimplifier(line)
+        simplifier.setDistanceTolerance(tolerance)
+        val simplifiedLine: Geometry = simplifier.resultGeometry
+
+        val simplePointList = simplifiedLine.coordinates.map { LatLng(it.x, it.y) }
+        LogUtils.i("simple line duration ${System.currentTimeMillis() - start}")
+        return simplePointList
+    }
+
+    private fun drawLineBuffer(line: Geometry) {
+        // 绘制区域
+        // 计算线的缓冲区
+        var start = System.currentTimeMillis()
+        val bufferParams = BufferParameters()
+        bufferParams.endCapStyle = BufferParameters.CAP_ROUND
+        bufferParams.joinStyle = BufferParameters.JOIN_ROUND
+        val bufferOp = BufferOp(line, bufferParams)
+        val width = CommonConstant.ONE_METER_LAT_LNG * 50
+        val polygon = bufferOp.getResultGeometry(width) as Polygon
+        LogUtils.i("line buffer duration ${System.currentTimeMillis() - start}")
+
+        // 注意环的情况
+        val polygonOptions = PolygonOptions()
+            .addAll(polygon.exteriorRing.coordinates.map { LatLng(it.x, it.y) })
+            .fillColor(Color.argb(150, 255, 0, 0))
+            .strokeWidth(0f)
+
+        if (polygon.numInteriorRing > 0) {
+            // TODO: 环如果过小，可以省略
+            for (index in 0 until polygon.numInteriorRing) {
+                LogUtils.i("draw polygon hole = $index")
+                val inter = polygon.getInteriorRingN(index).coordinates.map { LatLng(it.x, it.y) }
+                polygonOptions.addHoles(PolygonHoleOptions().addAll(inter))
+            }
+        }
+        start = System.currentTimeMillis()
+        map.addPolygon(polygonOptions)
+        LogUtils.i("addPolygon duration ${System.currentTimeMillis() - start}")
     }
 
     private fun drawLine(

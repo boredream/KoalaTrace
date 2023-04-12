@@ -26,9 +26,9 @@
         android:theme="@style/Theme.KoalaTrace"
         tools:targetApi="31">
         <activity
-            android:name=".ui.MainActivity"
+            android:name=".ui.main.MainTabActivity"
             android:exported="false"
-            android:label="@string/title_activity_main"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.KoalaTrace.NoActionBar">
             <meta-data
                 android:name="android.app.lib_name"

@@ -65,7 +65,7 @@ class TraceRecordListFragment :
         adapter.onItemLongClickListener = {
             DialogUtils.showDeleteConfirmDialog(requireContext(), { viewModel.delete(it) })
         }
-        getBinding().refreshTraceList.setup(
+        binding.refreshTraceList.setup(
             adapter,
             enableRefresh = false,
         )
@@ -73,7 +73,7 @@ class TraceRecordListFragment :
 
     @SuppressLint("NotifyDataSetChanged")
     private fun initObserver() {
-        getBinding().syncStatusView.setOnClickListener {
+        binding.syncStatusView.setOnClickListener {
             SyncDataService.startSync(requireContext())
         }
         viewModel.toDetailEvent.observe(viewLifecycleOwner) { toDetail() }

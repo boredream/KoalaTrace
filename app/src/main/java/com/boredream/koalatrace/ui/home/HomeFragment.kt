@@ -9,6 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.startForegroundService
+import androidx.databinding.DataBindingUtil.getBinding
+import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.ServiceUtils.startService
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseFragment
@@ -44,8 +46,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding>() {
         savedInstanceState: Bundle?
     ): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
-
-        getBinding().mapView.onCreate(savedInstanceState)
+        binding.mapView.onCreate(savedInstanceState)
         initObserver()
         toggleLocation(true)
         return view
@@ -62,7 +63,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding>() {
                         .setNegativeButton("删除") { _, _ -> viewModel.abandonTrace() }
                         .show()
                 }
-                is LocateMe -> getBinding().mapView.apply {
+                is LocateMe -> binding.mapView.apply {
                     post { locateMe() }
                 }
             }
@@ -88,25 +89,31 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding>() {
 
     override fun onDestroy() {
         toggleLocation(false)
-        getBinding().mapView.onDestroy()
+        binding.mapView.onDestroy()
         super.onDestroy()
     }
 
     override fun onResume() {
         super.onResume()
         viewModel.onResume()
-        getBinding().mapView.onResume()
+        binding.mapView.onResume()
     }
 
     override fun onPause() {
         viewModel.onPause()
-        getBinding().mapView.onPause()
+        binding.mapView.onPause()
         super.onPause()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        getBinding().mapView.onSaveInstanceState(outState)
+        try {
+            // FIXME: binding NPE?
+            binding.mapView.onSaveInstanceState(outState)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            LogUtils.i("error", e.message)
+        }
     }
 
 }

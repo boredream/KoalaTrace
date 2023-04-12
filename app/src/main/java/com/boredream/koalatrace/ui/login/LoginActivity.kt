@@ -4,12 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import com.blankj.utilcode.util.ToastUtils
-import com.boredream.koalatrace.ui.MainActivity
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseActivity
 import com.boredream.koalatrace.base.RepoCacheHelper
 import com.boredream.koalatrace.common.SimpleUiStateObserver
 import com.boredream.koalatrace.databinding.ActivityLoginBinding
+import com.boredream.koalatrace.ui.main.MainTabActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -35,7 +35,7 @@ class LoginActivity : BaseActivity<LoginViewModel, ActivityLoginBinding>() {
 
         SimpleUiStateObserver.setRequestObserver(this, this, viewModel.loginVMCompose) {
             ToastUtils.showShort("登录成功")
-            MainActivity.start(this)
+            MainTabActivity.start(this)
             finish()
         }
     }

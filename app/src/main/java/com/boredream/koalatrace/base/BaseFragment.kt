@@ -17,13 +17,10 @@ abstract class BaseFragment<VM: BaseViewModel, BD: ViewDataBinding>: Fragment(),
     // base
     protected lateinit var baseActivity: BaseActivity<*, *>
     protected lateinit var viewModel: VM
-    private var binding: BD? = null
+    private var _binding: BD? = null
+    protected val binding get() = _binding!!
     protected abstract fun getLayoutId(): Int
     protected abstract fun getViewModelClass(): Class<VM>
-
-    fun getBinding(): BD {
-        return binding!!
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,10 +28,10 @@ abstract class BaseFragment<VM: BaseViewModel, BD: ViewDataBinding>: Fragment(),
         savedInstanceState: Bundle?
     ): View {
         baseActivity = activity as BaseActivity<*, *>
-        binding = DataBindingUtil.inflate(inflater, getLayoutId(), container, false)
+        _binding = DataBindingUtil.inflate(inflater, getLayoutId(), container, false)!!
         viewModel = ViewModelProvider(this)[getViewModelClass()]
-        getBinding().lifecycleOwner = this
-        getBinding().setVariable(BR.vm, viewModel)
+        binding.lifecycleOwner = this
+        binding.setVariable(BR.vm, viewModel)
 
         viewModel.baseUiState.observe(viewLifecycleOwner) { showLoading(it.showLoading) }
         viewModel.baseEvent.observe(viewLifecycleOwner) {
@@ -43,7 +40,7 @@ abstract class BaseFragment<VM: BaseViewModel, BD: ViewDataBinding>: Fragment(),
             }
         }
 
-        return getBinding().root
+        return binding.root
     }
 
     override fun showLoading(show: Boolean) {
@@ -52,7 +49,7 @@ abstract class BaseFragment<VM: BaseViewModel, BD: ViewDataBinding>: Fragment(),
 
     override fun onDestroyView() {
         super.onDestroyView()
-        binding = null
+        _binding = null
     }
 
 }

@@ -1,11 +1,11 @@
 package com.boredream.koalatrace.ui.splash
 
 import android.os.Bundle
-import com.boredream.koalatrace.ui.MainActivity
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseActivity
 import com.boredream.koalatrace.databinding.ActivitySplashBinding
 import com.boredream.koalatrace.ui.login.LoginActivity
+import com.boredream.koalatrace.ui.main.MainTabActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -22,7 +22,7 @@ class SplashActivity : BaseActivity<SplashViewModel, ActivitySplashBinding>() {
         super.onCreate(savedInstanceState)
 
         viewModel.loginVMCompose.successUiState.observe(this) {
-            MainActivity.start(this)
+            MainTabActivity.start(this)
             finish()
         }
         viewModel.loginVMCompose.failUiState.observe(this) {
