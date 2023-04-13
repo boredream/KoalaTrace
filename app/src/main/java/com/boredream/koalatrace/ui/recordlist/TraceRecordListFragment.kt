@@ -1,4 +1,4 @@
-package com.boredream.koalatrace.ui.trace.recordlist
+package com.boredream.koalatrace.ui.recordlist
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -40,6 +40,7 @@ class TraceRecordListFragment :
         val view = super.onCreateView(inflater, container, savedInstanceState)
         initView()
         initObserver()
+        viewModel.updateRecordingTraces()
         EventBus.getDefault().register(this)
         return view
     }

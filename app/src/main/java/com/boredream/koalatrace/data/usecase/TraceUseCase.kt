@@ -55,7 +55,7 @@ class TraceUseCase @Inject constructor(
         val timeStr = TimeUtils.millis2String(time)
         val title = "轨迹 $timeStr"
         val traceRecord = TraceRecord(title, time, time, 0, isRecording = true)
-        val response = traceRecordRepository.add(traceRecord)
+        val response = traceRecordRepository.insertOrUpdate(traceRecord)
         if (response.isSuccess()) {
             // 开始追踪
             currentTraceRecord = response.getSuccessData()
@@ -80,15 +80,8 @@ class TraceUseCase @Inject constructor(
      */
     suspend fun stopTrace() {
         locationRepository.stopTrace()
-
-        val locationList = locationRepository.traceList
-        if (CollectionUtils.isEmpty(locationList)) return
         val record = currentTraceRecord ?: return
-
-        record.endTime = locationList[locationList.lastIndex].time
-        record.distance = TraceUtils.calculateDistance(locationList)
-        record.isRecording = false
-        traceRecordRepository.add(record)
+        traceRecordRepository.updateByTraceList(record)
         locationRepository.clearTraceList()
         LogUtils.i("stop and save traceRecord: ${record.name} , distance = ${record.distance}")
     }

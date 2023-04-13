@@ -1,4 +1,4 @@
-package com.boredream.koalatrace.ui.trace.recordlist
+package com.boredream.koalatrace.ui.recordlist
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -9,6 +9,7 @@ import com.boredream.koalatrace.common.vmcompose.RequestVMCompose
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.repo.TraceRecordRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,6 +35,16 @@ class TraceRecordListViewModel @Inject constructor(
         deleteVMCompose.request(
             onSuccess = { start() }
         ) { repository.delete(data) }
+    }
+
+    fun updateRecordingTraces() {
+        // 如果有之前未保存的，刷新轨迹数据
+        viewModelScope.launch {
+            val hasUpdate = repository.checkAllRecordUpdateByTraceList()
+            if(hasUpdate) {
+                start()
+            }
+        }
     }
 
 }

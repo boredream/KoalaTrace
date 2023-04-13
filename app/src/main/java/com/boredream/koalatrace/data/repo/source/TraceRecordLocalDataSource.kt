@@ -15,6 +15,15 @@ class TraceRecordLocalDataSource @Inject constructor(appDatabase: AppDatabase) :
     private val traceRecordDao = appDatabase.traceRecordDao()
     private val traceLocationDao = appDatabase.traceLocationDao()
 
+    suspend fun getUnRecordingTraceRecord(): ResponseEntity<ArrayList<TraceRecord>> {
+        return try {
+            val list = traceRecordDao.loadUnRecording()
+            ResponseEntity.success(ArrayList(list))
+        } catch (e: Exception) {
+            ResponseEntity(null, 500, e.toString())
+        }
+    }
+
     suspend fun getUnSyncedTraceRecord(): ResponseEntity<ArrayList<TraceRecord>> {
         return try {
             val list = traceRecordDao.loadUnSynced()

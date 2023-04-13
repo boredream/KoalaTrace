@@ -119,6 +119,8 @@ class TraceMapView : MapView {
         for (i in startDrawIndex until allTracePointList.size) {
             pointList.add(allTracePointList[i].toLatLng())
         }
+        if(pointList.size <= 1) return
+
         drawLine(pointList)
         // 绘制完成后，更新 startDrawIndex
         val newIndex = allTracePointList.lastIndex

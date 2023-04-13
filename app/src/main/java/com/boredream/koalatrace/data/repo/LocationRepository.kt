@@ -142,11 +142,11 @@ class LocationRepository @Inject constructor(
         if (distance > TRACE_DISTANCE_THRESHOLD && distance < maxDistance) {
             // 移动距离设置阈值，且不能超过最大值（过滤坐标漂移的数据）
             traceList.add(location)
-            onTraceSuccess.forEach { it.invoke(traceList) }
         } else {
-            // 距离达不到阈值时，视为原地不动，只更新最新一次时间？
+            // 距离达不到阈值时，视为原地不动，只更新最新一次时间
             traceList[traceList.lastIndex].time = location.time
         }
+        onTraceSuccess.forEach { it.invoke(traceList) }
     }
 
 }

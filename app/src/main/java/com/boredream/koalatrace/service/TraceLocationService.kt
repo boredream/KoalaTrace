@@ -13,6 +13,7 @@ import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.constant.BundleKey
+import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.repo.LocationRepository
 import com.boredream.koalatrace.data.usecase.TraceUseCase
 import com.boredream.koalatrace.ui.main.MainTabActivity
@@ -139,10 +140,20 @@ class TraceLocationService : Service() {
 
     private var onTraceSuccess: (allTracePointList: ArrayList<TraceLocation>) -> Unit = {
         // 定位状态变化
-        // println("TraceLocationService allTracePointList $it")
+         LogUtils.v("TraceLocationService allTracePointList ${it.size}")
         if (it.size != 0) {
             scope.launch {
                 traceUseCase.addLocation2currentRecord(it)
+            }
+
+            if(it.size > 1) {
+                // 超过一个坐标点，查询最后一个距离上一个点位时间差，如果超过一个阈值，则代表停留在一个地方太久，直接保存并关闭轨迹记录
+                val stay = it[it.lastIndex].time - it[it.lastIndex-1].time
+                if(stay >= LocationConstant.STOP_THRESHOLD_DURATION) {
+                    scope.launch {
+                        traceUseCase.stopTrace()
+                    }
+                }
             }
 
             // TODO: 桌面小程序

@@ -17,7 +17,7 @@ import com.boredream.koalatrace.service.TraceLocationService
 import com.boredream.koalatrace.ui.FragmentController
 import com.boredream.koalatrace.ui.home.HomeFragment
 import com.boredream.koalatrace.ui.mine.MineFragment
-import com.boredream.koalatrace.ui.trace.recordlist.TraceRecordListFragment
+import com.boredream.koalatrace.ui.recordlist.TraceRecordListFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 

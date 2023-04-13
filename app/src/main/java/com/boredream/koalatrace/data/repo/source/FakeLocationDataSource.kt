@@ -2,6 +2,7 @@ package com.boredream.koalatrace.data.repo.source
 
 import android.os.CountDownTimer
 import com.amap.api.location.AMapLocation
+import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.utils.TraceFilter
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.db.AppDatabase
@@ -28,7 +29,7 @@ class FakeLocationDataSource @Inject constructor() : LocationDataSource {
         // 开启定时任务，然后挨个返回虚拟经纬度
         val total = (10 * 60 * 1000 + 100).toLong()
         countDownTimer = object : CountDownTimer(total, 2000) {
-            override fun onTick(millisUntilFinished: Long) = onSuccess.invoke(testStepLocation())
+            override fun onTick(millisUntilFinished: Long) = onSuccess.invoke(testStepLocation(millisUntilFinished))
             override fun onFinish() = Unit
         }
         countDownTimer.start()
@@ -38,10 +39,15 @@ class FakeLocationDataSource @Inject constructor() : LocationDataSource {
         countDownTimer.cancel()
     }
 
-    fun testStepLocation(): TraceLocation {
-        val yStep = 0.00001 * (Random.nextInt(100) - 30)
-        val xStep = 0.00001 * (Random.nextInt(50) - 20)
+    fun testStepLocation(millisUntilFinished: Long): TraceLocation {
+        var yStep = 0.00001 * (Random.nextInt(100) - 30)
+        var xStep = 0.00001 * (Random.nextInt(50) - 20)
         val ratio = 0.3
+        if(millisUntilFinished < 580000) {
+            // FIXME: 测试停留自动关闭保存经纬度
+            yStep = 0.0
+            xStep = 0.0
+        }
         moveLocation.latitude = moveLocation.latitude + yStep * ratio
         moveLocation.longitude = moveLocation.longitude + xStep * ratio
         return TraceLocation(latitude = moveLocation.latitude, longitude = moveLocation.longitude)

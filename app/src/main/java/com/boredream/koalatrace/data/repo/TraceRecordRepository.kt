@@ -1,5 +1,6 @@
 package com.boredream.koalatrace.data.repo
 
+import com.amap.api.mapcore.util.it
 import com.blankj.utilcode.util.CollectionUtils
 import com.boredream.koalatrace.base.BaseRepository
 import com.boredream.koalatrace.data.ResponseEntity
@@ -11,6 +12,7 @@ import com.boredream.koalatrace.data.repo.source.ConfigLocalDataSource.Companion
 import com.boredream.koalatrace.data.repo.source.TraceRecordLocalDataSource
 import com.boredream.koalatrace.data.repo.source.TraceRecordRemoteDataSource
 import com.boredream.koalatrace.utils.Logger
+import com.boredream.koalatrace.utils.TraceUtils
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -47,7 +49,7 @@ class TraceRecordRepository @Inject constructor(
                         }
                         logger.i("pull and save data = ${traceRecord.name} , location size = ${traceRecord.traceList?.size}")
                         updateSyncTime(traceRecord.syncTimestamp)
-                        add(traceRecord)
+                        insertOrUpdate(traceRecord)
                     } else {
                         // 3. 如果本地数据，同步标志位是false，即本地有修改还没提交给服务端的，处理冲突
                         // 冲突数据【本地的】，因为大部分是珍贵的轨迹收集数据，所以本地为准，服务端数据抛弃
@@ -89,7 +91,7 @@ class TraceRecordRepository @Inject constructor(
     suspend fun getLocationList(traceRecordDbId: String) =
         localDataSource.getTraceLocationList(traceRecordDbId)
 
-    suspend fun add(data: TraceRecord) = localDataSource.add(data)
+    suspend fun insertOrUpdate(data: TraceRecord) = localDataSource.add(data)
 
     suspend fun insertOrUpdateLocation(data: TraceLocation) = localDataSource.insertOrUpdate(data)
 
@@ -131,6 +133,29 @@ class TraceRecordRepository @Inject constructor(
     suspend fun update(data: TraceRecord): ResponseEntity<TraceRecord> {
         data.synced = false // 同步标志位，有修改的都需要设为false
         return localDataSource.update(data)
+    }
+
+    suspend fun checkAllRecordUpdateByTraceList() : Boolean{
+        var hasUpdate = false
+        val list = localDataSource.getUnRecordingTraceRecord()
+        if(list.isSuccess()) {
+            logger.i("checkAllRecordUpdateByTraceList ${list.getSuccessData().size}")
+            list.getSuccessData().forEach {
+                it.traceList = localDataSource.getTraceLocationList(it.dbId).data
+                updateByTraceList(it)
+                hasUpdate = true
+            }
+        }
+        return hasUpdate
+    }
+
+    suspend fun updateByTraceList(record: TraceRecord) {
+        val locationList = record.traceList ?: return
+        record.endTime = locationList[locationList.lastIndex].time
+        record.distance = TraceUtils.calculateDistance(locationList)
+        record.isRecording = false
+        insertOrUpdate(record)
+        logger.i("updateByTraceList ${record.name} , distance = ${record.distance}")
     }
 
     suspend fun delete(data: TraceRecord): ResponseEntity<TraceRecord> {

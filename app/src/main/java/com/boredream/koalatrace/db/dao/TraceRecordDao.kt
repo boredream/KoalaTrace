@@ -10,6 +10,9 @@ interface TraceRecordDao {
     @Query("SELECT * FROM TraceRecord WHERE synced = 0")
     suspend fun loadUnSynced(): List<TraceRecord>
 
+    @Query("SELECT * FROM TraceRecord WHERE isRecording = 1 AND isDelete = 0")
+    suspend fun loadUnRecording(): List<TraceRecord>
+
     @Query("SELECT * FROM TraceRecord WHERE isDelete = 0 limit :limit offset :offset")
     suspend fun loadByPage(limit: Int, offset: Int): List<TraceRecord>
 
