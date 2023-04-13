@@ -27,4 +27,17 @@ data class TraceRecord(
     @Ignore
     var traceList: ArrayList<TraceLocation>? = arrayListOf()
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as TraceRecord
+        if (dbId != other.dbId) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return dbId.hashCode()
+    }
+
+
 }

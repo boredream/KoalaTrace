@@ -145,13 +145,14 @@ class TraceLocationService : Service() {
                 traceUseCase.addLocation2currentRecord(it)
             }
 
-            val timeDiff = System.currentTimeMillis() - it[0].time
-            val updateWidgetInterval = 30_000 // widget刷新间隔，单位毫秒
-            val timeIndex: Int = (timeDiff % updateWidgetInterval + 500).toInt() / 1000
-            if (timeIndex == 0) {
-                // LogUtils.i("updateTraceInfo $timeDiff $timeIndex")
-                AppWidgetUpdater.updateTraceInfo(this, it)
-            }
+            // TODO: 桌面小程序
+//            val timeDiff = System.currentTimeMillis() - it[0].time
+//            val updateWidgetInterval = 30_000 // widget刷新间隔，单位毫秒
+//            val timeIndex: Int = (timeDiff % updateWidgetInterval + 500).toInt() / 1000
+//            if (timeIndex == 0) {
+//                // LogUtils.i("updateTraceInfo $timeDiff $timeIndex")
+//                AppWidgetUpdater.updateTraceInfo(this, it)
+//            }
         }
     }
 

@@ -2,6 +2,7 @@ package com.boredream.koalatrace.data.repo
 
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.model.LatLng
+import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.constant.LocationConstant.TRACE_DISTANCE_THRESHOLD
 import com.boredream.koalatrace.data.repo.source.LocationDataSource
@@ -111,8 +112,8 @@ class LocationRepository @Inject constructor(
     /**
      * 定位成功
      */
-    fun onLocationSuccess(location: TraceLocation) {
-        // println("onLocationSuccess dataSource = ${dataSource.javaClass.simpleName}, location = $location")
+    private fun onLocationSuccess(location: TraceLocation) {
+        LogUtils.v("onLocationSuccess dataSource = ${dataSource.javaClass.simpleName}, location = $location")
         myLocation = location
         onLocationSuccess.forEach { it.invoke(location) }
         if(status == STATUS_TRACE) {

@@ -1,21 +1,16 @@
 package com.boredream.koalatrace.ui.home
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat.startForegroundService
 import com.blankj.utilcode.util.LogUtils
-import com.blankj.utilcode.util.ServiceUtils.startService
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseFragment
 import com.boredream.koalatrace.common.SimpleUiStateObserver
-import com.boredream.koalatrace.data.constant.BundleKey
 import com.boredream.koalatrace.databinding.FragmentHomeBinding
 import com.boredream.koalatrace.service.SyncDataService
-import com.boredream.koalatrace.service.TraceLocationService
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -37,7 +32,6 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding>() {
         LogUtils.i("map view onCreate")
         binding.mapView.onCreate(savedInstanceState)
         initObserver()
-        toggleLocation(true)
         return view
     }
 
@@ -57,20 +51,8 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding>() {
         }
     }
 
-    private fun toggleLocation(start: Boolean) {
-        // TODO: start service 应该放在架构哪一层？
-        serviceIntent = Intent(activity, TraceLocationService::class.java)
-        serviceIntent.putExtra(BundleKey.TOGGLE_LOCATION, start)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(requireContext(), serviceIntent)
-        } else {
-            startService(serviceIntent)
-        }
-    }
-
     override fun onDestroyView() {
         LogUtils.d("map view onDestroy")
-        toggleLocation(false)
         binding.mapView.onDestroy()
         super.onDestroyView()
     }

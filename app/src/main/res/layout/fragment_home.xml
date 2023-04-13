@@ -24,7 +24,7 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:myLocation="@{vm.uiState.myLocation}"
-            app:traceList="@{vm.tracePointListUiState}" />
+            app:traceList="@{vm.traceRecordUiState}" />
 
         <Button
             android:id="@+id/btn_show_history_trace"
