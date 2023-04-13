@@ -1,11 +1,15 @@
 package com.boredream.koalatrace.ui.home
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.blankj.utilcode.util.CollectionUtils
+import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.base.BaseViewModel
 import com.boredream.koalatrace.common.vmcompose.RequestVMCompose
 import com.boredream.koalatrace.data.TraceLocation
+import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.repo.LocationRepository
 import com.boredream.koalatrace.data.usecase.TraceUseCase
 import com.boredream.koalatrace.vm.SingleLiveEvent
@@ -35,8 +39,8 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableLiveData(UiState())
     val uiState: LiveData<UiState> = _uiState
 
-    private val _tracePointListUiState = MutableLiveData(ArrayList<TraceLocation>())
-    val tracePointListUiState: LiveData<ArrayList<TraceLocation>> = _tracePointListUiState
+    private val _traceRecordUiState = MutableLiveData<TraceRecord>()
+    val traceRecordUiState: LiveData<TraceRecord> = _traceRecordUiState
 
     // 是否显示历史轨迹
     private val _isShowHistoryTrace = MutableLiveData(false)
@@ -97,17 +101,16 @@ class HomeViewModel @Inject constructor(
     // 页面暂停时，无需刷新 uiState
     fun onPause() {
         traceUseCase.removeLocationSuccessListener(onLocationSuccess)
-        traceUseCase.removeTraceSuccessListener(onTraceSuccess)
+        traceUseCase.removeTraceRecordUpdateListener(onTraceRecordUpdate)
         traceUseCase.removeStatusChangeListener(onStatusChange)
     }
 
     fun onResume() {
         // 可能其他地方有修改，再次打开时刷新
-        _uiState.value = UiState(traceUseCase.getMyLocation())
         _isTracing.value = traceUseCase.isTracing()
 
         traceUseCase.addLocationSuccessListener(onLocationSuccess)
-        traceUseCase.addTraceSuccessListener(onTraceSuccess)
+        traceUseCase.addTraceRecordUpdateListener(onTraceRecordUpdate)
         traceUseCase.addStatusChangeListener(onStatusChange)
 
         locateMe()
@@ -117,9 +120,10 @@ class HomeViewModel @Inject constructor(
         _uiState.value = UiState(it)
     }
 
-    private val onTraceSuccess: (allTracePointList: ArrayList<TraceLocation>) -> Unit = {
-        // 轨迹成功回调，回调的是整个轨迹列表
-        _tracePointListUiState.value = it
+    private val onTraceRecordUpdate: (traceRecord: TraceRecord) -> Unit = {
+        // LogUtils.i("onTraceRecordUpdate invoked on thread: ${Thread.currentThread().name}")
+        // 轨迹成功回调，回调的是整个轨迹列表。注意这里是异步线程，需要post value
+        _traceRecordUiState.postValue(it)
     }
 
     private val onStatusChange : (status: Int) -> Unit = {

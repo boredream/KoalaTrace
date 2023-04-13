@@ -3,10 +3,10 @@ package com.boredream.koalatrace.vm;
 import android.widget.ImageView;
 
 import androidx.databinding.BindingAdapter;
-import androidx.databinding.InverseMethod;
 
 import com.boredream.koalatrace.common.vmcompose.RefreshUiState;
 import com.boredream.koalatrace.data.TraceLocation;
+import com.boredream.koalatrace.data.TraceRecord;
 import com.boredream.koalatrace.utils.GlideUtils;
 import com.boredream.koalatrace.view.RefreshListView;
 import com.boredream.koalatrace.view.SyncStatusView;
@@ -15,7 +15,6 @@ import com.bumptech.glide.Glide;
 import com.github.chrisbanes.photoview.PhotoView;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * 用于解决自定义组件的DataBinding问题
@@ -39,9 +38,9 @@ public class BindingContract {
     }
 
     @BindingAdapter("traceList")
-    public static void setTraceMapViewTraceList(TraceMapView traceMapView, ArrayList<TraceLocation> allTracePointList) {
-        if (allTracePointList == null) return;
-        traceMapView.drawTraceList(allTracePointList);
+    public static void setTraceMapViewTraceList(TraceMapView traceMapView, TraceRecord traceRecord) {
+        if (traceRecord == null) return;
+        traceMapView.drawTraceRecord(traceRecord);
     }
 
     @BindingAdapter("historyTraceList")

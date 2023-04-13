@@ -11,8 +11,8 @@ import com.amap.api.maps.model.*
 import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.data.TraceLocation
+import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.CommonConstant
-import com.boredream.koalatrace.utils.FileUtils
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
@@ -31,6 +31,7 @@ class TraceMapView : MapView {
     private var myLocation: TraceLocation? = null
     private var myLocationMarker: Marker? = null
     private var startDrawIndex = 0
+    private var curTraceRecord: TraceRecord? = null
 
     var isFollowingMode = false
         set(value) {
@@ -100,7 +101,14 @@ class TraceMapView : MapView {
     /**
      * 绘制正在跟踪的轨迹线路
      */
-    fun drawTraceList(allTracePointList: ArrayList<TraceLocation>) {
+    fun drawTraceRecord(traceRecord: TraceRecord) {
+        if(traceRecord != curTraceRecord) {
+            // 线路变化时，重新绘图
+            curTraceRecord = traceRecord
+            startDrawIndex = 0
+        }
+
+        val allTracePointList = traceRecord.traceList ?: return
         if (startDrawIndex >= allTracePointList.size) {
             // 如果开始绘制的位置，超过了轨迹列表大小，代表错误数据or轨迹列表更换了，此次为无效绘制
             return
@@ -203,4 +211,5 @@ class TraceMapView : MapView {
     private fun TraceLocation.toLatLng(): LatLng {
         return LatLng(this.latitude, this.longitude)
     }
+
 }

@@ -17,8 +17,6 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding>() {
 
-    private lateinit var serviceIntent: Intent
-
     override fun getLayoutId() = R.layout.fragment_home
 
     override fun getViewModelClass() = HomeViewModel::class.java

@@ -10,8 +10,10 @@ import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.repo.LocationRepository
 import com.boredream.koalatrace.data.repo.TraceRecordRepository
 import com.boredream.koalatrace.utils.TraceUtils
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.collections.ArrayList
 
 @Singleton
 class TraceUseCase @Inject constructor(
@@ -43,6 +45,11 @@ class TraceUseCase @Inject constructor(
      * 开始追踪轨迹
      */
     suspend fun startTrace() {
+        if(locationRepository.status != LocationRepository.STATUS_LOCATION) {
+            // 定位中才可以开始记录轨迹
+            return
+        }
+
         // 开始记录轨迹时，就先创建一个线路
         val time = System.currentTimeMillis()
         val timeStr = TimeUtils.millis2String(time)
@@ -62,7 +69,10 @@ class TraceUseCase @Inject constructor(
         val record = currentTraceRecord ?: return
         val location = locationList.last()
         location.traceRecordId = record.dbId
+        record.traceList = locationList
+        // TODO: 回调主要用于刷新ui，放在sql后影响性能？
         traceRecordRepository.insertOrUpdateLocation(location)
+        traceRecordUpdate.forEach { it.invoke(record) }
     }
 
     /**
@@ -77,6 +87,7 @@ class TraceUseCase @Inject constructor(
 
         record.endTime = locationList[locationList.lastIndex].time
         record.distance = TraceUtils.calculateDistance(locationList)
+        record.isRecording = false
         traceRecordRepository.add(record)
         locationRepository.clearTraceList()
         LogUtils.i("stop and save traceRecord: ${record.name} , distance = ${record.distance}")
@@ -124,6 +135,14 @@ class TraceUseCase @Inject constructor(
 
     fun removeStatusChangeListener(listener: (status: Int) -> Unit) {
         locationRepository.removeStatusChangeListener(listener)
+    }
+
+    private var traceRecordUpdate: LinkedList<(traceRecord: TraceRecord) -> Unit> = LinkedList()
+    fun addTraceRecordUpdateListener(listener: (traceRecord: TraceRecord) -> Unit) {
+        traceRecordUpdate.add(listener)
+    }
+    fun removeTraceRecordUpdateListener(listener: (traceRecord: TraceRecord) -> Unit) {
+        traceRecordUpdate.remove(listener)
     }
 
 }

@@ -22,7 +22,7 @@ data class TraceRecord(
     var syncTimestamp: Long? = null, // 同步数据的时间
     var isRecording: Boolean = false, // 正在记录中
     @PrimaryKey var dbId: String = UUID.randomUUID().toString()
-) : Belong2UserEntity() {
+) : Belong2UserEntity(), java.io.Serializable {
 
     @Ignore
     var traceList: ArrayList<TraceLocation>? = arrayListOf()
