@@ -7,9 +7,10 @@ import com.boredream.koalatrace.base.BaseUseCase
 import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
+import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.repo.LocationRepository
 import com.boredream.koalatrace.data.repo.TraceRecordRepository
-import com.boredream.koalatrace.utils.TraceUtils
+import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -64,15 +65,30 @@ class TraceUseCase @Inject constructor(
         }
     }
 
-    suspend fun addLocation2currentRecord(locationList: ArrayList<TraceLocation>) {
-        if (CollectionUtils.isEmpty(locationList)) return
+    suspend fun addLocation2currentRecord(list: ArrayList<TraceLocation>) {
+        if (CollectionUtils.isEmpty(list)) return
         val record = currentTraceRecord ?: return
-        val location = locationList.last()
+        val location = list.last()
         location.traceRecordId = record.dbId
-        record.traceList = locationList
+        record.traceList = list
         // TODO: 回调主要用于刷新ui，放在sql后影响性能？
         traceRecordRepository.insertOrUpdateLocation(location)
         traceRecordUpdate.forEach { it.invoke(record) }
+    }
+
+    suspend fun checkStopTrace(list: ArrayList<TraceLocation>) {
+        if (list.size <= 1) return
+        // 超过一个坐标点，查询最后一个距离上一个点位时间差，如果超过一个阈值，则代表停留在一个地方太久，直接保存并关闭轨迹记录
+        val lastLocation = list[list.lastIndex]
+        val lastPreLocation = list[list.lastIndex - 1]
+        val stay = lastLocation.time - lastPreLocation.time
+        if (stay >= LocationConstant.STOP_THRESHOLD_DURATION) {
+            LogUtils.i("stay too long~")
+            stopTrace()
+            // TODO: 关闭定位后再次启动
+//            startListenerMove()
+//            traceUseCase.stopLocation()
+        }
     }
 
     /**
@@ -137,5 +153,6 @@ class TraceUseCase @Inject constructor(
     fun removeTraceRecordUpdateListener(listener: (traceRecord: TraceRecord) -> Unit) {
         traceRecordUpdate.remove(listener)
     }
+
 
 }

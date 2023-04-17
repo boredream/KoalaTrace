@@ -6,6 +6,8 @@ import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.utils.TraceFilter
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.db.AppDatabase
+import java.math.BigDecimal
+import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -48,8 +50,10 @@ class FakeLocationDataSource @Inject constructor() : LocationDataSource {
             yStep = 0.0
             xStep = 0.0
         }
-        moveLocation.latitude = moveLocation.latitude + yStep * ratio
-        moveLocation.longitude = moveLocation.longitude + xStep * ratio
+        moveLocation.latitude = BigDecimal(moveLocation.latitude + yStep * ratio)
+            .setScale(6, RoundingMode.HALF_UP).toDouble()
+        moveLocation.longitude = BigDecimal(moveLocation.longitude + xStep * ratio)
+            .setScale(6, RoundingMode.HALF_UP).toDouble()
         return TraceLocation(latitude = moveLocation.latitude, longitude = moveLocation.longitude)
     }
 

@@ -127,7 +127,7 @@ class HomeViewModel @Inject constructor(
     }
 
     private val onStatusChange : (status: Int) -> Unit = {
-        _isTracing.value = it == LocationRepository.STATUS_TRACE
+        _isTracing.postValue(it == LocationRepository.STATUS_TRACE)
     }
 
 }

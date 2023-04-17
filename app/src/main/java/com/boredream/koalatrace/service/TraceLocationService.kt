@@ -87,7 +87,7 @@ class TraceLocationService : Service() {
             startForeground(SERVICE_ID, notification)
         }
 
-        traceUseCase.addStatusChangeListener(onStatusChange)
+//        traceUseCase.addStatusChangeListener(onStatusChange)
         traceUseCase.addTraceSuccessListener(onTraceSuccess)
 
         traceUseCase.startLocation()
@@ -117,26 +117,26 @@ class TraceLocationService : Service() {
 
         job.cancel()
 
-        traceUseCase.removeStatusChangeListener(onStatusChange)
+//        traceUseCase.removeStatusChangeListener(onStatusChange)
         traceUseCase.stopLocation()
 
         AppWidgetUpdater.updateTraceStatus(this, true)
     }
 
-    private var onStatusChange: (status: Int) -> Unit = {
-        // 定位状态变化
-        val statusStr = when (it) {
-            LocationRepository.STATUS_TRACE -> "轨迹记录中"
-            LocationRepository.STATUS_LOCATION -> "定位中"
-            else -> it.toString()
-        }
-        LogUtils.i("status = $statusStr")
-        if (it == LocationRepository.STATUS_TRACE) {
-            AppWidgetUpdater.updateTraceStatus(this, true)
-        } else {
-            AppWidgetUpdater.updateTraceStatus(this, false)
-        }
-    }
+//    private var onStatusChange: (status: Int) -> Unit = {
+//        // 定位状态变化
+//        val statusStr = when (it) {
+//            LocationRepository.STATUS_TRACE -> "轨迹记录中"
+//            LocationRepository.STATUS_LOCATION -> "定位中"
+//            else -> it.toString()
+//        }
+//        LogUtils.i("status = $statusStr")
+//        if (it == LocationRepository.STATUS_TRACE) {
+//            AppWidgetUpdater.updateTraceStatus(this, true)
+//        } else {
+//            AppWidgetUpdater.updateTraceStatus(this, false)
+//        }
+//    }
 
     private var onTraceSuccess: (allTracePointList: ArrayList<TraceLocation>) -> Unit = {
         // 定位状态变化
@@ -144,16 +144,7 @@ class TraceLocationService : Service() {
         if (it.size != 0) {
             scope.launch {
                 traceUseCase.addLocation2currentRecord(it)
-            }
-
-            if(it.size > 1) {
-                // 超过一个坐标点，查询最后一个距离上一个点位时间差，如果超过一个阈值，则代表停留在一个地方太久，直接保存并关闭轨迹记录
-                val stay = it[it.lastIndex].time - it[it.lastIndex-1].time
-                if(stay >= LocationConstant.STOP_THRESHOLD_DURATION) {
-                    scope.launch {
-                        traceUseCase.stopTrace()
-                    }
-                }
+                traceUseCase.checkStopTrace(it)
             }
 
             // TODO: 桌面小程序
@@ -165,6 +156,12 @@ class TraceLocationService : Service() {
 //                AppWidgetUpdater.updateTraceInfo(this, it)
 //            }
         }
+    }
+
+    // 开始监听手机是否再次开始移动
+    private fun startListenerMove() {
+        // TODO: 传感器？wifi？等
+
     }
 
 }
