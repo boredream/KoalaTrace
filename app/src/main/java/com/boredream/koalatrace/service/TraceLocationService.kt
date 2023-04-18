@@ -4,17 +4,19 @@ import android.app.*
 import android.app.NotificationManager.IMPORTANCE_DEFAULT
 import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.PendingIntent.FLAG_UPDATE_CURRENT
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+import android.hardware.*
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.constant.BundleKey
-import com.boredream.koalatrace.data.constant.LocationConstant
-import com.boredream.koalatrace.data.repo.LocationRepository
+import com.boredream.koalatrace.data.constant.GlobalConstant
 import com.boredream.koalatrace.data.usecase.TraceUseCase
 import com.boredream.koalatrace.ui.main.MainTabActivity
 import com.boredream.koalatrace.widget.AppWidgetUpdater
@@ -34,8 +36,8 @@ import javax.inject.Inject
 class TraceLocationService : Service() {
 
     companion object {
-        const val SERVICE_ID = 110119120
-        const val CHANNEL_ID = "com.boredream.lovebook.service.tracelocation"
+        const val SERVICE_ID = 19900214
+        const val CHANNEL_ID = "com.boredream.koalatrace.service.tracelocation"
     }
 
     @Inject
@@ -143,11 +145,19 @@ class TraceLocationService : Service() {
 
     private var onTraceSuccess: (allTracePointList: ArrayList<TraceLocation>) -> Unit = {
         // 定位状态变化
-         LogUtils.v("TraceLocationService allTracePointList ${it.size}")
+         Log.v("DDD", "TraceLocationService allTracePointList ${it.size}")
         if (it.size != 0) {
             scope.launch {
                 traceUseCase.addLocation2currentRecord()
-                traceUseCase.checkStopTrace()
+                val stop = traceUseCase.checkStopTrace()
+                if(stop) {
+                    // 如果停留时间过长，停止追踪了，则开启监听移动
+                    addMoveSensorListener()
+                    // 如果此时在后台，定位也关闭
+                    if(!GlobalConstant.isForeground) {
+                        traceUseCase.stopLocation()
+                    }
+                }
             }
 
             // TODO: 桌面小程序
@@ -162,9 +172,22 @@ class TraceLocationService : Service() {
     }
 
     // 开始监听手机是否再次开始移动
-    private fun startListenerMove() {
-        // TODO: 传感器？wifi？等
-
+    private fun addMoveSensorListener() {
+        val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION)
+        val triggerEventListener = object : TriggerEventListener() {
+            override fun onTrigger(event: TriggerEvent?) {
+                // 每次生效后都会停止监听，需要再次request
+                traceUseCase.startLocation()
+                scope.launch {
+                    traceUseCase.startTrace()
+                }
+            }
+        }
+        sensor?.also {
+            sensorManager.requestTriggerSensor(triggerEventListener, it)
+            LogUtils.i("start listener move")
+        }
     }
 
 }

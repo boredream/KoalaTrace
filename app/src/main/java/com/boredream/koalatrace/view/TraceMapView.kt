@@ -13,6 +13,7 @@ import com.boredream.koalatrace.R
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.CommonConstant
+import com.boredream.koalatrace.data.constant.LocationConstant
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
@@ -160,7 +161,7 @@ class TraceMapView : MapView {
         val line = factory.createLineString(coordinateList.toTypedArray())
 
         // 简化线的几何形状
-        val tolerance = CommonConstant.ONE_METER_LAT_LNG * 20 // 简化容差
+        val tolerance = LocationConstant.ONE_METER_LAT_LNG * 20 // 简化容差
         val simplifier = DouglasPeuckerSimplifier(line)
         simplifier.setDistanceTolerance(tolerance)
         val simplifiedLine: Geometry = simplifier.resultGeometry
@@ -178,7 +179,7 @@ class TraceMapView : MapView {
         bufferParams.endCapStyle = BufferParameters.CAP_ROUND
         bufferParams.joinStyle = BufferParameters.JOIN_ROUND
         val bufferOp = BufferOp(line, bufferParams)
-        val width = CommonConstant.ONE_METER_LAT_LNG * 50
+        val width = LocationConstant.ONE_METER_LAT_LNG * 50
         val polygon = bufferOp.getResultGeometry(width) as Polygon
         LogUtils.i("line buffer duration ${System.currentTimeMillis() - start}")
 

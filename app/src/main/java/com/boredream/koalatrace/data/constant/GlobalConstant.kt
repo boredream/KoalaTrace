@@ -8,6 +8,7 @@ object GlobalConstant {
 
     var token: String? = null
     var curUser: User? = null
+    var isForeground: Boolean = true
 
     fun saveToken(token: String?) {
         DataStoreUtils.putSyncData(DataStoreKey.TOKEN, token ?: "")

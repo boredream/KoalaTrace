@@ -1,12 +1,12 @@
 package com.boredream.koalatrace.data.repo
 
-import com.amap.api.mapcore.util.it
 import com.blankj.utilcode.util.CollectionUtils
 import com.boredream.koalatrace.base.BaseRepository
 import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.CommonConstant
+import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.repo.source.ConfigLocalDataSource
 import com.boredream.koalatrace.data.repo.source.ConfigLocalDataSource.Companion.DATA_SYNC_TIMESTAMP_KEY
 import com.boredream.koalatrace.data.repo.source.TraceRecordLocalDataSource
@@ -76,7 +76,7 @@ class TraceRecordRepository @Inject constructor(
     ): ResponseEntity<ArrayList<TraceRecord>> {
         // 查询附近线路 5km
         val rangeMeter = 5000
-        val range = CommonConstant.ONE_METER_LAT_LNG * rangeMeter
+        val range = LocationConstant.ONE_METER_LAT_LNG * rangeMeter
         val traceRecordList = localDataSource.getNearbyList(targetLat, targetLng, range)
         // 查询线路下所有轨迹
         if(traceRecordList.isSuccess()) {

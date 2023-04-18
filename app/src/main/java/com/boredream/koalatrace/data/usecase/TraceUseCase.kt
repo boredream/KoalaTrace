@@ -7,6 +7,7 @@ import com.boredream.koalatrace.base.BaseUseCase
 import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
+import com.boredream.koalatrace.data.constant.GlobalConstant
 import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.repo.LocationRepository
 import com.boredream.koalatrace.data.repo.TraceRecordRepository
@@ -80,9 +81,9 @@ class TraceUseCase @Inject constructor(
         traceRecordUpdate.forEach { it.invoke(record) }
     }
 
-    suspend fun checkStopTrace() {
-        val list = currentTraceRecord?.traceList ?: return
-        if (list.size <= 1) return
+    suspend fun checkStopTrace() : Boolean {
+        val list = currentTraceRecord?.traceList ?: return false
+        if (list.size <= 1) return false
         // 超过一个坐标点，查询最后一个距离上一个点位时间差，如果超过一个阈值，则代表停留在一个地方太久，直接保存并关闭轨迹记录
         val lastLocation = list[list.lastIndex]
         val lastPreLocation = list[list.lastIndex - 1]
@@ -90,10 +91,9 @@ class TraceUseCase @Inject constructor(
         if (stay >= LocationConstant.STOP_THRESHOLD_DURATION) {
             logger.i("stay too long~")
             stopTrace()
-            // TODO: 关闭定位后再次启动
-//            startListenerMove()
-//            traceUseCase.stopLocation()
+            return true
         }
+        return false
     }
 
     /**

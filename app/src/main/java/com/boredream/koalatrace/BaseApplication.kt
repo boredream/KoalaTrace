@@ -1,8 +1,11 @@
 package com.boredream.koalatrace
 
+import android.app.Activity
 import android.app.Application
+import com.blankj.utilcode.util.AppUtils
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.Utils
+import com.boredream.koalatrace.data.constant.GlobalConstant
 import com.boredream.koalatrace.utils.DataStoreUtils
 import com.scwang.smart.refresh.footer.ClassicsFooter
 import com.scwang.smart.refresh.header.ClassicsHeader
@@ -21,6 +24,16 @@ class BaseApplication : Application() {
 
         DataStoreUtils.init(this)
         initRefresh()
+
+        AppUtils.registerAppStatusChangedListener(object : Utils.OnAppStatusChangedListener {
+            override fun onForeground(activity: Activity?) {
+                GlobalConstant.isForeground = true
+            }
+
+            override fun onBackground(activity: Activity?) {
+                GlobalConstant.isForeground = false
+            }
+        })
     }
 
     private fun initRefresh() {
