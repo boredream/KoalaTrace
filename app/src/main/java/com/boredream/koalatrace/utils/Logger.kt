@@ -5,6 +5,10 @@ import javax.inject.Inject
 
 open class Logger @Inject constructor() {
 
+    open fun v(log: String) {
+        LogUtils.v(log)
+    }
+
     open fun i(log: String) {
         LogUtils.i(log)
     }

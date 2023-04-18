@@ -50,8 +50,16 @@ class MainTabActivity : BaseActivity<MainTabViewModel, ActivityMainTabBinding>()
 
         val controller = FragmentController(navView, supportFragmentManager, R.id.fl_fragment, fragmentList)
         controller.initFragment(savedInstanceState)
+    }
 
+    override fun onResume() {
+        super.onResume()
         toggleLocation(true)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        toggleLocation(false)
     }
 
     private fun toggleLocation(start: Boolean) {
@@ -62,11 +70,6 @@ class MainTabActivity : BaseActivity<MainTabViewModel, ActivityMainTabBinding>()
         } else {
             ServiceUtils.startService(serviceIntent)
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        toggleLocation(false)
     }
 
 }

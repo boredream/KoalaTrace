@@ -89,8 +89,6 @@ class TraceLocationService : Service() {
 
 //        traceUseCase.addStatusChangeListener(onStatusChange)
         traceUseCase.addTraceSuccessListener(onTraceSuccess)
-
-        traceUseCase.startLocation()
         LogUtils.i("onCreate")
     }
 
@@ -104,8 +102,16 @@ class TraceLocationService : Service() {
                     } else {
                         // 打开页面/刷新widget进行询问保存？或者直接进行保存
                         traceUseCase.stopTrace()
-
                     }
+                }
+            }
+
+            if(it.hasExtra(BundleKey.TOGGLE_LOCATION)) {
+                val start = it.getBooleanExtra(BundleKey.TOGGLE_LOCATION, false)
+                if (start) {
+                    traceUseCase.startLocation()
+                } else {
+                    traceUseCase.stopLocation()
                 }
             }
         }
@@ -113,14 +119,11 @@ class TraceLocationService : Service() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
-
         job.cancel()
-
 //        traceUseCase.removeStatusChangeListener(onStatusChange)
-        traceUseCase.stopLocation()
-
+        traceUseCase.removeTraceSuccessListener(onTraceSuccess)
         AppWidgetUpdater.updateTraceStatus(this, true)
+        super.onDestroy()
     }
 
 //    private var onStatusChange: (status: Int) -> Unit = {
@@ -143,8 +146,8 @@ class TraceLocationService : Service() {
          LogUtils.v("TraceLocationService allTracePointList ${it.size}")
         if (it.size != 0) {
             scope.launch {
-                traceUseCase.addLocation2currentRecord(it)
-                traceUseCase.checkStopTrace(it)
+                traceUseCase.addLocation2currentRecord()
+                traceUseCase.checkStopTrace()
             }
 
             // TODO: 桌面小程序

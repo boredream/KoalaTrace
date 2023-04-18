@@ -10,6 +10,7 @@ import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.repo.LocationRepository
 import com.boredream.koalatrace.data.repo.TraceRecordRepository
+import com.boredream.koalatrace.utils.Logger
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
@@ -18,13 +19,14 @@ import kotlin.collections.ArrayList
 
 @Singleton
 class TraceUseCase @Inject constructor(
+    private val logger: Logger,
     private val locationRepository: LocationRepository,
     private val traceRecordRepository: TraceRecordRepository,
 ) : BaseUseCase() {
 
-    private var currentTraceRecord: TraceRecord? = null
+    var currentTraceRecord: TraceRecord? = null
 
-    fun getMyLocation() = locationRepository.myLocation
+    private fun getMyLocation() = locationRepository.myLocation
 
     fun isTracing() = locationRepository.status == LocationRepository.STATUS_TRACE
 
@@ -61,29 +63,32 @@ class TraceUseCase @Inject constructor(
             // 开始追踪
             currentTraceRecord = response.getSuccessData()
             locationRepository.startTrace()
-            LogUtils.i("create traceRecord: ${traceRecord.name}")
+            logger.i("create traceRecord: ${traceRecord.name}")
         }
     }
 
-    suspend fun addLocation2currentRecord(list: ArrayList<TraceLocation>) {
-        if (CollectionUtils.isEmpty(list)) return
+    suspend fun addLocation2currentRecord() {
         val record = currentTraceRecord ?: return
+        val list = locationRepository.traceList
+        if (CollectionUtils.isEmpty(list)) return
         val location = list.last()
         location.traceRecordId = record.dbId
         record.traceList = list
         // TODO: 回调主要用于刷新ui，放在sql后影响性能？
+        // TODO: 有没有可能之前某个location没有添加成功，那这里需要添加多个
         traceRecordRepository.insertOrUpdateLocation(location)
         traceRecordUpdate.forEach { it.invoke(record) }
     }
 
-    suspend fun checkStopTrace(list: ArrayList<TraceLocation>) {
+    suspend fun checkStopTrace() {
+        val list = currentTraceRecord?.traceList ?: return
         if (list.size <= 1) return
         // 超过一个坐标点，查询最后一个距离上一个点位时间差，如果超过一个阈值，则代表停留在一个地方太久，直接保存并关闭轨迹记录
         val lastLocation = list[list.lastIndex]
         val lastPreLocation = list[list.lastIndex - 1]
         val stay = lastLocation.time - lastPreLocation.time
         if (stay >= LocationConstant.STOP_THRESHOLD_DURATION) {
-            LogUtils.i("stay too long~")
+            logger.i("stay too long~")
             stopTrace()
             // TODO: 关闭定位后再次启动
 //            startListenerMove()
@@ -95,11 +100,12 @@ class TraceUseCase @Inject constructor(
      * 结束追踪轨迹，并更新数据
      */
     suspend fun stopTrace() {
+        // TODO: 停止的时候，如果没有轨迹点，则删除之
         locationRepository.stopTrace()
         val record = currentTraceRecord ?: return
         traceRecordRepository.updateByTraceList(record)
         locationRepository.clearTraceList()
-        LogUtils.i("stop and save traceRecord: ${record.name} , distance = ${record.distance}")
+        logger.i("stop and save traceRecord: ${record.name} , distance = ${record.distance}")
     }
 
     /**
@@ -121,7 +127,6 @@ class TraceUseCase @Inject constructor(
         return recordList
     }
 
-    // TODO: 回调适合用函数吗？
     fun addLocationSuccessListener(listener: (location: TraceLocation) -> Unit) {
         locationRepository.addLocationSuccessListener(listener)
     }

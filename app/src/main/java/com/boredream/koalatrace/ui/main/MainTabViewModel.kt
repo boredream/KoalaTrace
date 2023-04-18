@@ -8,5 +8,4 @@ import javax.inject.Inject
 class MainTabViewModel @Inject constructor() : BaseViewModel() {
 
 
-
 }

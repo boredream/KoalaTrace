@@ -2,10 +2,10 @@ package com.boredream.koalatrace.data.repo
 
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.model.LatLng
-import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.constant.LocationConstant.TRACE_DISTANCE_THRESHOLD
 import com.boredream.koalatrace.data.repo.source.LocationDataSource
+import com.boredream.koalatrace.utils.Logger
 import com.boredream.koalatrace.utils.TraceFilter
 import java.util.*
 import javax.inject.Inject
@@ -16,6 +16,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class LocationRepository @Inject constructor(
+    private val logger: Logger,
     private val dataSource: LocationDataSource
 ) {
 
@@ -73,9 +74,8 @@ class LocationRepository @Inject constructor(
      * 停止定位
      */
     fun stopLocation() {
-        if(status != STATUS_IDLE) {
-            // 追踪依赖定位，如果追踪开启状态，则也顺便先关闭
-            stopTrace()
+        if(status == STATUS_LOCATION) {
+            // 追踪依赖定位，只有非追踪状态才可关闭
             dataSource.stopLocation()
             status = STATUS_IDLE
         }
@@ -112,8 +112,8 @@ class LocationRepository @Inject constructor(
     /**
      * 定位成功
      */
-    private fun onLocationSuccess(location: TraceLocation) {
-        LogUtils.v("onLocationSuccess dataSource = ${dataSource.javaClass.simpleName}, location = $location")
+    fun onLocationSuccess(location: TraceLocation) {
+        logger.v("onLocationSuccess dataSource = ${dataSource.javaClass.simpleName}, location = $location")
         myLocation = location
         onLocationSuccess.forEach { it.invoke(location) }
         if(status == STATUS_TRACE) {
@@ -141,10 +141,12 @@ class LocationRepository @Inject constructor(
         val maxDistance = 0.02 * (location.time - lastPoint.time)
         if (distance > TRACE_DISTANCE_THRESHOLD && distance < maxDistance) {
             // 移动距离设置阈值，且不能超过最大值（过滤坐标漂移的数据）
+            logger.v("distance is $distance , in range [$TRACE_DISTANCE_THRESHOLD , $maxDistance]")
             traceList.add(location)
         } else {
             // 距离达不到阈值时，视为原地不动，只更新最新一次时间
             traceList[traceList.lastIndex].time = location.time
+            logger.v("distance is $distance , not in range [$TRACE_DISTANCE_THRESHOLD , $maxDistance] , update last time = ${location.time}")
         }
         onTraceSuccess.forEach { it.invoke(traceList) }
     }
