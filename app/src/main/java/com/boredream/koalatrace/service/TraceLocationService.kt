@@ -123,7 +123,7 @@ class TraceLocationService : Service() {
                 }
             }
 
-            if(it.hasExtra(BundleKey.TOGGLE_LOCATION)) {
+            if (it.hasExtra(BundleKey.TOGGLE_LOCATION)) {
                 val start = it.getBooleanExtra(BundleKey.TOGGLE_LOCATION, false)
                 if (start) {
                     traceUseCase.startLocation()
@@ -161,16 +161,16 @@ class TraceLocationService : Service() {
 
     private var onTraceSuccess: (allTracePointList: ArrayList<TraceLocation>) -> Unit = {
         // 定位状态变化
-         Log.v("DDD", "TraceLocationService allTracePointList ${it.size}")
+        Log.v("DDD", "TraceLocationService allTracePointList ${it.size}")
         if (it.size != 0) {
             scope.launch {
                 traceUseCase.addLocation2currentRecord()
                 val stop = traceUseCase.checkStopTrace()
-                if(stop) {
+                if (stop) {
                     // 如果停留时间过长，停止追踪了，则开启监听移动
                     addMoveSensorListener()
                     // 如果此时在后台，定位也关闭
-                    if(!GlobalConstant.isForeground) {
+                    if (!GlobalConstant.isForeground) {
                         traceUseCase.stopLocation()
                     }
                 }
@@ -190,52 +190,52 @@ class TraceLocationService : Service() {
     // 开始监听手机是否再次开始移动
     private var determineMovementStatus = 0
     private var startDetermineMovementTime = 0L
-    private var determineMovementCount = 0
-    private var determineNotMovementCount = 0
+    private var movementCount = 0
+    private var notMovementCount = 0
     private val sensorEventListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent?) {
-            if (event != null) {
-                val x = event.values[0]
-                // 噪音
-                if(determineMovementStatus == 0 && x < 0.1) return
+            if (event == null) return
+            val x = event.values[0]
+            // 噪音
+            if (determineMovementStatus == 0 && x < 0.1) return
 
-                val y = event.values[1]
-                val z = event.values[2]
-                val acceleration = sqrt((x * x + y * y + z * z).toDouble())
-                // Log.v("DDD", "x = $x , y = $y , z = $z , acceleration = $acceleration")
-                if (acceleration > LocationConstant.DETERMINE_MOVEMENT_THRESHOLD
-                    && determineMovementStatus == 0) {
-                    // 如果达到阈值，开始检测
-                    startDetermineMovementTime = SystemClock.elapsedRealtime()
-                    determineMovementStatus = 1
-                    determineMovementCount = 0
-                    determineNotMovementCount = 0
-                    Log.v("DDD", "start determine movement")
+            val y = event.values[1]
+            val z = event.values[2]
+            val acceleration = sqrt((x * x + y * y + z * z).toDouble())
+            // Log.v("DDD", "x = $x , y = $y , z = $z , acceleration = $acceleration")
+            if (acceleration > LocationConstant.DETERMINE_MOVEMENT_THRESHOLD
+                && determineMovementStatus == 0
+            ) {
+                // 如果达到阈值，开始检测
+                startDetermineMovementTime = SystemClock.elapsedRealtime()
+                determineMovementStatus = 1
+                movementCount = 0
+                notMovementCount = 0
+                Log.v("DDD", "start determine movement")
+            }
+
+            if (determineMovementStatus == 1) {
+                // 如果已经开始检测了，开始记录运动状态
+                if (acceleration > LocationConstant.DETERMINE_MOVEMENT_THRESHOLD) {
+                    movementCount++
+                } else {
+                    notMovementCount++
                 }
+                Log.v("DDD", "determine movement [$movementCount , $notMovementCount]")
+            }
 
-                if(determineMovementStatus == 1) {
-                    // 如果已经开始检测了，开始记录运动状态
-                    if(acceleration > LocationConstant.DETERMINE_MOVEMENT_THRESHOLD) {
-                        determineMovementCount ++
+            if (determineMovementStatus == 1) {
+                val duration = SystemClock.elapsedRealtime() - startDetermineMovementTime
+                if (duration > LocationConstant.DETERMINE_MOVEMENT_CHECK_INTERVAL) {
+                    // 每次达到时间间隔进行一次判定
+                    determineMovementStatus = 0
+                    if (notMovementCount == 0) notMovementCount = 1 // 方便除法
+                    if (1f * movementCount / notMovementCount > 7) {
+                        // 如果区间内多数检测结果是移动状态，则判断用户已经切换到移动
+                        LogUtils.i("determine movement!")
+                        determineMovement()
                     } else {
-                        determineNotMovementCount ++
-                    }
-                    Log.v("DDD", "determine movement [$determineMovementCount , $determineNotMovementCount]")
-                }
-
-                if (determineMovementStatus == 1) {
-                    val duration = SystemClock.elapsedRealtime() - startDetermineMovementTime
-                    if (duration > LocationConstant.DETERMINE_MOVEMENT_CHECK_INTERVAL) {
-                        // 每次达到时间间隔进行一次判定
-                        determineMovementStatus = 0
-                        if(determineNotMovementCount == 0) determineNotMovementCount = 1 // 方便除法
-                        if (1f * determineMovementCount / determineNotMovementCount > 7) {
-                            // 如果区间内多数检测结果是移动状态，则判断用户已经切换到移动
-                            LogUtils.i("determine movement!")
-                            determineMovement()
-                        } else {
-                            LogUtils.i("determine not movement")
-                        }
+                        LogUtils.i("determine not movement")
                     }
                 }
             }
@@ -244,8 +244,13 @@ class TraceLocationService : Service() {
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
         }
     }
+
     private fun addMoveSensorListener() {
-        sensorManager.registerListener(sensorEventListener, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager.registerListener(
+            sensorEventListener,
+            sensor,
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
     }
 
     private fun determineMovement() {

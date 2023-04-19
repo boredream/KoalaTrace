@@ -7,10 +7,13 @@ import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.db.AppDatabase
+import com.boredream.koalatrace.utils.Logger
 import javax.inject.Inject
 
-class TraceRecordLocalDataSource @Inject constructor(appDatabase: AppDatabase) :
-    TraceRecordDataSource {
+class TraceRecordLocalDataSource @Inject constructor(
+    private val logger: Logger,
+    appDatabase: AppDatabase
+) : TraceRecordDataSource {
 
     private val traceRecordDao = appDatabase.traceRecordDao()
     private val traceLocationDao = appDatabase.traceLocationDao()
@@ -88,7 +91,7 @@ class TraceRecordLocalDataSource @Inject constructor(appDatabase: AppDatabase) :
             val maxLng = targetLng + range
             val list = traceRecordDao.loadNearby(minLat, maxLat, minLng, maxLng)
 //            val list = traceRecordDao.loadAll()
-            print("minLat=$minLat, maxLat=$maxLat, minLng=$minLng, maxLng=$maxLng")
+            logger.i("minLat=$minLat, maxLat=$maxLat, minLng=$minLng, maxLng=$maxLng")
             ResponseEntity.success(ArrayList(list))
         } catch (e: Exception) {
             ResponseEntity(null, 500, e.toString())
@@ -122,7 +125,7 @@ class TraceRecordLocalDataSource @Inject constructor(appDatabase: AppDatabase) :
         try {
             data.isDelete = true // 软删除，方便同步用
             delete = traceRecordDao.update(data)
-            LogUtils.i("delete record ${data.name}")
+            logger.i("delete record ${data.name}")
         } catch (e: Exception) {
             //
         }
@@ -134,7 +137,7 @@ class TraceRecordLocalDataSource @Inject constructor(appDatabase: AppDatabase) :
         return try {
             // location跟着trace record走，不用于判断同步，所以直接删除
             val deleteListCount = traceLocationDao.deleteByTraceRecordId(data.dbId)
-            LogUtils.i("delete location list size = $deleteListCount")
+            logger.i("delete location list size = $deleteListCount")
             ResponseEntity.success(data)
         } catch (e: Exception) {
             ResponseEntity(null, 500, e.toString())

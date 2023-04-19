@@ -86,7 +86,7 @@ class TraceUseCase @Inject constructor(
         val list = record.traceList ?: return false
         if (list.size <= 1) {
             // 如果一直是一个坐标点，则代表重启过于敏感，目标还是没有移动，超过一个较低阈值后直接删除当前路线
-            val stayFromStart = list[0].time - record.startTime
+            val stayFromStart = System.currentTimeMillis() - record.startTime
 //            if (stayFromStart >= 0.2 * LocationConstant.STOP_THRESHOLD_DURATION) {
             if (stayFromStart >= LocationConstant.STOP_THRESHOLD_DURATION) {
                 logger.i("stay too long~ delete trace")
