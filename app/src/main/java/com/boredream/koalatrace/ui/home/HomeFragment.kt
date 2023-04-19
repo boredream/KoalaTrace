@@ -27,7 +27,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding>() {
         savedInstanceState: Bundle?
     ): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
-        LogUtils.i("map view onCreate")
+        LogUtils.v("map view onCreate")
         binding.mapView.onCreate(savedInstanceState)
         initObserver()
         return view
@@ -50,35 +50,29 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding>() {
     }
 
     override fun onDestroyView() {
-        LogUtils.d("map view onDestroy")
+        LogUtils.v("map view onDestroy")
         binding.mapView.onDestroy()
         super.onDestroyView()
     }
 
     override fun onResume() {
         super.onResume()
-        LogUtils.d("map view onResume")
+        LogUtils.v("map view onResume")
         viewModel.onResume()
         binding.mapView.onResume()
     }
 
     override fun onPause() {
-        LogUtils.d("map view onPause")
+        LogUtils.v("map view onPause")
         viewModel.onPause()
         binding.mapView.onPause()
         super.onPause()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        LogUtils.d("map view onSaveInstanceState")
+        LogUtils.v("map view onSaveInstanceState")
         super.onSaveInstanceState(outState)
-        try {
-            // FIXME: binding NPE?
-            binding.mapView.onSaveInstanceState(outState)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            LogUtils.i("error", e.message)
-        }
+        binding.mapView.onSaveInstanceState(outState)
     }
 
 }

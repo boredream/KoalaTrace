@@ -150,12 +150,17 @@ class TraceRecordRepository @Inject constructor(
     }
 
     suspend fun updateByTraceList(record: TraceRecord) {
-        val locationList = record.traceList ?: return
-        record.endTime = locationList[locationList.lastIndex].time
-        record.distance = TraceUtils.calculateDistance(locationList)
-        record.isRecording = false
-        insertOrUpdate(record)
-        logger.i("updateByTraceList ${record.name} , distance = ${record.distance}")
+        val locationList = record.traceList ?: ArrayList()
+        if(locationList.size <= LocationConstant.SAVE_TRACE_MIN_POSITION_SIZE) {
+            delete(record)
+            logger.i("delete traceRecord: ${record.name} , distance = ${record.distance}")
+        } else {
+            record.endTime = locationList[locationList.lastIndex].time
+            record.distance = TraceUtils.calculateDistance(locationList)
+            record.isRecording = false
+            insertOrUpdate(record)
+            logger.i("update traceRecord: ${record.name} , distance = ${record.distance}")
+        }
     }
 
     suspend fun delete(data: TraceRecord): ResponseEntity<TraceRecord> {

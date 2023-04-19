@@ -82,14 +82,25 @@ class TraceUseCase @Inject constructor(
     }
 
     suspend fun checkStopTrace() : Boolean {
-        val list = currentTraceRecord?.traceList ?: return false
-        if (list.size <= 1) return false
+        val record = currentTraceRecord ?: return false
+        val list = record.traceList ?: return false
+        if (list.size <= 1) {
+            // 如果一直是一个坐标点，则代表重启过于敏感，目标还是没有移动，超过一个较低阈值后直接删除当前路线
+            val stayFromStart = list[0].time - record.startTime
+//            if (stayFromStart >= 0.2 * LocationConstant.STOP_THRESHOLD_DURATION) {
+            if (stayFromStart >= LocationConstant.STOP_THRESHOLD_DURATION) {
+                logger.i("stay too long~ delete trace")
+                stopTrace()
+                return true
+            }
+            return false
+        }
         // 超过一个坐标点，查询最后一个距离上一个点位时间差，如果超过一个阈值，则代表停留在一个地方太久，直接保存并关闭轨迹记录
         val lastLocation = list[list.lastIndex]
         val lastPreLocation = list[list.lastIndex - 1]
         val stay = lastLocation.time - lastPreLocation.time
         if (stay >= LocationConstant.STOP_THRESHOLD_DURATION) {
-            logger.i("stay too long~")
+            logger.i("stay too long~ save trace")
             stopTrace()
             return true
         }
@@ -100,12 +111,11 @@ class TraceUseCase @Inject constructor(
      * 结束追踪轨迹，并更新数据
      */
     suspend fun stopTrace() {
-        // TODO: 停止的时候，如果没有轨迹点，则删除之
         locationRepository.stopTrace()
         val record = currentTraceRecord ?: return
+        logger.i("stop trace: ${record.name}")
         traceRecordRepository.updateByTraceList(record)
         locationRepository.clearTraceList()
-        logger.i("stop and save traceRecord: ${record.name} , distance = ${record.distance}")
     }
 
     /**
