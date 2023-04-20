@@ -1,6 +1,7 @@
 package com.boredream.koalatrace.ui.mine
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +13,7 @@ import com.boredream.koalatrace.common.SimpleListAdapter
 import com.boredream.koalatrace.data.SettingItem
 import com.boredream.koalatrace.databinding.FragmentMineBinding
 import com.boredream.koalatrace.databinding.ItemSettingBinding
+import com.boredream.koalatrace.ui.log.LogActivity
 import com.boredream.koalatrace.ui.login.LoginActivity
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -44,11 +46,12 @@ class MineFragment : BaseFragment<MineViewModel, FragmentMineBinding>() {
         dataList.add(SettingItem("关于我们", ""))
         dataList.add(SettingItem("推荐给好友", ""))
         dataList.add(SettingItem("意见反馈", ""))
+        dataList.add(SettingItem("日志", ""))
         adapter = SimpleListAdapter(dataList, R.layout.item_setting)
         adapter.onItemClickListener = {
             when(it.name) {
                 "另一半" -> toggleBindCp()
-                // TODO: click
+                "日志" -> startActivity(Intent(activity, LogActivity::class.java))
             }
         }
         binding.rvSetting.adapter = adapter

@@ -73,11 +73,10 @@ class TraceUseCase @Inject constructor(
         val list = locationRepository.traceList
         if (CollectionUtils.isEmpty(list)) return
         val location = list.last()
-        location.traceRecordId = record.dbId
         record.traceList = list
         // TODO: 回调主要用于刷新ui，放在sql后影响性能？
         // TODO: 有没有可能之前某个location没有添加成功，那这里需要添加多个
-        traceRecordRepository.insertOrUpdateLocation(location)
+        traceRecordRepository.insertOrUpdateLocation(record.dbId, location)
         traceRecordUpdate.forEach { it.invoke(record) }
     }
 

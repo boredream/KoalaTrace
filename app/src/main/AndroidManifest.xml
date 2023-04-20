@@ -74,6 +74,7 @@
         <activity android:name=".ui.login.LoginActivity" />
         <activity android:name=".ui.trace.recorddetail.TraceRecordDetailActivity" />
         <activity android:name=".ui.trace.editmap.TraceEditMapActivity" />
+        <activity android:name=".ui.log.LogActivity" />
     </application>
 
 </manifest>

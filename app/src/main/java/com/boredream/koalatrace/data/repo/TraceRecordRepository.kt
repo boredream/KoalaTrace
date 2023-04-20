@@ -5,7 +5,6 @@ import com.boredream.koalatrace.base.BaseRepository
 import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
-import com.boredream.koalatrace.data.constant.CommonConstant
 import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.repo.source.ConfigLocalDataSource
 import com.boredream.koalatrace.data.repo.source.ConfigLocalDataSource.Companion.DATA_SYNC_TIMESTAMP_KEY
@@ -49,7 +48,11 @@ class TraceRecordRepository @Inject constructor(
                         }
                         logger.i("pull and save data = ${traceRecord.name} , location size = ${traceRecord.traceList?.size}")
                         updateSyncTime(traceRecord.syncTimestamp)
-                        insertOrUpdate(traceRecord)
+                        val insertResponse = insertOrUpdate(traceRecord)
+                        if (insertResponse.isSuccess() && traceRecord.traceList != null) {
+                            // 插入location list
+                            insertOrUpdateLocationList(traceRecord.dbId, traceRecord.traceList!!)
+                        }
                     } else {
                         // 3. 如果本地数据，同步标志位是false，即本地有修改还没提交给服务端的，处理冲突
                         // 冲突数据【本地的】，因为大部分是珍贵的轨迹收集数据，所以本地为准，服务端数据抛弃
@@ -79,7 +82,7 @@ class TraceRecordRepository @Inject constructor(
         val range = LocationConstant.ONE_METER_LAT_LNG * rangeMeter
         val traceRecordList = localDataSource.getNearbyList(targetLat, targetLng, range)
         // 查询线路下所有轨迹
-        if(traceRecordList.isSuccess()) {
+        if (traceRecordList.isSuccess()) {
             traceRecordList.getSuccessData().forEach {
                 it.traceList = localDataSource.getTraceLocationList(it.dbId).data
             }
@@ -93,7 +96,17 @@ class TraceRecordRepository @Inject constructor(
 
     suspend fun insertOrUpdate(data: TraceRecord) = localDataSource.add(data)
 
-    suspend fun insertOrUpdateLocation(data: TraceLocation) = localDataSource.insertOrUpdate(data)
+    suspend fun insertOrUpdateLocation(traceRecordDbId: String, data: TraceLocation)
+            : ResponseEntity<TraceLocation> {
+        data.traceRecordId = traceRecordDbId
+        return localDataSource.insertOrUpdateLocation(data)
+    }
+
+    suspend fun insertOrUpdateLocationList(traceRecordDbId: String, dataList: ArrayList<TraceLocation>)
+            : ResponseEntity<ArrayList<TraceLocation>> {
+        dataList.forEach { it.traceRecordId = traceRecordDbId }
+        return localDataSource.insertOrUpdateLocationList(dataList)
+    }
 
     suspend fun pushDataToRemote(data: TraceRecord): ResponseEntity<TraceRecord> {
         val response = if (data.id != null) {
@@ -135,10 +148,10 @@ class TraceRecordRepository @Inject constructor(
         return localDataSource.update(data)
     }
 
-    suspend fun checkAllRecordUpdateByTraceList() : Boolean{
+    suspend fun checkAllRecordUpdateByTraceList(): Boolean {
         var hasUpdate = false
         val list = localDataSource.getUnRecordingTraceRecord()
-        if(list.isSuccess()) {
+        if (list.isSuccess()) {
             logger.i("checkAllRecordUpdateByTraceList ${list.getSuccessData().size}")
             list.getSuccessData().forEach {
                 it.traceList = localDataSource.getTraceLocationList(it.dbId).data
@@ -151,7 +164,7 @@ class TraceRecordRepository @Inject constructor(
 
     suspend fun updateByTraceList(record: TraceRecord) {
         val locationList = record.traceList ?: ArrayList()
-        if(locationList.size <= LocationConstant.SAVE_TRACE_MIN_POSITION_SIZE) {
+        if (locationList.size <= LocationConstant.SAVE_TRACE_MIN_POSITION_SIZE) {
             delete(record)
             logger.i("delete traceRecord: ${record.name} , distance = ${record.distance}")
         } else {

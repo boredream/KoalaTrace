@@ -2,7 +2,6 @@ package com.boredream.koalatrace.data.repo.source
 
 import androidx.room.Transaction
 import com.amap.api.mapcore.util.it
-import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
@@ -51,7 +50,7 @@ class TraceRecordLocalDataSource @Inject constructor(
         return ResponseEntity.success(data)
     }
 
-    suspend fun insertOrUpdate(data: TraceLocation): ResponseEntity<TraceLocation> {
+    suspend fun insertOrUpdateLocation(data: TraceLocation): ResponseEntity<TraceLocation> {
         var insert: Long = -1
         try {
             insert = traceLocationDao.insertOrUpdate(data)
@@ -62,6 +61,21 @@ class TraceRecordLocalDataSource @Inject constructor(
             return ResponseEntity(null, 500, "数据插入失败")
         }
         return ResponseEntity.success(data)
+    }
+
+    suspend fun insertOrUpdateLocationList(dataList: ArrayList<TraceLocation>)
+            : ResponseEntity<ArrayList<TraceLocation>> {
+        var insert: List<Long> = arrayListOf()
+
+        try {
+            insert = traceLocationDao.insertOrUpdateAll(dataList)
+        } catch (e: Exception) {
+            //
+        }
+        if (insert.isEmpty() || insert.any { it <= 0 }) {
+            return ResponseEntity(null, 500, "数据插入失败")
+        }
+        return ResponseEntity.success(dataList)
     }
 
     suspend fun getTraceRecordByDbId(dbId: String): ResponseEntity<TraceRecord?> {
@@ -100,6 +114,8 @@ class TraceRecordLocalDataSource @Inject constructor(
 
     suspend fun getTraceLocationList(traceRecordDbId: String): ResponseEntity<ArrayList<TraceLocation>> {
         return try {
+            val list = traceLocationDao.loadAll()
+            println(list)
             ResponseEntity.success(ArrayList(traceLocationDao.loadByTraceRecordId(traceRecordDbId)))
         } catch (e: Exception) {
             ResponseEntity(null, 500, e.toString())

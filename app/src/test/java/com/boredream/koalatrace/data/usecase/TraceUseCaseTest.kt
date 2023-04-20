@@ -40,7 +40,7 @@ class TraceUseCaseTest {
         coEvery { runBlocking { traceRecordRepository.insertOrUpdate(any()) } } returns
                 ResponseEntity.success(TraceRecord("", 0, 0, 0))
         coEvery { runBlocking { traceRecordRepository.updateByTraceList(any()) } } just runs
-        coEvery { runBlocking { traceRecordRepository.insertOrUpdateLocation(any()) } } returns
+        coEvery { runBlocking { traceRecordRepository.insertOrUpdateLocation(any(), any()) } } returns
                 ResponseEntity.success(TraceLocation(0.0, 0.0))
     }
 
@@ -63,7 +63,7 @@ class TraceUseCaseTest {
 
         // 插入轨迹点
         useCase.addLocation2currentRecord()
-        verify(exactly = 1) { runBlocking { traceRecordRepository.insertOrUpdateLocation(any()) } }
+        verify(exactly = 1) { runBlocking { traceRecordRepository.insertOrUpdateLocation(any(), any()) } }
 
         // 停止并更新记录
         runBlocking { useCase.stopTrace() }
@@ -88,7 +88,7 @@ class TraceUseCaseTest {
 
         // 插入轨迹点
         useCase.addLocation2currentRecord()
-        verify(exactly = 1) { runBlocking { traceRecordRepository.insertOrUpdateLocation(any()) } }
+        verify(exactly = 1) { runBlocking { traceRecordRepository.insertOrUpdateLocation(any(), any()) } }
 
         // 停止并更新记录
         runBlocking { useCase.stopTrace() }

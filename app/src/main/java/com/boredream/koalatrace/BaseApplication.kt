@@ -3,7 +3,9 @@ package com.boredream.koalatrace
 import android.app.Activity
 import android.app.Application
 import com.blankj.utilcode.util.AppUtils
+import com.blankj.utilcode.util.FileUtils
 import com.blankj.utilcode.util.LogUtils
+import com.blankj.utilcode.util.PathUtils
 import com.blankj.utilcode.util.Utils
 import com.boredream.koalatrace.data.constant.GlobalConstant
 import com.boredream.koalatrace.utils.DataStoreUtils
@@ -11,6 +13,7 @@ import com.scwang.smart.refresh.footer.ClassicsFooter
 import com.scwang.smart.refresh.header.ClassicsHeader
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
 import dagger.hilt.android.HiltAndroidApp
+import java.io.File
 
 
 @HiltAndroidApp
@@ -20,7 +23,16 @@ class BaseApplication : Application() {
         super.onCreate()
 
         Utils.init(this)
-        LogUtils.getConfig().setBorderSwitch(false)
+
+        // https://github.com/Blankj/AndroidUtilCode/blob/master/lib/utilcode/README-CN.md#%E6%97%A5%E5%BF%97%E7%9B%B8%E5%85%B3---logutilsjava---demo
+        LogUtils.getConfig()
+            .setConsoleSwitch(BuildConfig.DEBUG)
+            // .setLogHeadSwitch(false)
+            .setStackOffset(1)
+            .setLog2FileSwitch(true)
+            .setDir(File(PathUtils.getInternalAppCachePath(), "log"))
+            .setSaveDays(7)
+            .setBorderSwitch(false)
 
         DataStoreUtils.init(this)
         initRefresh()
