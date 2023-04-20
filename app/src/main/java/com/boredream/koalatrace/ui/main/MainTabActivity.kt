@@ -50,6 +50,10 @@ class MainTabActivity : BaseActivity<MainTabViewModel, ActivityMainTabBinding>()
 
         val controller = FragmentController(navView, supportFragmentManager, R.id.fl_fragment, fragmentList)
         controller.initFragment(savedInstanceState)
+
+        LogUtils.i("------------------------------------------------------")
+        LogUtils.i("----------------------- start ------------------------")
+        LogUtils.i("------------------------------------------------------")
     }
 
     override fun onResume() {
