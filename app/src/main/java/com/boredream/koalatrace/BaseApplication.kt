@@ -26,12 +26,11 @@ class BaseApplication : Application() {
 
         // https://github.com/Blankj/AndroidUtilCode/blob/master/lib/utilcode/README-CN.md#%E6%97%A5%E5%BF%97%E7%9B%B8%E5%85%B3---logutilsjava---demo
         LogUtils.getConfig()
-            .setConsoleSwitch(BuildConfig.DEBUG)
-            // .setLogHeadSwitch(false)
             .setStackOffset(1)
-            .setLog2FileSwitch(true)
-            .setDir(File(PathUtils.getInternalAppCachePath(), "log"))
-            .setSaveDays(7)
+            .setConsoleSwitch(BuildConfig.DEBUG)
+//            .setLog2FileSwitch(BuildConfig.DEBUG)
+//            .setDir(File(PathUtils.getInternalAppCachePath(), "log"))
+//            .setSaveDays(7)
             .setBorderSwitch(false)
 
         DataStoreUtils.init(this)

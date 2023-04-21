@@ -7,17 +7,7 @@ import androidx.room.PrimaryKey
 import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.base.BaseEntity
 
-@Entity(
-    foreignKeys = [
-        ForeignKey(
-            entity = TraceRecord::class,
-            parentColumns = ["dbId"],
-            childColumns = ["traceRecordId"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ],
-    indices = [Index(value = ["traceRecordId"])]
-)
+@Entity
 open class TraceLocation(
     var latitude: Double,
     var longitude: Double,

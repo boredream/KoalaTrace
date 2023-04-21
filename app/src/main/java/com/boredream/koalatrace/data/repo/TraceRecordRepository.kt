@@ -91,7 +91,7 @@ class TraceRecordRepository @Inject constructor(
         return traceRecordList
     }
 
-    suspend fun getLocationList(traceRecordDbId: String) =
+    suspend fun getLocationList(traceRecordDbId: String?) =
         localDataSource.getTraceLocationList(traceRecordDbId)
 
     suspend fun insertOrUpdate(data: TraceRecord) = localDataSource.add(data)

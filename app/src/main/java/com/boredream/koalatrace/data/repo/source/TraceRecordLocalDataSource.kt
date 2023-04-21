@@ -39,6 +39,8 @@ class TraceRecordLocalDataSource @Inject constructor(
     override suspend fun add(data: TraceRecord): ResponseEntity<TraceRecord> {
         var insert: Long = -1
         try {
+            // 如果traceList有值 Room会自动处理 TraceLocation
+            data.traceList = null
             insert = traceRecordDao.insertOrUpdate(data)
         } catch (e: Exception) {
             //
@@ -112,11 +114,14 @@ class TraceRecordLocalDataSource @Inject constructor(
         }
     }
 
-    suspend fun getTraceLocationList(traceRecordDbId: String): ResponseEntity<ArrayList<TraceLocation>> {
+    suspend fun getTraceLocationList(traceRecordDbId: String?): ResponseEntity<ArrayList<TraceLocation>> {
         return try {
-            val list = traceLocationDao.loadAll()
-            println(list)
-            ResponseEntity.success(ArrayList(traceLocationDao.loadByTraceRecordId(traceRecordDbId)))
+            val list = if(traceRecordDbId == null) {
+                traceLocationDao.loadAll()
+            } else {
+                traceLocationDao.loadByTraceRecordId(traceRecordDbId)
+            }
+            ResponseEntity.success(ArrayList(list))
         } catch (e: Exception) {
             ResponseEntity(null, 500, e.toString())
         }
@@ -125,6 +130,7 @@ class TraceRecordLocalDataSource @Inject constructor(
     override suspend fun update(data: TraceRecord): ResponseEntity<TraceRecord> {
         var update: Int = -1
         try {
+            data.traceList = null
             update = traceRecordDao.update(data)
         } catch (e: Exception) {
             //
@@ -139,6 +145,7 @@ class TraceRecordLocalDataSource @Inject constructor(
     override suspend fun delete(data: TraceRecord): ResponseEntity<TraceRecord> {
         var delete: Int = -1
         try {
+            data.traceList = null
             data.isDelete = true // 软删除，方便同步用
             delete = traceRecordDao.update(data)
             logger.i("delete record ${data.name}")

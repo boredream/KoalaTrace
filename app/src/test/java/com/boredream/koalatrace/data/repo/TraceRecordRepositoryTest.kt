@@ -20,10 +20,10 @@ class TraceRecordRepositoryTest {
     @MockK
     private lateinit var configDataSource: ConfigLocalDataSource
 
-    @MockK
+    @MockK(relaxed = true)
     private lateinit var remoteDataSource: TraceRecordRemoteDataSource
 
-    @MockK
+    @MockK(relaxed = true)
     private lateinit var localDataSource: TraceRecordLocalDataSource
 
     private lateinit var repo: TraceRecordRepository

@@ -62,8 +62,11 @@ class TraceUseCaseTest {
         every { locationRepository.traceList } returns TestDataConstants.getTraceList()
 
         // 插入轨迹点
-        useCase.addLocation2currentRecord()
-        verify(exactly = 1) { runBlocking { traceRecordRepository.insertOrUpdateLocation(any(), any()) } }
+        val locationCount = 5
+        for (i in 0 until locationCount) {
+            useCase.addLocation2currentRecord()
+        }
+        verify(exactly = 5) { runBlocking { traceRecordRepository.insertOrUpdateLocation(any(), any()) } }
 
         // 停止并更新记录
         runBlocking { useCase.stopTrace() }
