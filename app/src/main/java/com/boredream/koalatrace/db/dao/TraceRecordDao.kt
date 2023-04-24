@@ -11,7 +11,7 @@ interface TraceRecordDao {
     suspend fun loadUnSynced(): List<TraceRecord>
 
     @Query("SELECT * FROM TraceRecord WHERE isRecording = 1 AND isDelete = 0")
-    suspend fun loadUnRecording(): List<TraceRecord>
+    suspend fun loadRecordingRecord(): List<TraceRecord>
 
     @Query("SELECT * FROM TraceRecord WHERE isDelete = 0 limit :limit offset :offset")
     suspend fun loadByPage(limit: Int, offset: Int): List<TraceRecord>
@@ -27,6 +27,9 @@ interface TraceRecordDao {
 
     @Delete
     suspend fun delete(data: TraceRecord): Int
+
+    @Query("DELETE FROM TraceRecord")
+    suspend fun deleteAll(): Int
 
     @Update
     suspend fun update(data: TraceRecord): Int

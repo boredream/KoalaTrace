@@ -150,7 +150,7 @@ class TraceRecordRepository @Inject constructor(
 
     suspend fun checkAllRecordUpdateByTraceList(): Boolean {
         var hasUpdate = false
-        val list = localDataSource.getUnRecordingTraceRecord()
+        val list = localDataSource.getRecordingTraceRecord()
         if (list.isSuccess()) {
             logger.i("checkAllRecordUpdateByTraceList ${list.getSuccessData().size}")
             list.getSuccessData().forEach {

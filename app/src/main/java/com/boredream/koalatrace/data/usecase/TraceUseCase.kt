@@ -54,6 +54,8 @@ class TraceUseCase @Inject constructor(
             return
         }
 
+        // TODO: 应该第一个定位点回来才开始创建轨迹
+
         // 开始记录轨迹时，就先创建一个线路
         val time = System.currentTimeMillis()
         val timeStr = TimeUtils.millis2String(time)

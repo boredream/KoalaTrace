@@ -1,7 +1,6 @@
 package com.boredream.koalatrace.data.repo.source
 
 import androidx.room.Transaction
-import com.amap.api.mapcore.util.it
 import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
@@ -17,9 +16,9 @@ class TraceRecordLocalDataSource @Inject constructor(
     private val traceRecordDao = appDatabase.traceRecordDao()
     private val traceLocationDao = appDatabase.traceLocationDao()
 
-    suspend fun getUnRecordingTraceRecord(): ResponseEntity<ArrayList<TraceRecord>> {
+    suspend fun getRecordingTraceRecord(): ResponseEntity<ArrayList<TraceRecord>> {
         return try {
-            val list = traceRecordDao.loadUnRecording()
+            val list = traceRecordDao.loadRecordingRecord()
             ResponseEntity.success(ArrayList(list))
         } catch (e: Exception) {
             ResponseEntity(null, 500, e.toString())
@@ -40,7 +39,6 @@ class TraceRecordLocalDataSource @Inject constructor(
         var insert: Long = -1
         try {
             // 如果traceList有值 Room会自动处理 TraceLocation
-            data.traceList = null
             insert = traceRecordDao.insertOrUpdate(data)
         } catch (e: Exception) {
             //
@@ -130,7 +128,6 @@ class TraceRecordLocalDataSource @Inject constructor(
     override suspend fun update(data: TraceRecord): ResponseEntity<TraceRecord> {
         var update: Int = -1
         try {
-            data.traceList = null
             update = traceRecordDao.update(data)
         } catch (e: Exception) {
             //
@@ -145,7 +142,6 @@ class TraceRecordLocalDataSource @Inject constructor(
     override suspend fun delete(data: TraceRecord): ResponseEntity<TraceRecord> {
         var delete: Int = -1
         try {
-            data.traceList = null
             data.isDelete = true // 软删除，方便同步用
             delete = traceRecordDao.update(data)
             logger.i("delete record ${data.name}")

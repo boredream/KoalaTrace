@@ -1,6 +1,5 @@
 package com.boredream.koalatrace.di
 
-import com.boredream.koalatrace.data.repo.source.FakeLocationDataSource
 import com.boredream.koalatrace.data.repo.source.GdLocationDataSource
 import com.boredream.koalatrace.data.repo.source.LocationDataSource
 import dagger.Binds
