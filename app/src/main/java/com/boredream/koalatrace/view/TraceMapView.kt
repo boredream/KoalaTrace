@@ -12,8 +12,8 @@ import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
-import com.boredream.koalatrace.data.constant.CommonConstant
 import com.boredream.koalatrace.data.constant.LocationConstant
+import com.boredream.koalatrace.utils.FileUtils
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
@@ -48,19 +48,19 @@ class TraceMapView : MapView {
         attrs,
         defStyleAttr
     ) {
-        // 样式
+        // AMap https://a.amap.com/lbs/static/unzip/Android_Map_Doc/index.html
         map?.let {
             it.uiSettings.isScaleControlsEnabled = false
             it.uiSettings.isZoomControlsEnabled = false
             // 高德自定义样式 https://geohub.amap.com/mapstyle
-            // TODO: 道路还有箭头？
-//            val styleData = FileUtils.readBytesFromAssets(context, "mapstyle/style.data")
-//            val styleExtraData = FileUtils.readBytesFromAssets(context, "mapstyle/style_extra.data")
-//            val styleOptions = CustomMapStyleOptions()
-//                .setEnable(true)
-//                .setStyleData(styleData)
-//                .setStyleExtraData(styleExtraData)
-//            it.setCustomMapStyle(styleOptions)
+            val styleData = FileUtils.readBytesFromAssets(context, "mapstyle/style.data")
+            val styleExtraData = FileUtils.readBytesFromAssets(context, "mapstyle/style_extra.data")
+            val styleOptions = CustomMapStyleOptions()
+                .setEnable(true)
+                .setStyleData(styleData)
+                .setStyleExtraData(styleExtraData)
+            it.setCustomMapStyle(styleOptions)
+            it.setRoadArrowEnable(false)
             it.addOnCameraChangeListener(object : OnCameraChangeListener {
                 override fun onCameraChange(position: CameraPosition?) {
 

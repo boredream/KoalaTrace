@@ -28,9 +28,10 @@ class BaseApplication : Application() {
         LogUtils.getConfig()
             .setStackOffset(1)
             .setConsoleSwitch(BuildConfig.DEBUG)
-//            .setLog2FileSwitch(BuildConfig.DEBUG)
-//            .setDir(File(PathUtils.getInternalAppCachePath(), "log"))
-//            .setSaveDays(7)
+            .setLog2FileSwitch(BuildConfig.DEBUG)
+            .setFileFilter(LogUtils.I)
+            .setDir(File(PathUtils.getInternalAppCachePath(), "log"))
+            .setSaveDays(7)
             .setBorderSwitch(false)
 
         DataStoreUtils.init(this)

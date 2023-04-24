@@ -2,12 +2,8 @@ package com.boredream.koalatrace.ui.main
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import androidx.core.content.ContentProviderCompat.requireContext
-import androidx.core.content.ContextCompat
 import com.blankj.utilcode.util.LogUtils
-import com.blankj.utilcode.util.ServiceUtils
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseActivity
 import com.boredream.koalatrace.base.BaseFragment
@@ -69,11 +65,7 @@ class MainTabActivity : BaseActivity<MainTabViewModel, ActivityMainTabBinding>()
     private fun toggleLocation(start: Boolean) {
         serviceIntent = Intent(this, TraceLocationService::class.java)
         serviceIntent.putExtra(BundleKey.TOGGLE_LOCATION, start)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            ContextCompat.startForegroundService(this, serviceIntent)
-        } else {
-            ServiceUtils.startService(serviceIntent)
-        }
+        startService(serviceIntent)
     }
 
 }
