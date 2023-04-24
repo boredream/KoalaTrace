@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.ProgressDialog
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
@@ -41,9 +42,20 @@ abstract class BaseActivity<VM : BaseViewModel, BD : ViewDataBinding> : AppCompa
 
         viewModel.baseUiState.observe(this) { showLoading(it.showLoading) }
         viewModel.baseEvent.observe(this) {
-            when(it) {
-                is ToastLiveEvent -> ToastUtils.showShort(it.toast)
-            }
+            handleBaseEvent(it)
+        }
+    }
+
+    fun handleBaseEvent(it: BaseLiveEvent?) {
+        when (it) {
+            is ToastLiveEvent -> ToastUtils.showShort(it.toast)
+            is ShowConfirmDialogLiveEvent ->
+                AlertDialog.Builder(this)
+                    .setTitle(it.title)
+                    .setMessage(it.content)
+                    .setPositiveButton(it.confirmText) { _, _ -> it.confirmClickListener.invoke() }
+                    .setNegativeButton(it.cancelText, null)
+                    .show()
         }
     }
 

@@ -20,7 +20,8 @@ class BackupRepository @Inject constructor(
 
     private val traceRecordDao = appDatabase.traceRecordDao()
     private val appDbFile = File(PathUtils.getInternalAppDbPath(CommonConstant.DB_NAME))
-    private val backupDbFile = File(PathUtils.getExternalStoragePath(), "KoalaTrace/backup/" + appDbFile.name)
+    var backupDbFile = File(PathUtils.getExternalStoragePath(), "KoalaTrace/backup/" + appDbFile.name)
+        private set
 
     suspend fun backup(): ResponseEntity<String> {
         val list = traceRecordDao.loadRecordingRecord()

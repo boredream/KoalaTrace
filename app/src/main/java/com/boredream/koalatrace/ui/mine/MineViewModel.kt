@@ -1,23 +1,22 @@
 package com.boredream.koalatrace.ui.mine
 
+import android.text.format.DateUtils
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.FileUtils
-import com.blankj.utilcode.util.LogUtils
-import com.blankj.utilcode.util.PathUtils
-import com.blankj.utilcode.util.ToastUtils
-import com.boredream.koalatrace.R
+import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.base.BaseViewModel
+import com.boredream.koalatrace.base.ShowConfirmDialogLiveEvent
 import com.boredream.koalatrace.base.ToastLiveEvent
 import com.boredream.koalatrace.data.User
-import com.boredream.koalatrace.data.constant.CommonConstant
 import com.boredream.koalatrace.data.repo.BackupRepository
 import com.boredream.koalatrace.data.repo.UserRepository
 import com.boredream.koalatrace.vm.SingleLiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.io.File
 import javax.inject.Inject
 
 
@@ -55,8 +54,17 @@ class MineViewModel @Inject constructor(
         }
     }
 
-    fun intent2RestoreDB() {
-        backupRepository
+    fun showRestoreDbConfirmDialog() {
+        val title = "恢复备份提醒"
+        val filePath = backupRepository.backupDbFile.absolutePath
+        val fileLastModifyTime = TimeUtils.millis2String(FileUtils.getFileLastModified(backupRepository.backupDbFile))
+        val content = StringBuilder()
+        content.append("备份文件位置：\n").append(filePath).append("\n\n")
+            .append("上次备份时间：\n").append(fileLastModifyTime).append("\n\n")
+            .append("恢复操作会把当前应用已有数据全部覆盖，之后重新启动应用生效，请谨慎操作！")
+        _baseEvent.value = ShowConfirmDialogLiveEvent(title, content.toString(), "确认恢复") {
+            restoreDB()
+        }
     }
 
     fun restoreDB() {

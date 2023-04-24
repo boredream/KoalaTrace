@@ -34,11 +34,7 @@ abstract class BaseFragment<VM: BaseViewModel, BD: ViewDataBinding>: Fragment(),
         binding.setVariable(BR.vm, viewModel)
 
         viewModel.baseUiState.observe(viewLifecycleOwner) { showLoading(it.showLoading) }
-        viewModel.baseEvent.observe(viewLifecycleOwner) {
-            when(it) {
-                is ToastLiveEvent -> ToastUtils.showShort(it.toast)
-            }
-        }
+        viewModel.baseEvent.observe(viewLifecycleOwner) { baseActivity.handleBaseEvent(it) }
 
         return binding.root
     }

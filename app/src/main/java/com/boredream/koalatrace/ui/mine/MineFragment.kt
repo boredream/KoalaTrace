@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.blankj.utilcode.util.AppUtils
-import com.blankj.utilcode.util.FileUtils
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseFragment
 import com.boredream.koalatrace.common.SimpleListAdapter
@@ -97,14 +96,7 @@ class MineFragment : BaseFragment<MineViewModel, FragmentMineBinding>() {
                 Manifest.permission.READ_EXTERNAL_STORAGE
             )
             .onGranted {
-                viewModel.intent2RestoreDB()
-                // TODO: 交互优化
-                AlertDialog.Builder(requireContext())
-                    .setTitle("恢复备份提醒")
-                    .setMessage("恢复操作会把当前应用已有数据全部覆盖，之后重新启动应用生效。\n请谨慎操作，确认恢复吗？")
-                    .setPositiveButton("确认") { _, _ -> viewModel.restoreDB() }
-                    .setNegativeButton("取消", null)
-                    .show()
+                viewModel.showRestoreDbConfirmDialog()
             }
             .onDenied { permissions ->
                 if (AndPermission.hasAlwaysDeniedPermission(this, permissions)) {
@@ -129,7 +121,7 @@ class MineFragment : BaseFragment<MineViewModel, FragmentMineBinding>() {
                     LoginActivity.start(requireContext())
                     baseActivity.finish()
                 }
-                is RestoreSuccessEvent -> AppUtils.relaunchApp()
+                is RestoreSuccessEvent -> AppUtils.relaunchApp(true)
             }
         }
     }
