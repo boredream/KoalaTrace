@@ -1,22 +1,18 @@
 package com.boredream.koalatrace.data.usecase
 
 import com.blankj.utilcode.util.CollectionUtils
-import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.base.BaseUseCase
 import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
-import com.boredream.koalatrace.data.constant.GlobalConstant
 import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.repo.LocationRepository
 import com.boredream.koalatrace.data.repo.TraceRecordRepository
 import com.boredream.koalatrace.utils.Logger
-import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.collections.ArrayList
 
 @Singleton
 class TraceUseCase @Inject constructor(
@@ -49,14 +45,21 @@ class TraceUseCase @Inject constructor(
      * 开始追踪轨迹
      */
     suspend fun startTrace() {
-        if(locationRepository.status != LocationRepository.STATUS_LOCATION) {
+        if (locationRepository.status != LocationRepository.STATUS_LOCATION) {
             // 定位中才可以开始记录轨迹
             return
         }
+        locationRepository.startTrace()
+    }
 
-        // TODO: 应该第一个定位点回来才开始创建轨迹
+    suspend fun checkCreateTraceRecord() {
+        if (locationRepository.status == LocationRepository.STATUS_TRACE && currentTraceRecord == null) {
+            // 如果已经开始追踪了，但当前trace是空，代表还没有坐标点返回，当第一个点返回后，开始追踪
+            createTraceRecord()
+        }
+    }
 
-        // 开始记录轨迹时，就先创建一个线路
+    suspend fun createTraceRecord() {
         val time = System.currentTimeMillis()
         val timeStr = TimeUtils.millis2String(time)
         val title = "轨迹 $timeStr"
@@ -82,7 +85,7 @@ class TraceUseCase @Inject constructor(
         traceRecordUpdate.forEach { it.invoke(record) }
     }
 
-    suspend fun checkStopTrace() : Boolean {
+    suspend fun checkStopTrace(): Boolean {
         val record = currentTraceRecord ?: return false
         val list = record.traceList ?: return false
         if (list.size <= 1) {
@@ -165,6 +168,7 @@ class TraceUseCase @Inject constructor(
     fun addTraceRecordUpdateListener(listener: (traceRecord: TraceRecord) -> Unit) {
         traceRecordUpdate.add(listener)
     }
+
     fun removeTraceRecordUpdateListener(listener: (traceRecord: TraceRecord) -> Unit) {
         traceRecordUpdate.remove(listener)
     }

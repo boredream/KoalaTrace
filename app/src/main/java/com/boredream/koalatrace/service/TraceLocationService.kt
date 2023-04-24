@@ -11,6 +11,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.location.Location
 import android.os.Build
 import android.os.IBinder
 import android.os.SystemClock
@@ -101,6 +102,7 @@ class TraceLocationService : Service() {
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
 
 //        traceUseCase.addStatusChangeListener(onStatusChange)
+        traceUseCase.addLocationSuccessListener(onLocationSuccess)
         traceUseCase.addTraceSuccessListener(onTraceSuccess)
         traceUseCase.startLocation()
         scope.launch {
@@ -139,6 +141,7 @@ class TraceLocationService : Service() {
         job.cancel()
 //        traceUseCase.removeStatusChangeListener(onStatusChange)
         traceUseCase.removeTraceSuccessListener(onTraceSuccess)
+        traceUseCase.removeLocationSuccessListener(onLocationSuccess)
         sensorManager.unregisterListener(sensorEventListener, sensor)
         AppWidgetUpdater.updateTraceStatus(this, true)
         super.onDestroy()
@@ -158,6 +161,12 @@ class TraceLocationService : Service() {
 //            AppWidgetUpdater.updateTraceStatus(this, false)
 //        }
 //    }
+
+    private var onLocationSuccess: (location: TraceLocation) -> Unit = {
+        scope.launch {
+            traceUseCase.checkCreateTraceRecord()
+        }
+    }
 
     private var onTraceSuccess: (allTracePointList: ArrayList<TraceLocation>) -> Unit = {
         // 定位状态变化
