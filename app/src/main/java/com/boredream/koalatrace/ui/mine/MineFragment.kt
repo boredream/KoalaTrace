@@ -1,13 +1,11 @@
 package com.boredream.koalatrace.ui.mine
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.blankj.utilcode.util.AppUtils
 import com.boredream.koalatrace.R
@@ -102,13 +100,6 @@ class MineFragment : BaseFragment<MineViewModel, FragmentMineBinding>() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun initObserver() {
-        viewModel.uiState.observe(viewLifecycleOwner) {
-            // 更新用户绑定另一半信息
-            val bindCpItem = dataList[0]
-            bindCpItem.content = if (it.cpUser != null) ("昵称：" + it.cpUser?.nickname) else "点击绑定"
-            adapter.notifyDataSetChanged()
-        }
-
         viewModel.eventUiState.observe(viewLifecycleOwner) {
             when (it) {
                 is LogoutEvent -> {
