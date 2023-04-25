@@ -6,10 +6,15 @@ import com.boredream.koalatrace.base.BaseUseCase
 import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
+import com.boredream.koalatrace.data.constant.GlobalConstant
 import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.repo.LocationRepository
+import com.boredream.koalatrace.data.repo.SensorRepository
 import com.boredream.koalatrace.data.repo.TraceRecordRepository
 import com.boredream.koalatrace.utils.Logger
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,6 +24,8 @@ class TraceUseCase @Inject constructor(
     private val logger: Logger,
     private val locationRepository: LocationRepository,
     private val traceRecordRepository: TraceRecordRepository,
+    private val sensorRepository: SensorRepository,
+    private val scope: CoroutineScope,
 ) : BaseUseCase() {
 
     var currentTraceRecord: TraceRecord? = null
@@ -27,10 +34,26 @@ class TraceUseCase @Inject constructor(
 
     fun isTracing() = locationRepository.status == LocationRepository.STATUS_TRACE
 
+    private val onTraceSuccessListener: (allTracePointList: ArrayList<TraceLocation>) -> Unit = {
+        scope.launch {
+            addLocation2currentRecord(it)
+            val stop = checkStopTrace()
+            if (stop) {
+                // 如果停留时间过长，停止追踪了，则开启监听移动
+                sensorRepository.startListenerMovement()
+                // 如果此时在后台，定位也关闭
+                if (!GlobalConstant.isForeground) {
+                    stopLocation()
+                }
+            }
+        }
+    }
+
     /**
      * 开始定位
      */
     fun startLocation() {
+        // TODO: 定位成功后再到定位状态?
         locationRepository.startLocation()
     }
 
@@ -49,14 +72,18 @@ class TraceUseCase @Inject constructor(
             // 定位中才可以开始记录轨迹
             return
         }
+        sensorRepository.movementListener = { if (it) determineMovement() }
+        locationRepository.addTraceSuccessListener(onTraceSuccessListener)
         locationRepository.startTrace()
+
+        // 开始就创建轨迹
+        createTraceRecord()
     }
 
-    suspend fun checkCreateTraceRecord() {
-        if (locationRepository.status == LocationRepository.STATUS_TRACE && currentTraceRecord == null) {
-            // 如果已经开始追踪了，但当前trace是空，代表还没有坐标点返回，当第一个点返回后，开始追踪
-            createTraceRecord()
-        }
+    private fun determineMovement() {
+        sensorRepository.stopListenerMovement()
+        startLocation()
+        scope.launch { startTrace() }
     }
 
     suspend fun createTraceRecord() {
@@ -64,18 +91,12 @@ class TraceUseCase @Inject constructor(
         val timeStr = TimeUtils.millis2String(time)
         val title = "轨迹 $timeStr"
         val traceRecord = TraceRecord(title, time, time, 0, isRecording = true)
-        val response = traceRecordRepository.insertOrUpdate(traceRecord)
-        if (response.isSuccess()) {
-            // 开始追踪
-            currentTraceRecord = response.getSuccessData()
-            locationRepository.startTrace()
-            logger.i("create traceRecord: ${traceRecord.name}")
-        }
+        traceRecordRepository.insertOrUpdate(traceRecord)
+        currentTraceRecord = traceRecord
     }
 
-    suspend fun addLocation2currentRecord() {
+    suspend fun addLocation2currentRecord(list: ArrayList<TraceLocation>) {
         val record = currentTraceRecord ?: return
-        val list = locationRepository.traceList
         if (CollectionUtils.isEmpty(list)) return
         val location = list.last()
         record.traceList = list
@@ -86,6 +107,7 @@ class TraceUseCase @Inject constructor(
     }
 
     suspend fun checkStopTrace(): Boolean {
+        // FIXME: currentTraceRecord 被误删了
         val record = currentTraceRecord ?: return false
         val list = record.traceList ?: return false
         if (list.size <= 1) {
@@ -119,6 +141,8 @@ class TraceUseCase @Inject constructor(
         logger.i("stop trace: ${record.name}")
         traceRecordRepository.updateByTraceList(record)
         locationRepository.clearTraceList()
+        currentTraceRecord = null
+        locationRepository.removeTraceSuccessListener(onTraceSuccessListener)
     }
 
     /**

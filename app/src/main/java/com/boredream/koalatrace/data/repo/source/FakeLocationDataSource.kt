@@ -45,7 +45,7 @@ class FakeLocationDataSource @Inject constructor() : LocationDataSource {
         var yStep = 0.00001 * (Random.nextInt(100) - 30)
         var xStep = 0.00001 * (Random.nextInt(50) - 20)
         val ratio = 0.3
-        if(millisUntilFinished % 20000 < 10000) {
+        if(millisUntilFinished % 40000 < 15000) {
             // 走走停停
             yStep = 0.0
             xStep = 0.0

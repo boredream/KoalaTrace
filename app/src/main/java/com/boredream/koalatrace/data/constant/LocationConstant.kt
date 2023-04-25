@@ -14,13 +14,14 @@ object LocationConstant {
     /**
      * 定位间隔（秒）
      */
-    const val LOCATION_INTERVAL: Long = 5000L
+//    const val LOCATION_INTERVAL: Long = 5000L
+    const val LOCATION_INTERVAL: Long = 3000L // test
 
     /**
      * 停留时间阈值（秒），超过这个时间后会自动记录一笔定位数据
      */
-//    const val STOP_THRESHOLD_DURATION: Long = DateUtils.SECOND_IN_MILLIS * 20 // test
-    const val STOP_THRESHOLD_DURATION: Long = DateUtils.MINUTE_IN_MILLIS * 10
+//    const val STOP_THRESHOLD_DURATION: Long = DateUtils.MINUTE_IN_MILLIS * 10
+    const val STOP_THRESHOLD_DURATION: Long = DateUtils.SECOND_IN_MILLIS * 10 // test
 
     /**
      * 最小计算追踪点，单位米
@@ -40,7 +41,7 @@ object LocationConstant {
     /**
      * 判断设备移动的加速度，判断间隔
      */
-//    const val DETERMINE_MOVEMENT_CHECK_INTERVAL = DateUtils.SECOND_IN_MILLIS * 5 // test
-    const val DETERMINE_MOVEMENT_CHECK_INTERVAL = DateUtils.SECOND_IN_MILLIS * 30
+//    const val DETERMINE_MOVEMENT_CHECK_INTERVAL = DateUtils.SECOND_IN_MILLIS * 30
+    const val DETERMINE_MOVEMENT_CHECK_INTERVAL = DateUtils.SECOND_IN_MILLIS * 5 // test
 
 }

@@ -94,7 +94,7 @@ class TraceEditMapActivityTest {
 
         for (i in 1..10) {
             locationRepository.onLocationSuccess(TestDataConstants.getStepTraceLocation())
-            traceUseCase.addLocation2currentRecord()
+            traceUseCase.addLocation2currentRecord(arrayListOf(TestDataConstants.getStepTraceLocation()))
 
             val locationList = traceRecordRepository
                 .getLocationList(traceUseCase.currentTraceRecord?.dbId).getSuccessData()

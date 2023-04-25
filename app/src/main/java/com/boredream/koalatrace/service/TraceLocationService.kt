@@ -4,35 +4,21 @@ import android.app.*
 import android.app.NotificationManager.IMPORTANCE_DEFAULT
 import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.PendingIntent.FLAG_UPDATE_CURRENT
-import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
-import android.location.Location
 import android.os.Build
 import android.os.IBinder
-import android.os.SystemClock
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.R
-import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.constant.BundleKey
-import com.boredream.koalatrace.data.constant.GlobalConstant
-import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.usecase.TraceUseCase
 import com.boredream.koalatrace.ui.main.MainTabActivity
-import com.boredream.koalatrace.widget.AppWidgetUpdater
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.math.sqrt
 
 
 /**
@@ -50,10 +36,8 @@ class TraceLocationService : Service() {
     @Inject
     lateinit var traceUseCase: TraceUseCase
 
-    private val job: Job = Job()
-    private val scope = CoroutineScope(Dispatchers.IO + job)
-    private lateinit var sensorManager: SensorManager
-    private lateinit var sensor: Sensor
+    @Inject
+    lateinit var scope: CoroutineScope
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -98,12 +82,6 @@ class TraceLocationService : Service() {
             startForeground(SERVICE_ID, notification)
         }
 
-        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
-
-//        traceUseCase.addStatusChangeListener(onStatusChange)
-        traceUseCase.addLocationSuccessListener(onLocationSuccess)
-        traceUseCase.addTraceSuccessListener(onTraceSuccess)
         traceUseCase.startLocation()
         scope.launch {
             traceUseCase.startTrace()
@@ -138,136 +116,8 @@ class TraceLocationService : Service() {
     }
 
     override fun onDestroy() {
-        job.cancel()
-//        traceUseCase.removeStatusChangeListener(onStatusChange)
-        traceUseCase.removeTraceSuccessListener(onTraceSuccess)
-        traceUseCase.removeLocationSuccessListener(onLocationSuccess)
-        sensorManager.unregisterListener(sensorEventListener, sensor)
-        AppWidgetUpdater.updateTraceStatus(this, true)
+        scope.cancel()
         super.onDestroy()
-    }
-
-//    private var onStatusChange: (status: Int) -> Unit = {
-//        // 定位状态变化
-//        val statusStr = when (it) {
-//            LocationRepository.STATUS_TRACE -> "轨迹记录中"
-//            LocationRepository.STATUS_LOCATION -> "定位中"
-//            else -> it.toString()
-//        }
-//        LogUtils.i("status = $statusStr")
-//        if (it == LocationRepository.STATUS_TRACE) {
-//            AppWidgetUpdater.updateTraceStatus(this, true)
-//        } else {
-//            AppWidgetUpdater.updateTraceStatus(this, false)
-//        }
-//    }
-
-    private var onLocationSuccess: (location: TraceLocation) -> Unit = {
-        scope.launch {
-            traceUseCase.checkCreateTraceRecord()
-        }
-    }
-
-    private var onTraceSuccess: (allTracePointList: ArrayList<TraceLocation>) -> Unit = {
-        // 定位状态变化
-        Log.v("DDD", "TraceLocationService allTracePointList ${it.size}")
-        if (it.size != 0) {
-            scope.launch {
-                traceUseCase.addLocation2currentRecord()
-                val stop = traceUseCase.checkStopTrace()
-                if (stop) {
-                    // 如果停留时间过长，停止追踪了，则开启监听移动
-                    addMoveSensorListener()
-                    // 如果此时在后台，定位也关闭
-                    if (!GlobalConstant.isForeground) {
-                        traceUseCase.stopLocation()
-                    }
-                }
-            }
-
-            // TODO: 桌面小程序
-//            val timeDiff = System.currentTimeMillis() - it[0].time
-//            val updateWidgetInterval = 30_000 // widget刷新间隔，单位毫秒
-//            val timeIndex: Int = (timeDiff % updateWidgetInterval + 500).toInt() / 1000
-//            if (timeIndex == 0) {
-//                // LogUtils.i("updateTraceInfo $timeDiff $timeIndex")
-//                AppWidgetUpdater.updateTraceInfo(this, it)
-//            }
-        }
-    }
-
-    // 开始监听手机是否再次开始移动
-    private var determineMovementStatus = 0
-    private var startDetermineMovementTime = 0L
-    private var movementCount = 0
-    private var notMovementCount = 0
-    private val sensorEventListener = object : SensorEventListener {
-        override fun onSensorChanged(event: SensorEvent?) {
-            if (event == null) return
-            val x = event.values[0]
-            // 噪音
-            if (determineMovementStatus == 0 && x < 0.1) return
-
-            val y = event.values[1]
-            val z = event.values[2]
-            val acceleration = sqrt((x * x + y * y + z * z).toDouble())
-            // Log.v("DDD", "x = $x , y = $y , z = $z , acceleration = $acceleration")
-            if (acceleration > LocationConstant.DETERMINE_MOVEMENT_THRESHOLD
-                && determineMovementStatus == 0
-            ) {
-                // 如果达到阈值，开始检测
-                startDetermineMovementTime = SystemClock.elapsedRealtime()
-                determineMovementStatus = 1
-                movementCount = 0
-                notMovementCount = 0
-                Log.v("DDD", "start determine movement")
-            }
-
-            if (determineMovementStatus == 1) {
-                // 如果已经开始检测了，开始记录运动状态
-                if (acceleration > LocationConstant.DETERMINE_MOVEMENT_THRESHOLD) {
-                    movementCount++
-                } else {
-                    notMovementCount++
-                }
-                Log.v("DDD", "determine movement [$movementCount , $notMovementCount]")
-            }
-
-            if (determineMovementStatus == 1) {
-                val duration = SystemClock.elapsedRealtime() - startDetermineMovementTime
-                if (duration > LocationConstant.DETERMINE_MOVEMENT_CHECK_INTERVAL) {
-                    // 每次达到时间间隔进行一次判定
-                    determineMovementStatus = 0
-                    if (notMovementCount == 0) notMovementCount = 1 // 方便除法
-                    if (1f * movementCount / notMovementCount > 7) {
-                        // 如果区间内多数检测结果是移动状态，则判断用户已经切换到移动
-                        LogUtils.i("determine movement!")
-                        determineMovement()
-                    } else {
-                        LogUtils.i("determine not movement")
-                    }
-                }
-            }
-        }
-
-        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        }
-    }
-
-    private fun addMoveSensorListener() {
-        sensorManager.registerListener(
-            sensorEventListener,
-            sensor,
-            SensorManager.SENSOR_DELAY_NORMAL
-        )
-    }
-
-    private fun determineMovement() {
-        traceUseCase.startLocation()
-        scope.launch {
-            traceUseCase.startTrace()
-        }
-        sensorManager.unregisterListener(sensorEventListener, sensor)
     }
 
 }

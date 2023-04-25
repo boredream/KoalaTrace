@@ -20,6 +20,7 @@ import com.boredream.koalatrace.ui.log.LogActivity
 import com.boredream.koalatrace.ui.login.LoginActivity
 import com.boredream.koalatrace.utils.PermissionSettingUtil
 import com.yanzhenjie.permission.AndPermission
+import com.yanzhenjie.permission.runtime.Permission
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -71,11 +72,11 @@ class MineFragment : BaseFragment<MineViewModel, FragmentMineBinding>() {
     }
 
     private fun backupDB() {
+        // FIXME: 当targetSDK从29升级到33后，前台服务端的通知不显示了，这里的写入文件也会失效？
         AndPermission.with(this)
             .runtime()
             .permission(
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE
+                Permission.WRITE_EXTERNAL_STORAGE,
             )
             .onGranted {
                viewModel.backupDB()
@@ -92,8 +93,7 @@ class MineFragment : BaseFragment<MineViewModel, FragmentMineBinding>() {
         AndPermission.with(this)
             .runtime()
             .permission(
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE
+                Permission.WRITE_EXTERNAL_STORAGE,
             )
             .onGranted {
                 viewModel.showRestoreDbConfirmDialog()
