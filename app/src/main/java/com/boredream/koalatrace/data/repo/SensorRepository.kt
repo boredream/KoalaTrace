@@ -27,7 +27,8 @@ class SensorRepository @Inject constructor(
 
     private val sensorListener: SensorEventListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent?) {
-            val move = handleSensorChanged(event)
+            val acceleration = calculateAcceleration(event)
+            val move = handleSensorChanged(acceleration)
             movementListener.invoke(move)
         }
 
@@ -44,15 +45,18 @@ class SensorRepository @Inject constructor(
         dataSource.stopListenerMovement(sensorListener)
     }
 
-    fun handleSensorChanged(event: SensorEvent?) : Boolean {
-        if (event == null) return false
+    private fun calculateAcceleration(event: SensorEvent?): Double {
+        if (event == null) return 0.0
         val x = event.values[0]
         // 噪音
-        if (determineMovementStatus == 0 && x < 0.1) return false
+        if (determineMovementStatus == 0 && x < 0.1) return 0.0
 
         val y = event.values[1]
         val z = event.values[2]
-        val acceleration = sqrt((x * x + y * y + z * z).toDouble())
+        return sqrt((x * x + y * y + z * z).toDouble())
+    }
+
+    fun handleSensorChanged(acceleration: Double) : Boolean {
         if (acceleration > LocationConstant.DETERMINE_MOVEMENT_THRESHOLD
             && determineMovementStatus == 0) {
             // 如果达到阈值，开始检测

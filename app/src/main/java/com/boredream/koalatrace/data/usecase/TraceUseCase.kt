@@ -12,7 +12,6 @@ import com.boredream.koalatrace.data.repo.LocationRepository
 import com.boredream.koalatrace.data.repo.SensorRepository
 import com.boredream.koalatrace.data.repo.TraceRecordRepository
 import com.boredream.koalatrace.utils.Logger
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.*
@@ -35,16 +34,18 @@ class TraceUseCase @Inject constructor(
     fun isTracing() = locationRepository.status == LocationRepository.STATUS_TRACE
 
     private val onTraceSuccessListener: (allTracePointList: ArrayList<TraceLocation>) -> Unit = {
-        scope.launch {
-            addLocation2currentRecord(it)
-            val stop = checkStopTrace()
-            if (stop) {
-                // 如果停留时间过长，停止追踪了，则开启监听移动
-                sensorRepository.startListenerMovement()
-                // 如果此时在后台，定位也关闭
-                if (!GlobalConstant.isForeground) {
-                    stopLocation()
-                }
+        scope.launch { onTraceSuccess(it) }
+    }
+
+    suspend fun onTraceSuccess(locationList: ArrayList<TraceLocation>) {
+        addLocation2currentRecord(locationList)
+        val stop = checkStopTrace()
+        if (stop) {
+            // 如果停留时间过长，停止追踪了，则开启监听移动
+            sensorRepository.startListenerMovement()
+            // 如果此时在后台，定位也关闭
+            if (!GlobalConstant.isForeground) {
+                stopLocation()
             }
         }
     }
@@ -107,7 +108,6 @@ class TraceUseCase @Inject constructor(
     }
 
     suspend fun checkStopTrace(): Boolean {
-        // FIXME: currentTraceRecord 被误删了
         val record = currentTraceRecord ?: return false
         val list = record.traceList ?: return false
         if (list.size <= 1) {
