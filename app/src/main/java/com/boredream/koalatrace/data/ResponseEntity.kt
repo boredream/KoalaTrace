@@ -6,8 +6,6 @@ data class ResponseEntity<T>(
     val msg: String
 ) {
     fun isSuccess() = code == 0
-
-    // TODO: 有更好的写法吗？
     fun getSuccessData() = data!!
 
     companion object {

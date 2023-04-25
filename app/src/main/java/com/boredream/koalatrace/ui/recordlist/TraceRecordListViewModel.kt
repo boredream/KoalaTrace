@@ -23,7 +23,12 @@ class TraceRecordListViewModel @Inject constructor(
     private val _isSyncingState = MutableLiveData(false)
     val isSyncingState: LiveData<Boolean> = _isSyncingState
 
-    fun start() {
+    fun onResume() {
+        loadData()
+        // do other things
+    }
+
+    fun loadData() {
         refreshListVMCompose.loadList { repository.getList() }
     }
 
@@ -33,7 +38,7 @@ class TraceRecordListViewModel @Inject constructor(
 
     fun delete(data: TraceRecord) {
         deleteVMCompose.request(
-            onSuccess = { start() }
+            onSuccess = { loadData() }
         ) { repository.delete(data) }
     }
 
@@ -42,7 +47,7 @@ class TraceRecordListViewModel @Inject constructor(
         viewModelScope.launch {
             val hasUpdate = repository.checkAllRecordUpdateByTraceList()
             if(hasUpdate) {
-                start()
+                loadData()
             }
         }
     }

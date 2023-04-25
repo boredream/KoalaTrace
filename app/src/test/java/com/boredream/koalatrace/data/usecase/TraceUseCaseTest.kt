@@ -107,7 +107,7 @@ class TraceUseCaseTest {
 
     @Test
     fun testMovementAgain() = runTest {
-        // FIXME: 这个方法本来是想测试传感器超过阈值后，再次恢复的情况。但这个应该是放在下一级 SensorRepository 中测试，而非 useCase。
+        // 这个方法本来是想测试传感器超过阈值后，再次恢复的情况。但这个应该是放在下一级 SensorRepository 中测试，而非 useCase。
     }
 
 }

@@ -57,10 +57,11 @@ class MineViewModel @Inject constructor(
     fun showRestoreDbConfirmDialog() {
         val title = "恢复备份提醒"
         val filePath = backupRepository.backupDbFile.absolutePath
+        val fileSize = FileUtils.getSize(filePath)
         val fileLastModifyTime = TimeUtils.millis2String(FileUtils.getFileLastModified(backupRepository.backupDbFile))
         val content = StringBuilder()
-        // TODO: 文件大小
         content.append("备份文件位置：\n").append(filePath).append("\n\n")
+            .append("备份文件大小：\n").append(fileSize).append("\n\n")
             .append("上次备份时间：\n").append(fileLastModifyTime).append("\n\n")
             .append("恢复操作会把当前应用已有数据全部覆盖，之后重新启动应用生效，请谨慎操作！")
         _baseEvent.value = ShowConfirmDialogLiveEvent(title, content.toString(), "确认恢复") {

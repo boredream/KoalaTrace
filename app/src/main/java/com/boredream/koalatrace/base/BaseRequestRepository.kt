@@ -31,7 +31,6 @@ abstract class BaseRequestRepository<T : BaseEntity> : BaseRepository() {
         val response: ResponseEntity<PageResultDto<T>> =
             tryHttpError { request.invoke(requestPage) }
         if (response.isSuccess()) {
-            // TODO: db local data source
             // 缓存在本地
             val responseData = response.getSuccessData()
             cacheListPage = requestPage
@@ -60,7 +59,6 @@ abstract class BaseRequestRepository<T : BaseEntity> : BaseRepository() {
 
         val response: ResponseEntity<ArrayList<T>> = tryHttpError { request.invoke() }
         if (response.isSuccess()) {
-            // TODO: db local data source
             // 缓存在本地
             cacheList.clear()
             cacheList.addAll(response.getSuccessData())

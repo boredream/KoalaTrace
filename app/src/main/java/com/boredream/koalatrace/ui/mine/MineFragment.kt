@@ -48,7 +48,6 @@ class MineFragment : BaseFragment<MineViewModel, FragmentMineBinding>() {
 
     private fun initList() {
         binding.rvSetting.layoutManager = LinearLayoutManager(activity)
-        dataList.add(SettingItem("另一半", "绑定"))
         dataList.add(SettingItem("关于我们", ""))
         dataList.add(SettingItem("推荐给好友", ""))
         dataList.add(SettingItem("意见反馈", ""))
@@ -58,17 +57,12 @@ class MineFragment : BaseFragment<MineViewModel, FragmentMineBinding>() {
         adapter = SimpleListAdapter(dataList, R.layout.item_setting)
         adapter.onItemClickListener = {
             when (it.name) {
-                "另一半" -> toggleBindCp()
                 "日志" -> startActivity(Intent(activity, LogActivity::class.java))
                 "备份数据库" -> backupDB()
                 "恢复数据库" -> restoreDB()
             }
         }
         binding.rvSetting.adapter = adapter
-    }
-
-    private fun toggleBindCp() {
-        // TODO: bind cp
     }
 
     private fun backupDB() {

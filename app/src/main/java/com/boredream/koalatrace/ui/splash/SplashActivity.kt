@@ -17,8 +17,6 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class SplashActivity : BaseActivity<SplashViewModel, ActivitySplashBinding>() {
 
-    // TODO: The application should not provide its own launch screen
-
     override fun getLayoutId() = R.layout.activity_splash
 
     override fun getViewModelClass() = SplashViewModel::class.java

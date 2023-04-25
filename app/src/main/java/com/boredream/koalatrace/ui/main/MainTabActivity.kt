@@ -30,8 +30,6 @@ class MainTabActivity : BaseActivity<MainTabViewModel, ActivityMainTabBinding>()
         }
     }
 
-    // TODO: 无需 vm ？
-
     override fun getLayoutId() = R.layout.activity_main_tab
     override fun getViewModelClass() = MainTabViewModel::class.java
 

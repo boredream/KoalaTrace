@@ -19,7 +19,6 @@ class GdLocationDataSource @Inject constructor(@ApplicationContext val context: 
     private var locationClient: AMapLocationClient? = null
 
     override fun startLocation(onSuccess: (location: TraceLocation) -> Unit) {
-        // TODO: on error
         try {
             locationClient = AMapLocationClient(context)
             locationClient?.let {
@@ -44,11 +43,6 @@ class GdLocationDataSource @Inject constructor(@ApplicationContext val context: 
                     latitude = it.latitude,
                     longitude = it.longitude,
                 )
-                // TODO: 记录除了经纬度以外的其他重要信息
-                location.extraData =  "locationType：${it.locationType}, " + // 定位类型 https://lbs.amap.com/api/android-location-sdk/guide/utilities/location-type/
-                        "accuracy：${it.accuracy}, " + // 精度 米
-                        "speed：${it.speed}, " + // 速度 米/秒
-                        "bearing：${it.bearing}, " // 角度 0~360
                 onSuccess.invoke(location)
             } else Log.e(
                 TAG, "initClient Error, ErrCode:" + it.errorCode + ", errInfo:" + it.errorInfo

@@ -54,7 +54,6 @@ class TraceUseCase @Inject constructor(
      * 开始定位
      */
     fun startLocation() {
-        // TODO: 定位成功后再到定位状态?
         locationRepository.startLocation()
     }
 
@@ -94,6 +93,7 @@ class TraceUseCase @Inject constructor(
         val traceRecord = TraceRecord(title, time, time, 0, isRecording = true)
         traceRecordRepository.insertOrUpdate(traceRecord)
         currentTraceRecord = traceRecord
+        traceRecordUpdate.forEach { it.invoke(traceRecord) }
     }
 
     suspend fun addLocation2currentRecord(list: ArrayList<TraceLocation>) {
@@ -140,6 +140,7 @@ class TraceUseCase @Inject constructor(
         val record = currentTraceRecord ?: return
         logger.i("stop trace: ${record.name}")
         traceRecordRepository.updateByTraceList(record)
+        traceRecordUpdate.forEach { it.invoke(record) }
         locationRepository.clearTraceList()
         currentTraceRecord = null
         locationRepository.removeTraceSuccessListener(onTraceSuccessListener)

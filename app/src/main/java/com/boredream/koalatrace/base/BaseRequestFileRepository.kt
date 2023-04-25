@@ -10,8 +10,6 @@ import com.boredream.koalatrace.net.LocalImageFilter
 abstract class BaseRequestFileRepository<T : BaseEntity>(private val service: ApiService) :
     BaseRequestRepository<T>() {
 
-    // TODO: 请求应该放在DataSource里更合适？
-
     /**
      * 提交请求
      * @param request SuspendFunction0<ResponseEntity<Boolean>> 请求

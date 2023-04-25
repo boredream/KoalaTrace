@@ -92,7 +92,6 @@ class TraceMapView : MapView {
             locateMe()
             isFirstSetMyLocation = false
         }
-//        LogUtils.v(map.cameraPosition.target)
     }
 
     fun locateMe() {
