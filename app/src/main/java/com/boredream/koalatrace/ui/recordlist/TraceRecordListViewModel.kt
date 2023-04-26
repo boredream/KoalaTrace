@@ -42,10 +42,10 @@ class TraceRecordListViewModel @Inject constructor(
         ) { repository.delete(data) }
     }
 
-    fun updateRecordingTraces() {
+    fun updateAllUnFinishRecord() {
         // 如果有之前未保存的，刷新轨迹数据
         viewModelScope.launch {
-            val hasUpdate = repository.checkAllRecordUpdateByTraceList()
+            val hasUpdate = repository.updateAllUnFinishRecord()
             if(hasUpdate) {
                 loadData()
             }

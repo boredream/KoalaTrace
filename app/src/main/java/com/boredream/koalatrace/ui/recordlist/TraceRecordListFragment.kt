@@ -40,7 +40,7 @@ class TraceRecordListFragment :
         val view = super.onCreateView(inflater, container, savedInstanceState)
         initView()
         initObserver()
-        viewModel.updateRecordingTraces()
+        viewModel.updateAllUnFinishRecord()
         EventBus.getDefault().register(this)
         return view
     }

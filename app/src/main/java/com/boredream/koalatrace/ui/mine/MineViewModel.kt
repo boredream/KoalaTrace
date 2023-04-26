@@ -1,8 +1,5 @@
 package com.boredream.koalatrace.ui.mine
 
-import android.text.format.DateUtils
-import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope

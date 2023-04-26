@@ -1,6 +1,5 @@
 package com.boredream.koalatrace.data.repo
 
-import com.blankj.utilcode.util.CollectionUtils
 import com.blankj.utilcode.util.FileUtils
 import com.blankj.utilcode.util.PathUtils
 import com.boredream.koalatrace.base.BaseRepository
@@ -18,17 +17,11 @@ class BackupRepository @Inject constructor(
     private val appDatabase: AppDatabase,
 ) : BaseRepository() {
 
-    private val traceRecordDao = appDatabase.traceRecordDao()
     private val appDbFile = File(PathUtils.getInternalAppDbPath(CommonConstant.DB_NAME))
     var backupDbFile = File(PathUtils.getExternalStoragePath(), "KoalaTrace/backup/" + appDbFile.name)
         private set
 
     suspend fun backup(): ResponseEntity<String> {
-        val list = traceRecordDao.loadRecordingRecord()
-        if(CollectionUtils.isNotEmpty(list)) {
-            logger.i("backup error, has recording trace")
-            return ResponseEntity(null, 500, "请先暂停轨迹记录后再进行备份")
-        }
         val success = FileUtils.copy(appDbFile, backupDbFile)
         logger.i("backup success : $success")
         if(!success) {

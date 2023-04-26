@@ -1,5 +1,6 @@
 package com.boredream.koalatrace.data.repo
 
+import com.amap.api.mapcore.util.it
 import com.blankj.utilcode.util.CollectionUtils
 import com.boredream.koalatrace.base.BaseRepository
 import com.boredream.koalatrace.data.ResponseEntity
@@ -148,11 +149,15 @@ class TraceRecordRepository @Inject constructor(
         return localDataSource.update(data)
     }
 
-    suspend fun checkAllRecordUpdateByTraceList(): Boolean {
+    /**
+     * 更新所有未完成状态的轨迹（记录中的、数据有问题的等）
+     * @return Boolean
+     */
+    suspend fun updateAllUnFinishRecord(): Boolean {
         var hasUpdate = false
-        val list = localDataSource.getRecordingTraceRecord()
+        val list = localDataSource.getUnFinishTraceRecord()
         if (list.isSuccess()) {
-            logger.i("checkAllRecordUpdateByTraceList ${list.getSuccessData().size}")
+            logger.i("updateAllUnFinishRecord ${list.getSuccessData().size}")
             list.getSuccessData().forEach {
                 it.traceList = localDataSource.getTraceLocationList(it.dbId).data
                 updateByTraceList(it)

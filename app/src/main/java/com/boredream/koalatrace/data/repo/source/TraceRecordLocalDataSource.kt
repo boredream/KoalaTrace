@@ -16,9 +16,9 @@ class TraceRecordLocalDataSource @Inject constructor(
     private val traceRecordDao = appDatabase.traceRecordDao()
     private val traceLocationDao = appDatabase.traceLocationDao()
 
-    suspend fun getRecordingTraceRecord(): ResponseEntity<ArrayList<TraceRecord>> {
+    suspend fun getUnFinishTraceRecord(): ResponseEntity<ArrayList<TraceRecord>> {
         return try {
-            val list = traceRecordDao.loadRecordingRecord()
+            val list = traceRecordDao.loadUnFinishTraceRecord()
             ResponseEntity.success(ArrayList(list))
         } catch (e: Exception) {
             ResponseEntity(null, 500, e.toString())

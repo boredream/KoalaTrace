@@ -81,15 +81,18 @@ class MineFragment : BaseFragment<MineViewModel, FragmentMineBinding>() {
 
     override fun onResume() {
         super.onResume()
+        updatePermissionInfo()
+    }
 
+    private fun updatePermissionInfo() {
         val permissions = mutableListOf(
             ACCESS_FINE_LOCATION,
             WRITE_EXTERNAL_STORAGE,
             READ_EXTERNAL_STORAGE
         )
-        dataList[1].content = if (PermissionUtil.hasAll(baseActivity, permissions))
+        dataList[0].content = if (PermissionUtil.hasAll(baseActivity, permissions))
             "已开启全部权限" else "未开启全部权限"
-        adapter.notifyItemChanged(1)
+        adapter.notifyItemChanged(0)
     }
 
     // TODO: target api > 29 之后需要处理
