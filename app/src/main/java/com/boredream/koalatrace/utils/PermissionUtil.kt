@@ -1,9 +1,26 @@
 package com.boredream.koalatrace.utils
 
+import android.content.Context
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import com.blankj.utilcode.util.LogUtils
 import com.permissionx.guolindev.PermissionX
 
 object PermissionUtil {
+
+    fun hasAll(context: Context, permissions: List<String>): Boolean {
+        return permissions.all { has(context, it) }
+    }
+
+    fun has(context: Context, permission: String): Boolean {
+        val granted = ContextCompat.checkSelfPermission(
+            context,
+            permission
+        ) == PackageManager.PERMISSION_GRANTED
+        LogUtils.i("$permission is granted: $granted")
+        return granted
+    }
 
     fun request(
         activity: AppCompatActivity,
@@ -22,3 +39,4 @@ object PermissionUtil {
     }
 
 }
+
