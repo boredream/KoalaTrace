@@ -4,11 +4,13 @@ import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.User
 import com.boredream.koalatrace.data.constant.LocationConstant
+import com.boredream.koalatrace.data.constant.LocationParam
 import com.boredream.koalatrace.net.ApiService
 import com.boredream.koalatrace.net.ServiceCreator
 
 object TestDataConstants {
 
+    val locationParam = LocationParam()
     var user: User = createUser()
     const val token =
         "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NSwiZXhwIjoxNjY5ODcxNzI3fQ.3bKD6UKKq-smx__XbKfHJwnD4pm-sx0DJAo8NFdRpZY"
@@ -54,7 +56,7 @@ object TestDataConstants {
     private var step = 0
     fun getStepTraceLocation(): TraceLocation {
         val extra = step * LocationConstant.ONE_METER_LAT_LNG * 5
-        val time = System.currentTimeMillis() + step * LocationConstant.LOCATION_INTERVAL
+        val time = System.currentTimeMillis() + step * locationParam.locationInterval
         step += 1
         return getTraceLocation(latExtra = extra, time = time)
     }

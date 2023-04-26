@@ -1,7 +1,9 @@
 package com.boredream.koalatrace.ui.mine
 
+import android.Manifest.permission.*
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -16,9 +18,7 @@ import com.boredream.koalatrace.databinding.FragmentMineBinding
 import com.boredream.koalatrace.databinding.ItemSettingBinding
 import com.boredream.koalatrace.ui.log.LogActivity
 import com.boredream.koalatrace.ui.login.LoginActivity
-import com.boredream.koalatrace.utils.PermissionSettingUtil
-import com.yanzhenjie.permission.AndPermission
-import com.yanzhenjie.permission.runtime.Permission
+import com.boredream.koalatrace.utils.PermissionUtil
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -55,47 +55,23 @@ class MineFragment : BaseFragment<MineViewModel, FragmentMineBinding>() {
         adapter = SimpleListAdapter(dataList, R.layout.item_setting)
         adapter.onItemClickListener = {
             when (it.name) {
+                "关于我们" -> { }
                 "日志" -> startActivity(Intent(activity, LogActivity::class.java))
-                "备份数据库" -> backupDB()
-                "恢复数据库" -> restoreDB()
+                "备份数据库" -> checkPermission(viewModel::backupDB)
+                "恢复数据库" -> checkPermission(viewModel::showRestoreDbConfirmDialog)
             }
         }
         binding.rvSetting.adapter = adapter
     }
 
-    private fun backupDB() {
-        // FIXME: 当targetSDK从29升级到33后，前台服务端的通知不显示了，这里的写入文件也会失效？
-        AndPermission.with(this)
-            .runtime()
-            .permission(
-                Permission.WRITE_EXTERNAL_STORAGE,
-            )
-            .onGranted {
-               viewModel.backupDB()
-            }
-            .onDenied { permissions ->
-                if (AndPermission.hasAlwaysDeniedPermission(this, permissions)) {
-                    PermissionSettingUtil.showSetting(requireContext(), permissions)
-                }
-            }
-            .start()
-    }
-
-    private fun restoreDB() {
-        AndPermission.with(this)
-            .runtime()
-            .permission(
-                Permission.WRITE_EXTERNAL_STORAGE,
-            )
-            .onGranted {
-                viewModel.showRestoreDbConfirmDialog()
-            }
-            .onDenied { permissions ->
-                if (AndPermission.hasAlwaysDeniedPermission(this, permissions)) {
-                    PermissionSettingUtil.showSetting(requireContext(), permissions)
-                }
-            }
-            .start()
+    private fun checkPermission(callback: () -> Unit) {
+        val permissions = mutableListOf(WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            permissions.add(MANAGE_EXTERNAL_STORAGE)
+        }
+        PermissionUtil.request(baseActivity, permissions) {
+            if (it) callback.invoke()
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")

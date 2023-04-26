@@ -6,6 +6,7 @@ import androidx.room.RoomDatabase
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import com.amap.api.mapcore.util.it
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.CommonConstant
 import com.boredream.koalatrace.data.repo.BackupRepository
@@ -24,7 +25,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 @HiltAndroidTest
-class DbBackupTest {
+class DbTest {
 
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
@@ -44,6 +45,18 @@ class DbBackupTest {
             .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
             .build()
         repo = BackupRepository(PrintLogger(), db)
+    }
+
+    @Test
+    fun testDb() = runBlocking {
+        val dao = db.traceRecordDao()
+        val locationDao = db.traceLocationDao()
+        dao.loadAll().forEach {
+            println("-------------------")
+            println(it)
+            val list = locationDao.loadByTraceRecordId(it.dbId)
+            println(list)
+        }
     }
 
     @Test

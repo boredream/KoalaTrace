@@ -55,13 +55,14 @@ class TraceRecordDetailViewModel @Inject constructor(
     }
 
     private fun getTraceListSuccess(traceList: ArrayList<TraceLocation>) {
+        data.traceList = traceList
         _uiState.value = data
-        updateTraceList(traceList)
+        updateTraceList()
     }
 
-    private fun updateTraceList(traceList: ArrayList<TraceLocation>) {
+    private fun updateTraceList() {
         _traceListUiState.value = arrayListOf(data)
-        _startLocationUiState.value = traceList[traceList.lastIndex]
+        data.traceList?.let { _startLocationUiState.value = it.last() }
     }
 
 }

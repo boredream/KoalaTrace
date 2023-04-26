@@ -153,7 +153,7 @@ dependencies {
     implementation 'com.github.chrisbanes:PhotoView:2.2.0'
 
     // permission
-    implementation 'com.yanzhenjie.permission:x:2.0.1'
+    implementation 'com.guolindev.permissionx:permissionx:1.7.1'
 
     // rebirth
     implementation 'com.jakewharton:process-phoenix:2.0.0'

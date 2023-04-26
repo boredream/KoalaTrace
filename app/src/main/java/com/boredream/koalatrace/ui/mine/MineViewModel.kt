@@ -69,7 +69,7 @@ class MineViewModel @Inject constructor(
         }
     }
 
-    fun restoreDB() {
+    private fun restoreDB() {
         val response = backupRepository.restore()
         if (!response.isSuccess()) {
             _baseEvent.value = ToastLiveEvent("恢复备份失败：" + response.msg)
