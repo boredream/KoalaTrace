@@ -24,8 +24,8 @@ class TraceRecordDetailViewModel @Inject constructor(
     private val _uiState = MutableLiveData<TraceRecord>()
     val uiState: LiveData<TraceRecord> = _uiState
 
-    private val _traceListUiState = MutableLiveData(ArrayList<ArrayList<TraceLocation>>())
-    val traceListUiState: LiveData<ArrayList<ArrayList<TraceLocation>>> = _traceListUiState
+    private val _traceListUiState = MutableLiveData(ArrayList<TraceRecord>())
+    val traceListUiState: LiveData<ArrayList<TraceRecord>> = _traceListUiState
 
     private val _startLocationUiState = MutableLiveData<TraceLocation>()
     val startLocationUiState: LiveData<TraceLocation> = _startLocationUiState
@@ -60,7 +60,7 @@ class TraceRecordDetailViewModel @Inject constructor(
     }
 
     private fun updateTraceList(traceList: ArrayList<TraceLocation>) {
-        _traceListUiState.value = arrayListOf(traceList)
+        _traceListUiState.value = arrayListOf(data)
         _startLocationUiState.value = traceList[traceList.lastIndex]
     }
 

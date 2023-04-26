@@ -5,6 +5,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.os.SystemClock
 import com.boredream.koalatrace.data.constant.LocationConstant
+import com.boredream.koalatrace.data.constant.LocationParam
 import com.boredream.koalatrace.data.repo.source.LinearAccelerationDataSource
 import com.boredream.koalatrace.utils.Logger
 import javax.inject.Inject
@@ -14,6 +15,7 @@ import kotlin.math.sqrt
 @Singleton
 class SensorRepository @Inject constructor(
     private val logger: Logger,
+    private val locationParam: LocationParam,
     private val dataSource: LinearAccelerationDataSource
 ) {
 
@@ -79,7 +81,7 @@ class SensorRepository @Inject constructor(
 
         if (determineMovementStatus == 1) {
             val duration = SystemClock.elapsedRealtime() - startDetermineMovementTime
-            if (duration > LocationConstant.DETERMINE_MOVEMENT_CHECK_INTERVAL) {
+            if (duration > locationParam.determineMoveCheckInterval) {
                 // 每次达到时间间隔进行一次判定
                 determineMovementStatus = 0
                 if (notMovementCount == 0) notMovementCount = 1 // 方便除法

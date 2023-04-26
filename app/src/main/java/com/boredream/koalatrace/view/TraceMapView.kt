@@ -33,6 +33,7 @@ class TraceMapView : MapView {
     private var myLocationMarker: Marker? = null
     private var startDrawIndex = 0
     private var curTraceRecord: TraceRecord? = null
+    private var historyLineList: ArrayList<Polyline> = arrayListOf()
 
     var isFollowingMode = false
         set(value) {
@@ -131,15 +132,15 @@ class TraceMapView : MapView {
     /**
      * 绘制多条不会变化的线路
      */
-    fun drawMultiFixTraceList(multiTracePointList: ArrayList<ArrayList<TraceLocation>>) {
-        // TODO: 如何擦除已绘制路线？
-        multiTracePointList.forEach { it ->
+    fun drawMultiFixTraceList(traceList: ArrayList<TraceRecord>) {
+        historyLineList.forEach { it.remove() }
+        historyLineList.clear()
+        val color = ContextCompat.getColor(context, R.color.colorPrimaryLight)
+        traceList.forEach { record ->
             val pointList = ArrayList<LatLng>()
-            it.forEach { pointList.add(it.toLatLng()) }
-            drawLine(
-                pointList,
-                traceLineColor = ContextCompat.getColor(context, R.color.colorPrimaryLight)
-            )
+            record.traceList?.forEach { pointList.add(it.toLatLng()) }
+            val line = drawLine(pointList, traceLineColor = color)
+            line?.let { historyLineList.add(it) }
 
 //            val simplePointList = simpleLine(pointList)
 //            drawLine(
@@ -205,9 +206,9 @@ class TraceMapView : MapView {
         pointList: ArrayList<LatLng>,
         traceLineWidth: Float = 15f,
         traceLineColor: Int = ContextCompat.getColor(context, R.color.colorPrimary)
-    ) {
+    ): Polyline? {
         // TODO: 中途有多个点定位失败，然后走出很远距离后，再次定位成功（如坐地铁），应该分多条线绘制
-        map.addPolyline(PolylineOptions().addAll(pointList).width(traceLineWidth).color(traceLineColor))
+        return map.addPolyline(PolylineOptions().addAll(pointList).width(traceLineWidth).color(traceLineColor))
     }
 
     private fun TraceLocation.toLatLng(): LatLng {

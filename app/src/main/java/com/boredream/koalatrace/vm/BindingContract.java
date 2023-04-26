@@ -44,9 +44,9 @@ public class BindingContract {
     }
 
     @BindingAdapter("historyTraceList")
-    public static void setTraceMapViewHistoryTraceList(TraceMapView traceMapView, ArrayList<ArrayList<TraceLocation>> historyTracePointList) {
-        if (historyTracePointList == null) return;
-        traceMapView.drawMultiFixTraceList(historyTracePointList);
+    public static void setTraceMapViewHistoryTraceList(TraceMapView traceMapView, ArrayList<TraceRecord> historyTraceList) {
+        if (historyTraceList == null) return;
+        traceMapView.drawMultiFixTraceList(historyTraceList);
     }
 
     @BindingAdapter("isFollowing")

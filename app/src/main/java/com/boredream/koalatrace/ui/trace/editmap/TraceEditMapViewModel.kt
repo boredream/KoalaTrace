@@ -18,8 +18,8 @@ class TraceEditMapViewModel @Inject constructor(
     private lateinit var data: TraceRecord
     private var traceList = ArrayList<TraceLocation>()
 
-    private val _traceListUiState = MutableLiveData(ArrayList<ArrayList<TraceLocation>>())
-    val traceListUiState: LiveData<ArrayList<ArrayList<TraceLocation>>> = _traceListUiState
+    private val _traceListUiState = MutableLiveData(ArrayList<TraceRecord>())
+    val traceListUiState: LiveData<ArrayList<TraceRecord>> = _traceListUiState
 
     private val _startLocationUiState = MutableLiveData<TraceLocation>()
     val startLocationUiState: LiveData<TraceLocation> = _startLocationUiState
@@ -36,7 +36,7 @@ class TraceEditMapViewModel @Inject constructor(
 
     fun preStepTrace() {
         traceList.removeLast()
-        _traceListUiState.value = arrayListOf(traceList)
+        _traceListUiState.value = arrayListOf(data)
         step -= 1
     }
 

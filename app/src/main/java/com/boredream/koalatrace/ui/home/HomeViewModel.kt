@@ -1,11 +1,8 @@
 package com.boredream.koalatrace.ui.home
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.blankj.utilcode.util.CollectionUtils
-import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.base.BaseViewModel
 import com.boredream.koalatrace.common.vmcompose.RequestVMCompose
 import com.boredream.koalatrace.data.TraceLocation
@@ -46,10 +43,8 @@ class HomeViewModel @Inject constructor(
     private val _isShowHistoryTrace = MutableLiveData(false)
     val isShowHistoryTrace: LiveData<Boolean> = _isShowHistoryTrace
 
-    private val _historyTracePointListUiState =
-        MutableLiveData(ArrayList<ArrayList<TraceLocation>>())
-    val historyTracePointListUiState: LiveData<ArrayList<ArrayList<TraceLocation>>> =
-        _historyTracePointListUiState
+    private val _historyTraceListUiState = MutableLiveData(ArrayList<TraceRecord>())
+    val historyTraceListUiState: LiveData<ArrayList<TraceRecord>> = _historyTraceListUiState
 
     // 是否正在记录轨迹中
     private val _isTracing = MutableLiveData(false)
@@ -65,16 +60,10 @@ class HomeViewModel @Inject constructor(
         if (!old) {
             viewModelScope.launch {
                 val recordList = traceUseCase.getAllHistoryTraceListRecord()
-                val historyList = ArrayList<ArrayList<TraceLocation>>()
-                recordList.data?.let { it ->
-                    it.forEach {
-                        it.traceList?.let { list -> historyList.add(list) }
-                    }
-                }
-                _historyTracePointListUiState.value = historyList
+                _historyTraceListUiState.value = recordList.data
             }
         } else {
-            _historyTracePointListUiState.value = ArrayList()
+            _historyTraceListUiState.value = ArrayList()
         }
     }
 

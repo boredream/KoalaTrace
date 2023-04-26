@@ -7,7 +7,7 @@ import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.GlobalConstant
-import com.boredream.koalatrace.data.constant.LocationConstant
+import com.boredream.koalatrace.data.constant.LocationParam
 import com.boredream.koalatrace.data.repo.LocationRepository
 import com.boredream.koalatrace.data.repo.SensorRepository
 import com.boredream.koalatrace.data.repo.TraceRecordRepository
@@ -21,6 +21,7 @@ import javax.inject.Singleton
 @Singleton
 class TraceUseCase @Inject constructor(
     private val logger: Logger,
+    private val locationParam: LocationParam,
     private val locationRepository: LocationRepository,
     private val traceRecordRepository: TraceRecordRepository,
     private val sensorRepository: SensorRepository,
@@ -113,7 +114,7 @@ class TraceUseCase @Inject constructor(
         if (list.size <= 1) {
             // 如果一直是一个坐标点，则代表重启过于敏感，目标还是没有移动，超过一个较低阈值后直接删除当前路线
             val stayFromStart = System.currentTimeMillis() - record.startTime
-            if (stayFromStart >= LocationConstant.STOP_THRESHOLD_DURATION) {
+            if (stayFromStart >= locationParam.stopThresholdDuration) {
                 logger.i("stay too long~ delete trace")
                 stopTrace()
                 return true
@@ -124,7 +125,7 @@ class TraceUseCase @Inject constructor(
         val lastLocation = list[list.lastIndex]
         val lastPreLocation = list[list.lastIndex - 1]
         val stay = lastLocation.time - lastPreLocation.time
-        if (stay >= LocationConstant.STOP_THRESHOLD_DURATION) {
+        if (stay >= locationParam.stopThresholdDuration) {
             logger.i("stay too long~ save trace")
             stopTrace()
             return true
