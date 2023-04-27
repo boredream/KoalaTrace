@@ -35,6 +35,7 @@ class LocationRepository @Inject constructor(
     fun addStatusChangeListener(listener: (status: Int) -> Unit) {
         onStatusChange.add(listener)
     }
+
     fun removeStatusChangeListener(listener: (status: Int) -> Unit) {
         onStatusChange.remove(listener)
     }
@@ -45,6 +46,7 @@ class LocationRepository @Inject constructor(
     fun addLocationSuccessListener(listener: (location: TraceLocation) -> Unit) {
         onLocationSuccess.add(listener)
     }
+
     fun removeLocationSuccessListener(listener: (location: TraceLocation) -> Unit) {
         onLocationSuccess.remove(listener)
     }
@@ -52,10 +54,13 @@ class LocationRepository @Inject constructor(
     // 追踪
     var traceList: ArrayList<TraceLocation> = ArrayList()
     private lateinit var traceFilter: TraceFilter
-    private var onTraceSuccess: LinkedList<(allTracePointList: ArrayList<TraceLocation>) -> Unit> = LinkedList()
+    private var onTraceSuccess: LinkedList<(allTracePointList: ArrayList<TraceLocation>) -> Unit> =
+        LinkedList()
+
     fun addTraceSuccessListener(listener: (allTracePointList: ArrayList<TraceLocation>) -> Unit) {
         onTraceSuccess.add(listener)
     }
+
     fun removeTraceSuccessListener(listener: (allTracePointList: ArrayList<TraceLocation>) -> Unit) {
         onTraceSuccess.remove(listener)
     }
@@ -64,7 +69,7 @@ class LocationRepository @Inject constructor(
      * 开始定位
      */
     fun startLocation() {
-        if(status == STATUS_IDLE) {
+        if (status == STATUS_IDLE) {
             dataSource.startLocation(::onLocationSuccess)
             status = STATUS_LOCATION
         }
@@ -74,7 +79,7 @@ class LocationRepository @Inject constructor(
      * 停止定位
      */
     fun stopLocation() {
-        if(status == STATUS_LOCATION) {
+        if (status == STATUS_LOCATION) {
             // 追踪依赖定位，只有非追踪状态才可关闭
             dataSource.stopLocation()
             status = STATUS_IDLE
@@ -85,7 +90,7 @@ class LocationRepository @Inject constructor(
      * 开始追踪
      */
     fun startTrace() {
-        if(status == STATUS_LOCATION) {
+        if (status == STATUS_LOCATION) {
             // 只有定位状态下才能开启追踪
             traceFilter = TraceFilter()
             status = STATUS_TRACE
@@ -96,7 +101,7 @@ class LocationRepository @Inject constructor(
      * 停止追踪
      */
     fun stopTrace() {
-        if(status == STATUS_TRACE) {
+        if (status == STATUS_TRACE) {
             // 追踪状态退化到定位
             status = STATUS_LOCATION
         }
@@ -113,10 +118,10 @@ class LocationRepository @Inject constructor(
      * 定位成功
      */
     fun onLocationSuccess(location: TraceLocation) {
-        logger.v("onLocationSuccess dataSource = ${dataSource.javaClass.simpleName}, location = $location")
+        // logger.v("onLocationSuccess dataSource = ${dataSource.javaClass.simpleName}, location = $location")
         myLocation = location
         onLocationSuccess.forEach { it.invoke(location) }
-        if(status == STATUS_TRACE) {
+        if (status == STATUS_TRACE) {
             appendTracePoint(location)
         }
     }
@@ -125,7 +130,7 @@ class LocationRepository @Inject constructor(
      * 添加定位轨迹追踪点
      */
     private fun appendTracePoint(location: TraceLocation) {
-        if(traceList.size == 0) {
+        if (traceList.size == 0) {
             traceList.add(location)
             onTraceSuccess.forEach { it.invoke(traceList) }
             return
@@ -139,16 +144,18 @@ class LocationRepository @Inject constructor(
         )
         // 最大距离是时间差值可以走出的最远距离，按每秒20米算
         val maxDistance = 0.02 * (location.time - lastPoint.time)
-        if (distance > TRACE_DISTANCE_THRESHOLD && distance < maxDistance) {
+        // maxDistance是为了解决坐标漂移问题，如果是可信来源GPS，则也视为有效数据。比如在坐地铁什么的
+        val isGps = "GPS" == location.extraData
+        val validate = distance > TRACE_DISTANCE_THRESHOLD && (distance < maxDistance || isGps)
+        if (validate) {
             // 移动距离设置阈值，且不能超过最大值（过滤坐标漂移的数据）
-            logger.v("distance is $distance , in range [$TRACE_DISTANCE_THRESHOLD , $maxDistance]")
             traceList.add(location)
         } else {
-            // 距离达不到阈值时，视为原地不动，只更新最新一次时间
+            // 无效数据，只更新最后一个位置时间
             traceList[traceList.lastIndex].time = location.time
-            logger.v("distance is $distance , not in range [$TRACE_DISTANCE_THRESHOLD , $maxDistance] , update last time = ${location.time}")
         }
         onTraceSuccess.forEach { it.invoke(traceList) }
+        logger.v("trace success, size = ${traceList.size}, validate = $validate, pos = $location")
     }
 
 }

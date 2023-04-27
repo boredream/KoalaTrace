@@ -2,6 +2,7 @@ package com.boredream.koalatrace.data.repo.source
 
 import android.content.Context
 import android.util.Log
+import com.amap.api.location.AMapLocation
 import com.amap.api.location.AMapLocationClient
 import com.amap.api.location.AMapLocationClientOption
 import com.boredream.koalatrace.data.TraceLocation
@@ -46,6 +47,9 @@ class GdLocationDataSource @Inject constructor(
                     latitude = it.latitude,
                     longitude = it.longitude,
                 )
+                if (it.locationType == AMapLocation.LOCATION_TYPE_GPS) {
+                    location.extraData = "GPS"
+                }
                 onSuccess.invoke(location)
             } else Log.e(
                 TAG, "initClient Error, ErrCode:" + it.errorCode + ", errInfo:" + it.errorInfo

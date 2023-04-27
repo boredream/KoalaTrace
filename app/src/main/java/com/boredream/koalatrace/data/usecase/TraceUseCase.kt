@@ -95,6 +95,7 @@ class TraceUseCase @Inject constructor(
         traceRecordRepository.insertOrUpdate(traceRecord)
         currentTraceRecord = traceRecord
         traceRecordUpdate.forEach { it.invoke(traceRecord) }
+        logger.i("create trace $title")
     }
 
     suspend fun addLocation2currentRecord(list: ArrayList<TraceLocation>) {
