@@ -171,7 +171,6 @@ class TraceRecordRepository @Inject constructor(
         val locationList = record.traceList ?: ArrayList()
         if (locationList.size <= LocationConstant.SAVE_TRACE_MIN_POSITION_SIZE) {
             delete(record)
-            logger.i("delete traceRecord: ${record.name} , distance = ${record.distance}")
         } else {
             record.endTime = locationList[locationList.lastIndex].time
             record.distance = TraceUtils.calculateDistance(locationList)

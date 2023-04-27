@@ -39,5 +39,8 @@ data class TraceRecord(
         return dbId.hashCode()
     }
 
+    override fun toString(): String {
+        return "TraceRecord(dbId='$dbId', name='$name')"
+    }
 
 }

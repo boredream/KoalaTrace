@@ -38,8 +38,8 @@ class TraceRecordLocalDataSource @Inject constructor(
     override suspend fun add(data: TraceRecord): ResponseEntity<TraceRecord> {
         var insert: Long = -1
         try {
-            // 如果traceList有值 Room会自动处理 TraceLocation
             insert = traceRecordDao.insertOrUpdate(data)
+            logger.i("insert or update record $data")
         } catch (e: Exception) {
             //
         }
@@ -144,7 +144,7 @@ class TraceRecordLocalDataSource @Inject constructor(
         try {
             data.isDelete = true // 软删除，方便同步用
             delete = traceRecordDao.update(data)
-            logger.i("delete record ${data.name}")
+            logger.i("delete record $data")
         } catch (e: Exception) {
             //
         }
