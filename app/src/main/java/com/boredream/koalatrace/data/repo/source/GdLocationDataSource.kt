@@ -8,7 +8,9 @@ import com.amap.api.location.AMapLocationClientOption
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.constant.LocationParam
+import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.Objects
 import javax.inject.Inject
 
 class GdLocationDataSource @Inject constructor(
@@ -47,9 +49,7 @@ class GdLocationDataSource @Inject constructor(
                     latitude = it.latitude,
                     longitude = it.longitude,
                 )
-                if (it.locationType == AMapLocation.LOCATION_TYPE_GPS) {
-                    location.extraData = "GPS"
-                }
+                location.extraData = "${it.locationType}_${it.accuracy}"
                 onSuccess.invoke(location)
             } else Log.e(
                 TAG, "initClient Error, ErrCode:" + it.errorCode + ", errInfo:" + it.errorInfo

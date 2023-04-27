@@ -3,6 +3,7 @@ package com.boredream.koalatrace.data.repo
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.model.LatLng
 import com.boredream.koalatrace.data.TraceLocation
+import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.constant.LocationConstant.TRACE_DISTANCE_THRESHOLD
 import com.boredream.koalatrace.data.repo.source.LocationDataSource
 import com.boredream.koalatrace.utils.Logger
@@ -142,11 +143,20 @@ class LocationRepository @Inject constructor(
             LatLng(lastPoint.latitude, lastPoint.longitude),
             LatLng(location.latitude, location.longitude)
         )
-        // 最大距离是时间差值可以走出的最远距离，按每秒20米算
-        val maxDistance = 0.02 * (location.time - lastPoint.time)
+
+        // 是否是可信精度
+        var isCredibleAccuracy = false
+        try {
+            val locationType = location.extraData!!.split("_")[0]
+            val accuracy = location.extraData!!.split("_")[1].toFloat()
+            if(accuracy < LocationConstant.CREDIBLE_GPS_ACCURACY) {
+                isCredibleAccuracy = true
+            }
+        } catch (e: Exception) {}
+        // 最大距离是时间差值可以走出的最远距离
+        val maxDistance = LocationConstant.MAX_WALK_SPEED * (location.time - lastPoint.time) / 1000
         // maxDistance是为了解决坐标漂移问题，如果是可信来源GPS，则也视为有效数据。比如在坐地铁什么的
-        val isGps = "GPS" == location.extraData
-        val validate = distance > TRACE_DISTANCE_THRESHOLD && (distance < maxDistance || isGps)
+        val validate = distance > TRACE_DISTANCE_THRESHOLD && ( isCredibleAccuracy || distance < maxDistance)
         if (validate) {
             // 移动距离设置阈值，且不能超过最大值（过滤坐标漂移的数据）
             traceList.add(location)
@@ -155,7 +165,11 @@ class LocationRepository @Inject constructor(
             traceList[traceList.lastIndex].time = location.time
         }
         onTraceSuccess.forEach { it.invoke(traceList) }
-        logger.v("trace success, size = ${traceList.size}, validate = $validate, pos = $location")
+        logger.v("trace success, size = ${traceList.size}, " +
+                "isCredibleAccuracy = $isCredibleAccuracy, " +
+                "distance = $distance, " +
+                "maxDistance = $maxDistance, " +
+                "location = $location")
     }
 
 }

@@ -10,6 +10,11 @@ object LocationConstant {
     const val ONE_METER_LAT_LNG = 0.00001
 
     /**
+     * 最大行走速度（单位：m/s）
+     */
+    const val MAX_WALK_SPEED = ONE_METER_LAT_LNG * 5
+
+    /**
      * 最小计算追踪点，单位米
      */
     const val TRACE_DISTANCE_THRESHOLD = 2
@@ -23,5 +28,10 @@ object LocationConstant {
      * 判断设备移动的加速度阈值（单位：m/s²）
      */
     const val DETERMINE_MOVEMENT_THRESHOLD = 0.5
+
+    /**
+     * 判断GPS定位的精度完全可信的阈值（单位：m）
+     */
+    const val CREDIBLE_GPS_ACCURACY = 10
 
 }
