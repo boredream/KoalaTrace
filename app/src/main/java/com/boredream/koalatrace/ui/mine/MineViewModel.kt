@@ -1,16 +1,13 @@
 package com.boredream.koalatrace.ui.mine
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.FileUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.base.BaseViewModel
 import com.boredream.koalatrace.base.ShowConfirmDialogLiveEvent
 import com.boredream.koalatrace.base.ToastLiveEvent
-import com.boredream.koalatrace.data.User
 import com.boredream.koalatrace.data.repo.BackupRepository
-import com.boredream.koalatrace.data.repo.UserRepository
 import com.boredream.koalatrace.vm.SingleLiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -20,25 +17,10 @@ import javax.inject.Inject
 @HiltViewModel
 class MineViewModel @Inject constructor(
     private val backupRepository: BackupRepository,
-    private val repository: UserRepository,
-    ) : BaseViewModel() {
-
-    private val _uiState = MutableLiveData<User>()
-    val uiState: LiveData<User> = _uiState
+) : BaseViewModel() {
 
     private val _eventUiState = SingleLiveEvent<MineEventState>()
     val eventUiState: LiveData<MineEventState> = _eventUiState
-
-    fun loadUserInfo() {
-        // 直接从本地取
-        val user = repository.getLocalUser() ?: return
-        _uiState.value = user
-    }
-
-    fun logout() {
-        repository.logout()
-        _eventUiState.value = LogoutEvent
-    }
 
     fun backupDB() {
         viewModelScope.launch {
@@ -55,7 +37,8 @@ class MineViewModel @Inject constructor(
         val title = "恢复备份提醒"
         val filePath = backupRepository.backupDbFile.absolutePath
         val fileSize = FileUtils.getSize(filePath)
-        val fileLastModifyTime = TimeUtils.millis2String(FileUtils.getFileLastModified(backupRepository.backupDbFile))
+        val fileLastModifyTime =
+            TimeUtils.millis2String(FileUtils.getFileLastModified(backupRepository.backupDbFile))
         val content = StringBuilder()
         content.append("备份文件位置：\n").append(filePath).append("\n\n")
             .append("备份文件大小：\n").append(fileSize).append("\n\n")
@@ -75,9 +58,7 @@ class MineViewModel @Inject constructor(
             _eventUiState.value = RestoreSuccessEvent
         }
     }
-
 }
 
 sealed class MineEventState
-object LogoutEvent : MineEventState()
 object RestoreSuccessEvent : MineEventState()

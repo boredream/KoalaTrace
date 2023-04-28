@@ -39,7 +39,6 @@ class TraceRecordListFragment :
     ): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
         initView()
-        initObserver()
         viewModel.updateAllUnFinishRecord()
         EventBus.getDefault().register(this)
         return view
@@ -66,17 +65,6 @@ class TraceRecordListFragment :
             adapter,
             enableRefresh = false,
         )
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    private fun initObserver() {
-        binding.syncStatusView.setOnClickListener {
-            SyncDataService.startSync(requireContext())
-        }
-        SimpleUiStateObserver.setRequestObserver(this, this, viewModel.deleteVMCompose) {
-            // 提交成功后，开始推送信息
-            SyncDataService.startPush(requireContext())
-        }
     }
 
     // 接收消息

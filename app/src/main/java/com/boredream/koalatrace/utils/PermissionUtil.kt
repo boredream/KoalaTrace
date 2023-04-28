@@ -18,7 +18,7 @@ object PermissionUtil {
             context,
             permission
         ) == PackageManager.PERMISSION_GRANTED
-        LogUtils.i("$permission is granted: $granted")
+        // LogUtils.i("$permission is granted: $granted")
         return granted
     }
 

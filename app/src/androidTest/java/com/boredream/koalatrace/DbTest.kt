@@ -7,11 +7,16 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.amap.api.mapcore.util.it
+import com.blankj.utilcode.util.FileIOUtils
+import com.blankj.utilcode.util.FileUtils
+import com.blankj.utilcode.util.PathUtils
+import com.blankj.utilcode.util.ZipUtils
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.CommonConstant
 import com.boredream.koalatrace.data.repo.BackupRepository
 import com.boredream.koalatrace.db.AppDatabase
 import com.boredream.koalatrace.utils.DataStoreUtils
+import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.runBlocking
@@ -20,6 +25,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.File
 
 
 @RunWith(AndroidJUnit4::class)
@@ -48,15 +54,32 @@ class DbTest {
     }
 
     @Test
-    fun testDb() = runBlocking {
+    fun testPrintAllDb() = runBlocking {
         val dao = db.traceRecordDao()
         val locationDao = db.traceLocationDao()
         dao.loadAll().forEach {
             println("-------------------")
-            println(it)
             val list = locationDao.loadByTraceRecordId(it.dbId)
-            println(list)
+            println("$it , list = " + list.size)
         }
+    }
+
+    @Test
+    fun testDbToCustomerFile() = runBlocking {
+        val dao = db.traceRecordDao()
+        val locationDao = db.traceLocationDao()
+        val list = dao.loadAll()
+        list.forEach {
+            println("-------------------")
+            val traceList = locationDao.loadByTraceRecordId(it.dbId)
+            it.traceList = ArrayList(traceList)
+            println("$it , list = " + traceList.size)
+        }
+        val json = Gson().toJson(list)
+        val file = File(PathUtils.getInternalAppCachePath(), "trace.json")
+        FileIOUtils.writeFileFromString(file, json)
+        ZipUtils.zipFile(file, File(PathUtils.getExternalStoragePath(), "trace.zip"))
+        println("done")
     }
 
     @Test
