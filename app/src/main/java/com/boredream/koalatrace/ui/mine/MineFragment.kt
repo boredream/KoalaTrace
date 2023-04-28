@@ -19,7 +19,6 @@ import com.boredream.koalatrace.data.SettingItem
 import com.boredream.koalatrace.databinding.FragmentMineBinding
 import com.boredream.koalatrace.databinding.ItemSettingBinding
 import com.boredream.koalatrace.ui.log.LogActivity
-import com.boredream.koalatrace.ui.login.LoginActivity
 import com.boredream.koalatrace.utils.PermissionUtil
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -42,7 +41,6 @@ class MineFragment : BaseFragment<MineViewModel, FragmentMineBinding>() {
 
         initList()
         initObserver()
-        viewModel.loadUserInfo()
         return view
     }
 
@@ -122,10 +120,6 @@ class MineFragment : BaseFragment<MineViewModel, FragmentMineBinding>() {
     private fun initObserver() {
         viewModel.eventUiState.observe(viewLifecycleOwner) {
             when (it) {
-                is LogoutEvent -> {
-                    LoginActivity.start(requireContext())
-                    baseActivity.finish()
-                }
                 is RestoreSuccessEvent -> AppUtils.relaunchApp(true)
             }
         }

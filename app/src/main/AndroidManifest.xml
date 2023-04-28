@@ -55,7 +55,6 @@
         <service
             android:name=".service.TraceLocationService"
             android:foregroundServiceType="location" />
-        <service android:name=".service.SyncDataService" />
 
         <receiver
             android:name=".widget.AppWidgetProvider"

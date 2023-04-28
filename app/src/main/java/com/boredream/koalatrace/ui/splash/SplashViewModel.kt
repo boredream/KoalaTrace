@@ -1,20 +1,18 @@
 package com.boredream.koalatrace.ui.splash
 
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.boredream.koalatrace.base.BaseViewModel
-import com.boredream.koalatrace.common.vmcompose.RequestVMCompose
-import com.boredream.koalatrace.data.User
-import com.boredream.koalatrace.data.repo.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class SplashViewModel @Inject constructor(private val repository: UserRepository) :
-    BaseViewModel() {
+class SplashViewModel @Inject constructor() : BaseViewModel() {
 
-    val loginVMCompose = RequestVMCompose<User>(viewModelScope)
+    private val _uiState = MutableLiveData<String>()
+    val uiState: LiveData<String> = _uiState
 
     fun autoLogin() {
-        loginVMCompose.request { repository.autoLogin() }
+        _uiState.value = uiState.value
     }
 }

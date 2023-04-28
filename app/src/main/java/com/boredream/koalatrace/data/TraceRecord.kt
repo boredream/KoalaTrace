@@ -3,8 +3,8 @@ package com.boredream.koalatrace.data
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
+import com.boredream.koalatrace.base.BaseEntity
 import java.util.*
-import kotlin.collections.ArrayList
 
 /**
  * 轨迹记录
@@ -21,8 +21,10 @@ data class TraceRecord(
     var isDelete: Boolean = false, // 软删除
     var syncTimestamp: Long? = null, // 同步数据的时间
     var isRecording: Boolean = false, // 正在记录中
-    @PrimaryKey var dbId: String = UUID.randomUUID().toString()
-) : Belong2UserEntity(), java.io.Serializable {
+) : BaseEntity {
+
+    @PrimaryKey
+    var dbId: String = UUID.randomUUID().toString()
 
     @Ignore
     var traceList: ArrayList<TraceLocation> = arrayListOf()

@@ -5,7 +5,6 @@ import android.os.Bundle
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseActivity
 import com.boredream.koalatrace.databinding.ActivitySplashBinding
-import com.boredream.koalatrace.ui.login.LoginActivity
 import com.boredream.koalatrace.ui.main.MainTabActivity
 import com.boredream.koalatrace.utils.PermissionUtil
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,12 +19,8 @@ class SplashActivity : BaseActivity<SplashViewModel, ActivitySplashBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel.loginVMCompose.successUiState.observe(this) {
+        viewModel.uiState.observe(this) {
             MainTabActivity.start(this)
-            finish()
-        }
-        viewModel.loginVMCompose.failUiState.observe(this) {
-            LoginActivity.start(this)
             finish()
         }
 

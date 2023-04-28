@@ -5,10 +5,7 @@ import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.LocationConstant
-import com.boredream.koalatrace.data.repo.source.ConfigLocalDataSource
-import com.boredream.koalatrace.data.repo.source.ConfigLocalDataSource.Companion.DATA_SYNC_TIMESTAMP_KEY
 import com.boredream.koalatrace.data.repo.source.TraceRecordLocalDataSource
-import com.boredream.koalatrace.data.repo.source.TraceRecordRemoteDataSource
 import com.boredream.koalatrace.utils.Logger
 import com.boredream.koalatrace.utils.TraceUtils
 import javax.inject.Inject
@@ -20,8 +17,6 @@ import javax.inject.Singleton
 @Singleton
 class TraceRecordRepository @Inject constructor(
     private val logger: Logger,
-    private val configDataSource: ConfigLocalDataSource,
-    private val remoteDataSource: TraceRecordRemoteDataSource,
     private val localDataSource: TraceRecordLocalDataSource,
 ) : BaseRepository() {
 
@@ -63,20 +58,6 @@ class TraceRecordRepository @Inject constructor(
             : ResponseEntity<ArrayList<TraceLocation>> {
         dataList.forEach { it.traceRecordId = traceRecordDbId }
         return localDataSource.insertOrUpdateLocationList(dataList)
-    }
-
-    /**
-     * 更新同步全局时间戳，一般在本地数据更新成功后调用
-     */
-    private fun updateSyncTime(syncTimestamp: Long?) {
-        val timestamp = syncTimestamp ?: return
-
-        val localTimestamp = configDataSource.getLong(DATA_SYNC_TIMESTAMP_KEY)
-        if (timestamp > localTimestamp) {
-            // 如果数据同步时间比本地保存的新，替换之
-            configDataSource.set(DATA_SYNC_TIMESTAMP_KEY, timestamp)
-            logger.i("update syncTimestamp $timestamp")
-        }
     }
 
     suspend fun update(data: TraceRecord): ResponseEntity<TraceRecord> {

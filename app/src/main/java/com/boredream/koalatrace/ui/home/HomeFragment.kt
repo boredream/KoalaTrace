@@ -1,6 +1,5 @@
 package com.boredream.koalatrace.ui.home
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +9,6 @@ import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseFragment
 import com.boredream.koalatrace.common.SimpleUiStateObserver
 import com.boredream.koalatrace.databinding.FragmentHomeBinding
-import com.boredream.koalatrace.service.SyncDataService
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -43,10 +41,6 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding>() {
         }
 
         SimpleUiStateObserver.setRequestObserver(this, this, viewModel.commitVMCompose)
-        viewModel.commitVMCompose.successUiState.observe(viewLifecycleOwner) {
-            // 提交成功后，开始推送信息
-            SyncDataService.startPush(requireContext())
-        }
     }
 
     override fun onDestroyView() {
