@@ -5,6 +5,7 @@ import com.boredream.koalatrace.TestDataConstants.getStepTraceLocation
 import com.boredream.koalatrace.TestDataConstants.getTraceLocation
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.constant.LocationConstant
+import com.boredream.koalatrace.data.constant.LocationParam
 import com.boredream.koalatrace.data.repo.source.LocationDataSource
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -111,7 +112,7 @@ class LocationRepositoryTest {
         val lastIndex = repo.traceList.lastIndex
         val timeDiff = repo.traceList[lastIndex].time - repo.traceList[lastIndex - 1].time
         println("timeDiff = $timeDiff")
-        assertTrue(timeDiff > LocationConstant.LOCATION_INTERVAL * 2 - 500)
+        assertTrue(timeDiff > LocationParam().locationInterval * 2 - 500)
     }
 
     @Test

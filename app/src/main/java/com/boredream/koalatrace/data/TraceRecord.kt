@@ -25,7 +25,7 @@ data class TraceRecord(
 ) : Belong2UserEntity(), java.io.Serializable {
 
     @Ignore
-    var traceList: ArrayList<TraceLocation>? = arrayListOf()
+    var traceList: ArrayList<TraceLocation> = arrayListOf()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

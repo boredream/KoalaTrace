@@ -6,6 +6,7 @@ import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.LocationConstant
+import com.boredream.koalatrace.data.constant.LocationParam
 import com.boredream.koalatrace.data.repo.LocationRepository
 import com.boredream.koalatrace.data.repo.SensorRepository
 import com.boredream.koalatrace.data.repo.TraceRecordRepository
@@ -32,13 +33,15 @@ class TraceUseCaseTest {
     @MockK(relaxed = true)
     private lateinit var sensorRepository: SensorRepository
 
+    private lateinit var locationParam: LocationParam
     private lateinit var useCase: TraceUseCase
 
     @Before
     fun setUp() {
         MockKAnnotations.init(this)
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-        useCase = TraceUseCase(PrintLogger(), locationRepository, traceRecordRepository, sensorRepository, scope)
+        locationParam = LocationParam()
+        useCase = TraceUseCase(PrintLogger(), locationParam, locationRepository, traceRecordRepository, sensorRepository, scope)
 
         // use case 是连接多个 repo 的逻辑处理类，不需要在意repo细节
         coEvery { runBlocking { traceRecordRepository.insertOrUpdate(any()) } } returns
@@ -97,7 +100,7 @@ class TraceUseCaseTest {
 
         // 然后停留在一个地方
         val location = TraceLocation(locationList.last().latitude, locationList.last().longitude,
-            locationList.last().time + LocationConstant.STOP_THRESHOLD_DURATION + 500)
+            locationList.last().time + locationParam.stopThresholdDuration + 500)
         locationList.add(location)
         useCase.onTraceSuccess(locationList)
 

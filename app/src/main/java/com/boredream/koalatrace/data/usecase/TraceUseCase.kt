@@ -1,5 +1,6 @@
 package com.boredream.koalatrace.data.usecase
 
+import com.amap.api.mapcore.util.it
 import com.blankj.utilcode.util.CollectionUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.base.BaseUseCase
@@ -101,11 +102,18 @@ class TraceUseCase @Inject constructor(
     suspend fun addLocation2currentRecord(list: ArrayList<TraceLocation>) {
         val record = currentTraceRecord ?: return
         if (CollectionUtils.isEmpty(list)) return
-        val location = list.last()
-        record.traceList = list
+        // list 是源数据，没有dbId，所以要和当前已记录数据 record.traceList 对比
+        val lastLocation = list.last()
+        if(list.size > record.traceList.size) {
+            // 新增点
+            record.traceList.add(lastLocation)
+        } else {
+            // 如果相等，代表是已有最后一个location需要更新时间
+            record.traceList.last().time = lastLocation.time
+        }
         // TODO: 回调主要用于刷新ui，放在sql后影响性能？
         // TODO: 有没有可能之前某个location没有添加成功，那这里需要添加多个
-        traceRecordRepository.insertOrUpdateLocation(record.dbId, location)
+        traceRecordRepository.insertOrUpdateLocation(record.dbId, lastLocation)
         traceRecordUpdate.forEach { it.invoke(record) }
     }
 
@@ -161,7 +169,7 @@ class TraceUseCase @Inject constructor(
         if (recordList.isSuccess() && recordList.data != null) {
             recordList.data.forEach {
                 val locationList = traceRecordRepository.getLocationList(it.dbId).data
-                it.traceList = locationList
+                it.traceList = locationList ?: arrayListOf()
             }
         }
         return recordList
