@@ -39,7 +39,15 @@ class TraceUseCase @Inject constructor(
     }
 
     suspend fun onTraceSuccess(locationList: ArrayList<TraceLocation>) {
+        // 判断是否有跳点，则新建轨迹
+        if(locationList.size > 0 && locationList.last().action == TraceLocation.ACTION_NEW_RECORD) {
+            stopTrace()
+            startTrace()
+            return
+        }
+
         addLocation2currentRecord(locationList)
+
         val stop = checkStopTrace()
         if (stop) {
             // 如果停留时间过长，停止追踪了，则开启监听移动

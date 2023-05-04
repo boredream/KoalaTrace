@@ -128,14 +128,12 @@ class TraceUseCaseTest {
         }
 
         val jumpLocation = TestDataConstants.getStepTraceLocation()
-        jumpLocation.latitude += LocationConstant.DIVISION_DISTANCE * LocationConstant.ONE_METER_LAT_LNG * 1.1
-        jumpLocation.action = TraceLocation.ACTION_ADD
-
+        jumpLocation.action = TraceLocation.ACTION_NEW_RECORD
         locationList.add(jumpLocation)
         useCase.onTraceSuccess(locationList)
 
         verify(exactly = 1) { locationRepository.stopTrace() }
-        verify(exactly = 1) { sensorRepository.startListenerMovement() }
+        verify(exactly = 1) { locationRepository.startTrace() }
     }
 
 }

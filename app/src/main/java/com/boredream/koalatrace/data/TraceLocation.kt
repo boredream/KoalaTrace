@@ -15,6 +15,7 @@ open class TraceLocation(
         const val ACTION_NONE = 0
         const val ACTION_ADD = 1
         const val ACTION_UPDATE = 2
+        const val ACTION_NEW_RECORD = 3
     }
 
     @PrimaryKey(autoGenerate = true)

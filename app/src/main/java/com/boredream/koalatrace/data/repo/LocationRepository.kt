@@ -173,6 +173,12 @@ class LocationRepository @Inject constructor(
         if (validate) {
             // 移动距离设置阈值，且不能超过最大值（过滤坐标漂移的数据）
             location.action = TraceLocation.ACTION_ADD
+
+            // 如果是高精度+超过最大距离，则代表是坐地铁等情况的跳点
+            if(distance > LocationConstant.DIVISION_DISTANCE) {
+                location.action = TraceLocation.ACTION_NEW_RECORD
+            }
+
             traceList.add(location)
         } else {
             // 无效数据，只更新最后一个位置时间
