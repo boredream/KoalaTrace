@@ -4,7 +4,7 @@ import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.model.LatLng
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.constant.LocationConstant
-import com.boredream.koalatrace.data.constant.LocationConstant.TRACE_DISTANCE_THRESHOLD
+import com.boredream.koalatrace.data.constant.LocationConstant.MIN_VALID_DISTANCE
 import com.boredream.koalatrace.data.repo.source.LocationDataSource
 import com.boredream.koalatrace.utils.Logger
 import com.boredream.koalatrace.utils.TraceFilter
@@ -138,33 +138,32 @@ class LocationRepository @Inject constructor(
      * 添加定位轨迹追踪点
      */
     private fun appendTracePoint(location: TraceLocation) {
-        if (traceList.size == 0) {
-            traceList.add(location)
-            onTraceSuccess.forEach { it.invoke(traceList) }
-            return
+        var distanceValid = true
+        var distance = 0f
+        var maxDistance = 0L
+        if(traceList.size > 0) {
+            // 计算新的point和上一个定位point距离
+            val lastPoint = traceList[traceList.lastIndex]
+            distance = AMapUtils.calculateLineDistance(
+                LatLng(lastPoint.latitude, lastPoint.longitude),
+                LatLng(location.latitude, location.longitude)
+            )
+            // 最大距离是时间差值可以走出的最远距离
+            maxDistance = LocationConstant.MAX_WALK_SPEED * (location.time - lastPoint.time) / 1000
+            // 距离在范围内则有效
+            distanceValid = distance <= maxDistance && distance > MIN_VALID_DISTANCE
         }
 
-        // 计算新的point和上一个定位point距离
-        val lastPoint = traceList[traceList.lastIndex]
-        val distance = AMapUtils.calculateLineDistance(
-            LatLng(lastPoint.latitude, lastPoint.longitude),
-            LatLng(location.latitude, location.longitude)
-        )
-        // 最大距离是时间差值可以走出的最远距离
-        val maxDistance = LocationConstant.MAX_WALK_SPEED * (location.time - lastPoint.time) / 1000
-        // 距离在范围内则有效
-        val distanceValid = distance <= maxDistance && distance > TRACE_DISTANCE_THRESHOLD
-
         // 精度可信程度
-        var accuracyCredible = ACCURACY_TYPE_UN_CREDIBLE
+        var accuracyCredible = ACCURACY_TYPE_CREDIBLE
         try {
             val accuracy = location.extraData!!.split("_")[1].toFloat()
-            if(accuracy < LocationConstant.TOTALLY_CREDIBLE_ACCURACY) {
-                accuracyCredible = ACCURACY_TYPE_TOTALLY_CREDIBLE
+            accuracyCredible = if(accuracy < LocationConstant.TOTALLY_CREDIBLE_ACCURACY) {
+                ACCURACY_TYPE_TOTALLY_CREDIBLE
             } else if(accuracy > LocationConstant.CREDIBLE_ACCURACY) {
-                accuracyCredible = ACCURACY_TYPE_CREDIBLE
+                ACCURACY_TYPE_CREDIBLE
             } else {
-                accuracyCredible = ACCURACY_TYPE_UN_CREDIBLE
+                ACCURACY_TYPE_UN_CREDIBLE
             }
         } catch (_: Exception) {}
 

@@ -10,8 +10,6 @@ import com.boredream.koalatrace.data.repo.source.LocationDataSource
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.just
-import io.mockk.runs
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
@@ -121,7 +119,7 @@ class LocationRepositoryTest {
         repo.onLocationSuccess(
             TraceLocation(
                 latitude = 31.000000 + LocationConstant.ONE_METER_LAT_LNG
-                        * LocationConstant.TRACE_DISTANCE_THRESHOLD * 1.5f,
+                        * LocationConstant.MIN_VALID_DISTANCE * 1.5f,
                 longitude = 121.000000,
                 time = 5000,
             )
@@ -173,10 +171,6 @@ class LocationRepositoryTest {
 
     @Test
     fun testTrace_jump_trace() = runTest {
-//        31.21768, 121.355246, time=1683162788452, extraData='5_30.0
-//        31.21768, 121.355246, time=1683162793453, extraData='5_30.0
-//        31.21768, 121.355246, time=1683162798467, extraData='5_30.0
-//        31.21768, 121.355246, time=1683162803455, extraData='5_30.0
         repo.startLocation()
         repo.startTrace()
 

@@ -101,6 +101,7 @@ class TraceUseCaseTest {
         // 然后停留在一个地方
         val location = TraceLocation(locationList.last().latitude, locationList.last().longitude,
             locationList.last().time + locationParam.stopThresholdDuration + 500)
+        location.action = TraceLocation.ACTION_UPDATE
         locationList.add(location)
         useCase.onTraceSuccess(locationList)
 
@@ -111,6 +112,30 @@ class TraceUseCaseTest {
     @Test
     fun testMovementAgain() = runTest {
         // 这个方法本来是想测试传感器超过阈值后，再次恢复的情况。但这个应该是放在下一级 SensorRepository 中测试，而非 useCase。
+    }
+
+
+    @Test
+    fun testJumpStop() = runTest {
+        // 场景：坐地铁，近地铁前是个合理坐标，记录；10分钟内出地铁后，是个合理坐标，但距离跟上次太远了。不应该连线，应该分为两段
+        startTrace()
+
+        // 先正常定位
+        val locationList = arrayListOf<TraceLocation>()
+        repeat(5) {
+            locationList.add(TestDataConstants.getStepTraceLocation())
+            useCase.onTraceSuccess(locationList)
+        }
+
+        val jumpLocation = TestDataConstants.getStepTraceLocation()
+        jumpLocation.latitude += LocationConstant.DIVISION_DISTANCE * LocationConstant.ONE_METER_LAT_LNG * 1.1
+        jumpLocation.action = TraceLocation.ACTION_ADD
+
+        locationList.add(jumpLocation)
+        useCase.onTraceSuccess(locationList)
+
+        verify(exactly = 1) { locationRepository.stopTrace() }
+        verify(exactly = 1) { sensorRepository.startListenerMovement() }
     }
 
 }

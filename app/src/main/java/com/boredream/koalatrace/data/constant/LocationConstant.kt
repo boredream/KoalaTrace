@@ -10,14 +10,19 @@ object LocationConstant {
     const val ONE_METER_LAT_LNG = 0.00001
 
     /**
-     * 最大行走速度（单位：m/s）
+     * 分割距离，超过后自动分为俩线路（单位：m）
      */
-    const val MAX_WALK_SPEED = ONE_METER_LAT_LNG * 5
+    const val DIVISION_DISTANCE = 500
 
     /**
-     * 最小计算追踪点，单位米
+     * 最大行走速度（单位：m/s）
      */
-    const val TRACE_DISTANCE_THRESHOLD = 2
+    const val MAX_WALK_SPEED = 5
+
+    /**
+     * 最小计算追踪点（单位：m）
+     */
+    const val MIN_VALID_DISTANCE = 2
 
     /**
      * 最小保存轨迹点数量，小于等于时删除

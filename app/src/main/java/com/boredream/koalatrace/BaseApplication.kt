@@ -29,7 +29,7 @@ class BaseApplication : Application() {
             .setStackOffset(1)
             .setConsoleSwitch(BuildConfig.DEBUG)
             .setLog2FileSwitch(BuildConfig.DEBUG)
-            .setFileFilter(LogUtils.I)
+            .setFileFilter(LogUtils.V)
             .setDir(File(PathUtils.getInternalAppCachePath(), "log"))
             .setSaveDays(7)
             .setBorderSwitch(false)

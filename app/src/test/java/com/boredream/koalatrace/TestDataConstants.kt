@@ -65,11 +65,13 @@ object TestDataConstants {
         lngExtra: Double = 0.0,
         time: Long = System.currentTimeMillis()
     ): TraceLocation {
-        return TraceLocation(
+        val location = TraceLocation(
             latitude = 31.227792 + latExtra,
             longitude = 121.355379 + lngExtra,
             time = time
         )
+        location.action = TraceLocation.ACTION_ADD
+        return location
     }
 
 }
