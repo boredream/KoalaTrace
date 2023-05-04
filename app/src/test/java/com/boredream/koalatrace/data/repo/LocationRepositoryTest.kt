@@ -21,7 +21,7 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class LocationRepositoryTest {
 
-    @MockK
+    @MockK(relaxed = true)
     private lateinit var dataSource: LocationDataSource
 
     private lateinit var repo: LocationRepository
@@ -60,10 +60,6 @@ class LocationRepositoryTest {
 
     @Test
     fun testTrace_success() = runTest {
-        every {
-            dataSource.startLocation(any())
-        } just runs
-
         repo.startLocation()
         repo.startTrace()
         repo.onLocationSuccess(getStepTraceLocation())
@@ -73,10 +69,6 @@ class LocationRepositoryTest {
 
     @Test
     fun testTrace_stepTooNear() = runTest {
-        every {
-            dataSource.startLocation(any())
-        } just runs
-
         repo.startLocation()
         repo.startTrace()
         repo.onLocationSuccess(
@@ -117,10 +109,6 @@ class LocationRepositoryTest {
 
     @Test
     fun testTrace_stepTooFar() = runTest {
-        every {
-            dataSource.startLocation(any())
-        } just runs
-
         repo.startLocation()
         repo.startTrace()
         repo.onLocationSuccess(
@@ -132,7 +120,8 @@ class LocationRepositoryTest {
         )
         repo.onLocationSuccess(
             TraceLocation(
-                latitude = 31.000000 + LocationConstant.ONE_METER_LAT_LNG * 20,
+                latitude = 31.000000 + LocationConstant.ONE_METER_LAT_LNG
+                        * LocationConstant.TRACE_DISTANCE_THRESHOLD * 1.5f,
                 longitude = 121.000000,
                 time = 5000,
             )
@@ -158,10 +147,6 @@ class LocationRepositoryTest {
     fun testTrace_clear() = runTest {
         // 因为 dataSource 定位是定时持续返回的，而非每次调用 startLocation 返回
         // 所以多段多次回调，不用 answers arg 方式，直接手动 onSuccess 触发回调
-        every {
-            dataSource.startLocation(any())
-        } just runs
-
         repo.startLocation()
         repo.startTrace()
         repo.onLocationSuccess(getStepTraceLocation())
@@ -184,7 +169,25 @@ class LocationRepositoryTest {
         repo.onLocationSuccess(getStepTraceLocation())
         repo.onLocationSuccess(getStepTraceLocation())
         assertEquals(3, repo.traceList.size)
+    }
 
+    @Test
+    fun testTrace_jump_trace() = runTest {
+//        31.21768, 121.355246, time=1683162788452, extraData='5_30.0
+//        31.21768, 121.355246, time=1683162793453, extraData='5_30.0
+//        31.21768, 121.355246, time=1683162798467, extraData='5_30.0
+//        31.21768, 121.355246, time=1683162803455, extraData='5_30.0
+        repo.startLocation()
+        repo.startTrace()
+
+        val traceLocationList = mutableListOf<TraceLocation>()
+        for (i in 0..3) {
+            val location = TraceLocation(31.21768, 121.355246, 1683162788452 + i * 5000)
+            location.extraData = "5_30.0"
+            traceLocationList.add(location)
+            repo.onLocationSuccess(location)
+        }
+        assertEquals(1, repo.traceList.size)
     }
 
 }

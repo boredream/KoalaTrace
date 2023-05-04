@@ -25,6 +25,13 @@ class LocationRepository @Inject constructor(
         const val STATUS_IDLE = 0
         const val STATUS_LOCATION = 1
         const val STATUS_TRACE = 2
+
+        // 精度可信情况-完全可信
+        const val ACCURACY_TYPE_TOTALLY_CREDIBLE = 1
+        // 精度可信情况-可信
+        const val ACCURACY_TYPE_CREDIBLE = 2
+        // 精度可信情况-不可信
+        const val ACCURACY_TYPE_UN_CREDIBLE = 3
     }
 
     var status = STATUS_IDLE
@@ -143,32 +150,42 @@ class LocationRepository @Inject constructor(
             LatLng(lastPoint.latitude, lastPoint.longitude),
             LatLng(location.latitude, location.longitude)
         )
-
-        // 是否是可信精度
-        var isCredibleAccuracy = false
-        try {
-            val locationType = location.extraData!!.split("_")[0]
-            val accuracy = location.extraData!!.split("_")[1].toFloat()
-            if(accuracy < LocationConstant.CREDIBLE_GPS_ACCURACY) {
-                isCredibleAccuracy = true
-            }
-        } catch (e: Exception) {}
         // 最大距离是时间差值可以走出的最远距离
         val maxDistance = LocationConstant.MAX_WALK_SPEED * (location.time - lastPoint.time) / 1000
-        // maxDistance是为了解决坐标漂移问题，如果是可信来源GPS，则也视为有效数据。比如在坐地铁什么的
-        val validate = distance > TRACE_DISTANCE_THRESHOLD && ( isCredibleAccuracy || distance < maxDistance)
+        // 距离在范围内则有效
+        val distanceValid = distance <= maxDistance && distance > TRACE_DISTANCE_THRESHOLD
+
+        // 精度可信程度
+        var accuracyCredible = ACCURACY_TYPE_UN_CREDIBLE
+        try {
+            val accuracy = location.extraData!!.split("_")[1].toFloat()
+            if(accuracy < LocationConstant.TOTALLY_CREDIBLE_ACCURACY) {
+                accuracyCredible = ACCURACY_TYPE_TOTALLY_CREDIBLE
+            } else if(accuracy > LocationConstant.CREDIBLE_ACCURACY) {
+                accuracyCredible = ACCURACY_TYPE_CREDIBLE
+            } else {
+                accuracyCredible = ACCURACY_TYPE_UN_CREDIBLE
+            }
+        } catch (_: Exception) {}
+
+        // 完全可信精度 or 可信精度+合理距离，都视为有效数据
+        val validate = accuracyCredible == ACCURACY_TYPE_TOTALLY_CREDIBLE ||
+                (accuracyCredible == ACCURACY_TYPE_CREDIBLE && distanceValid)
         if (validate) {
             // 移动距离设置阈值，且不能超过最大值（过滤坐标漂移的数据）
+            location.action = TraceLocation.ACTION_ADD
             traceList.add(location)
         } else {
             // 无效数据，只更新最后一个位置时间
-            traceList[traceList.lastIndex].time = location.time
+            traceList.last().action = TraceLocation.ACTION_UPDATE
+            traceList.last().time = location.time
         }
         onTraceSuccess.forEach { it.invoke(traceList) }
         logger.v("trace success, size = ${traceList.size}, " +
-                "isCredibleAccuracy = $isCredibleAccuracy, " +
                 "distance = $distance, " +
                 "maxDistance = $maxDistance, " +
+                "accuracyCredible = $accuracyCredible, " +
+                "validate = $validate, " +
                 "location = $location")
     }
 

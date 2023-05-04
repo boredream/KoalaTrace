@@ -1,9 +1,6 @@
 package com.boredream.koalatrace.data
 
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Index
-import androidx.room.PrimaryKey
+import androidx.room.*
 import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.base.BaseEntity
 
@@ -14,10 +11,18 @@ open class TraceLocation(
     var time: Long = System.currentTimeMillis()
 ) : BaseEntity(), java.io.Serializable {
 
+    companion object {
+        const val ACTION_NONE = 0
+        const val ACTION_ADD = 1
+        const val ACTION_UPDATE = 2
+    }
+
     @PrimaryKey(autoGenerate = true)
     var dbId: Long = 0
     var traceRecordId: String? = null
     var extraData: String? = null
+    @Ignore
+    var action: Int = ACTION_NONE
 
     override fun toString(): String {
         return "${TimeUtils.millis2String(time)}  $latitude,$longitude"

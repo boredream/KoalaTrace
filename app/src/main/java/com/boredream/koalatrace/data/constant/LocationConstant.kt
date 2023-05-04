@@ -30,8 +30,13 @@ object LocationConstant {
     const val DETERMINE_MOVEMENT_THRESHOLD = 0.5
 
     /**
-     * 判断GPS定位的精度完全可信的阈值（单位：m）
+     * 可信精度的阈值（单位：m）
      */
-    const val CREDIBLE_GPS_ACCURACY = 10
+    const val CREDIBLE_ACCURACY = 25
+
+    /**
+     * 完全可信精度的阈值（单位：m）
+     */
+    const val TOTALLY_CREDIBLE_ACCURACY = 10
 
 }

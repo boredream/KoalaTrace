@@ -104,13 +104,16 @@ class TraceUseCase @Inject constructor(
         if (CollectionUtils.isEmpty(list)) return
         // list 是源数据，没有dbId，所以要和当前已记录数据 record.traceList 对比
         val lastLocation = list.last()
-        if(list.size > record.traceList.size) {
-            // 新增点
+        if(lastLocation.action == TraceLocation.ACTION_ADD) {
+            // 新增
             record.traceList.add(lastLocation)
-        } else {
-            // 如果相等，代表是已有最后一个location需要更新时间
+        } else if(lastLocation.action == TraceLocation.ACTION_UPDATE) {
+            // 最后一个location修改
             record.traceList.last().time = lastLocation.time
+            record.traceList.last().extraData = lastLocation.extraData
         }
+        lastLocation.action = TraceLocation.ACTION_NONE
+
         // TODO: 回调主要用于刷新ui，放在sql后影响性能？
         // TODO: 有没有可能之前某个location没有添加成功，那这里需要添加多个
         traceRecordRepository.insertOrUpdateLocation(record.dbId, lastLocation)
@@ -119,7 +122,7 @@ class TraceUseCase @Inject constructor(
 
     suspend fun checkStopTrace(): Boolean {
         val record = currentTraceRecord ?: return false
-        val list = record.traceList ?: return false
+        val list = record.traceList
         if (list.size <= 1) {
             // 如果一直是一个坐标点，则代表重启过于敏感，目标还是没有移动，超过一个较低阈值后直接删除当前路线
             val stayFromStart = System.currentTimeMillis() - record.startTime
