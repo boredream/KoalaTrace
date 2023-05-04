@@ -123,7 +123,7 @@ class TraceUseCase @Inject constructor(
 
         // TODO: 回调主要用于刷新ui，放在sql后影响性能？
         // TODO: 有没有可能之前某个location没有添加成功，那这里需要添加多个
-        traceRecordRepository.insertOrUpdateLocation(record.dbId, lastLocation)
+        traceRecordRepository.insertOrUpdateLocation(record.id, lastLocation)
         traceRecordUpdate.forEach { it.invoke(record) }
     }
 
@@ -178,7 +178,7 @@ class TraceUseCase @Inject constructor(
         )
         if (recordList.isSuccess() && recordList.data != null) {
             recordList.data.forEach {
-                val locationList = traceRecordRepository.getLocationList(it.dbId).data
+                val locationList = traceRecordRepository.getLocationList(it.id).data
                 it.traceList = locationList ?: arrayListOf()
             }
         }

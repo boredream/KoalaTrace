@@ -19,8 +19,8 @@ open class TraceLocation(
     }
 
     @PrimaryKey(autoGenerate = true)
-    var dbId: Long = 0
-    var traceRecordId: String? = null
+    var id: Long = 0
+    var traceId: Long = 0
     var extraData: String? = null
     @Ignore
     var action: Int = ACTION_NONE

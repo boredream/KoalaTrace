@@ -11,9 +11,9 @@ class TraceDetailUseCase @Inject constructor(
     private val traceRecordRepository: TraceRecordRepository,
 ) : BaseUseCase() {
 
-    private var traceRecordId: String? = null
+    private var traceRecordId: Long? = null
 
-    fun init(traceRecordId: String) {
+    fun init(traceRecordId: Long) {
         this.traceRecordId = traceRecordId
     }
 

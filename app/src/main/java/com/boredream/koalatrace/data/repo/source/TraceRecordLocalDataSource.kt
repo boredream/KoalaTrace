@@ -25,15 +25,6 @@ class TraceRecordLocalDataSource @Inject constructor(
         }
     }
 
-    suspend fun getUnSyncedTraceRecord(): ResponseEntity<ArrayList<TraceRecord>> {
-        return try {
-            val list = traceRecordDao.loadUnSynced()
-            ResponseEntity.success(ArrayList(list))
-        } catch (e: Exception) {
-            ResponseEntity(null, 500, e.toString())
-        }
-    }
-
     @Transaction
     override suspend fun add(data: TraceRecord): ResponseEntity<TraceRecord> {
         var insert: Long = -1
@@ -78,9 +69,9 @@ class TraceRecordLocalDataSource @Inject constructor(
         return ResponseEntity.success(dataList)
     }
 
-    suspend fun getTraceRecordByDbId(dbId: String): ResponseEntity<TraceRecord?> {
+    suspend fun getTraceRecordByDbId(id: Long): ResponseEntity<TraceRecord?> {
         return try {
-            ResponseEntity.success(traceRecordDao.loadByDbId(dbId))
+            ResponseEntity.success(traceRecordDao.loadById(id))
         } catch (e: Exception) {
             ResponseEntity(null, 500, e.toString())
         }
@@ -94,17 +85,17 @@ class TraceRecordLocalDataSource @Inject constructor(
         }
     }
 
-    suspend fun getNearbyList(targetLat: Double, targetLng: Double, range: Double): ResponseEntity<ArrayList<TraceRecord>> {
+    suspend fun getNearbyList(
+        targetLat: Double,
+        targetLng: Double,
+        range: Double
+    ): ResponseEntity<ArrayList<TraceRecord>> {
         return try {
-//            val range = AMapUtils.calculateLineDistance(
-//                LatLng(targetLat, targetLng),
-//                LatLng(targetLat, targetLng))
             val minLat = targetLat - range
             val maxLat = targetLat + range
             val minLng = targetLng - range
             val maxLng = targetLng + range
             val list = traceRecordDao.loadNearby(minLat, maxLat, minLng, maxLng)
-//            val list = traceRecordDao.loadAll()
             logger.i("minLat=$minLat, maxLat=$maxLat, minLng=$minLng, maxLng=$maxLng")
             ResponseEntity.success(ArrayList(list))
         } catch (e: Exception) {
@@ -112,13 +103,9 @@ class TraceRecordLocalDataSource @Inject constructor(
         }
     }
 
-    suspend fun getTraceLocationList(traceRecordDbId: String?): ResponseEntity<ArrayList<TraceLocation>> {
+    suspend fun getTraceLocationList(traceRecordDbId: Long): ResponseEntity<ArrayList<TraceLocation>> {
         return try {
-            val list = if(traceRecordDbId == null) {
-                traceLocationDao.loadAll()
-            } else {
-                traceLocationDao.loadByTraceRecordId(traceRecordDbId)
-            }
+            val list = traceLocationDao.loadByTraceRecordId(traceRecordDbId)
             ResponseEntity.success(ArrayList(list))
         } catch (e: Exception) {
             ResponseEntity(null, 500, e.toString())
@@ -142,8 +129,7 @@ class TraceRecordLocalDataSource @Inject constructor(
     override suspend fun delete(data: TraceRecord): ResponseEntity<TraceRecord> {
         var delete: Int = -1
         try {
-            data.isDelete = true // 软删除，方便同步用
-            delete = traceRecordDao.update(data)
+            delete = traceRecordDao.delete(data)
             logger.i("delete record $data")
         } catch (e: Exception) {
             //
@@ -155,7 +141,7 @@ class TraceRecordLocalDataSource @Inject constructor(
 
         return try {
             // location跟着trace record走，不用于判断同步，所以直接删除
-            val deleteListCount = traceLocationDao.deleteByTraceRecordId(data.dbId)
+            val deleteListCount = traceLocationDao.deleteByTraceRecordId(data.id)
             logger.i("delete location list size = $deleteListCount")
             ResponseEntity.success(data)
         } catch (e: Exception) {

@@ -1,5 +1,3 @@
 package com.boredream.koalatrace.base
 
-interface BaseEntity : java.io.Serializable {
-
-}
+open class BaseEntity : java.io.Serializable

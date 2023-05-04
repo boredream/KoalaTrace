@@ -55,22 +55,12 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="未同步"
-            android:textColor="@color/colorPrimary"
-            android:textSize="@dimen/txt_subhead"
-            android:visibility="@{bean.synced? View.GONE : View.VISIBLE}"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:text="记录中"
             android:textColor="@color/colorPrimary"
             android:textSize="@dimen/txt_subhead"
             android:visibility="@{bean.isRecording? View.VISIBLE : View.GONE}"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

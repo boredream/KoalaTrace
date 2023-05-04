@@ -61,14 +61,14 @@ class TraceLocationService : Service() {
             notificationManager.createNotificationChannel(channel)
 
             Notification.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_baseline_location_on_24) // 设置通知的图标
+                .setSmallIcon(R.drawable.ic_baseline_route_24) // 设置通知的图标
                 .setContentTitle(getString(R.string.app_name)) // 设置标题的标题
                 .setContentText("记录轨迹ing...") // 设置的标题内容
                 .setContentIntent(pendingIntent)
                 .build()
         } else {
             NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_baseline_location_on_24)
+                .setSmallIcon(R.drawable.ic_baseline_route_24)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText("记录轨迹ing...")
                 .setContentIntent(pendingIntent)

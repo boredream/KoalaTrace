@@ -4,7 +4,6 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.boredream.koalatrace.base.BaseEntity
-import java.util.*
 
 /**
  * 轨迹记录
@@ -15,16 +14,11 @@ data class TraceRecord(
     var startTime: Long,
     var endTime: Long,
     var distance: Int, // 单位米
-    var detail: String? = null,
-    var traceListStr: String? = null,
-    var synced: Boolean = false, // 是否已经同步到服务器
-    var isDelete: Boolean = false, // 软删除
-    var syncTimestamp: Long? = null, // 同步数据的时间
-    var isRecording: Boolean = false, // 正在记录中
-) : BaseEntity {
+    var isRecording: Boolean = false // 正在记录中
+) : BaseEntity() {
 
-    @PrimaryKey
-    var dbId: String = UUID.randomUUID().toString()
+    @PrimaryKey(autoGenerate = true)
+    var id: Long = 0
 
     @Ignore
     var traceList: ArrayList<TraceLocation> = arrayListOf()
@@ -33,16 +27,12 @@ data class TraceRecord(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
         other as TraceRecord
-        if (dbId != other.dbId) return false
+        if (id != other.id) return false
         return true
     }
 
     override fun hashCode(): Int {
-        return dbId.hashCode()
-    }
-
-    override fun toString(): String {
-        return "TraceRecord(dbId='$dbId', name='$name')"
+        return id.hashCode()
     }
 
 }

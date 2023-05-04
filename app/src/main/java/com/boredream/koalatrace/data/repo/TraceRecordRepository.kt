@@ -33,37 +33,33 @@ class TraceRecordRepository @Inject constructor(
         // 查询线路下所有轨迹
         if (traceRecordList.isSuccess()) {
             traceRecordList.getSuccessData().forEach {
-                it.traceList = localDataSource.getTraceLocationList(it.dbId).data ?: arrayListOf()
+                it.traceList = localDataSource.getTraceLocationList(it.id).data ?: arrayListOf()
             }
             logger.i("near 「${rangeMeter}米」 history list size = ${traceRecordList.getSuccessData().size}")
         }
         return traceRecordList
     }
 
-    suspend fun getLocationList(traceRecordDbId: String?) =
+    suspend fun getLocationList(traceRecordDbId: Long) =
         localDataSource.getTraceLocationList(traceRecordDbId)
 
     suspend fun insertOrUpdate(data: TraceRecord) = localDataSource.add(data)
 
-    suspend fun insertOrUpdateLocation(traceRecordDbId: String, data: TraceLocation)
+    suspend fun insertOrUpdateLocation(traceRecordDbId: Long, data: TraceLocation)
             : ResponseEntity<TraceLocation> {
-        data.traceRecordId = traceRecordDbId
+        data.traceId = traceRecordDbId
         return localDataSource.insertOrUpdateLocation(data)
     }
 
     suspend fun insertOrUpdateLocationList(
-        traceRecordDbId: String,
+        traceRecordDbId: Long,
         dataList: ArrayList<TraceLocation>
-    )
-            : ResponseEntity<ArrayList<TraceLocation>> {
-        dataList.forEach { it.traceRecordId = traceRecordDbId }
+    ): ResponseEntity<ArrayList<TraceLocation>> {
+        dataList.forEach { it.traceId = traceRecordDbId }
         return localDataSource.insertOrUpdateLocationList(dataList)
     }
 
-    suspend fun update(data: TraceRecord): ResponseEntity<TraceRecord> {
-        data.synced = false // 同步标志位，有修改的都需要设为false
-        return localDataSource.update(data)
-    }
+    suspend fun update(data: TraceRecord) = localDataSource.update(data)
 
     /**
      * 更新所有未完成状态的轨迹（记录中的、数据有问题的等）
@@ -75,7 +71,7 @@ class TraceRecordRepository @Inject constructor(
         if (list.isSuccess()) {
             logger.i("updateAllUnFinishRecord ${list.getSuccessData().size}")
             list.getSuccessData().forEach {
-                it.traceList = localDataSource.getTraceLocationList(it.dbId).data ?: arrayListOf()
+                it.traceList = localDataSource.getTraceLocationList(it.id).data ?: arrayListOf()
                 updateByTraceList(it)
                 hasUpdate = true
             }
@@ -96,9 +92,6 @@ class TraceRecordRepository @Inject constructor(
         }
     }
 
-    suspend fun delete(data: TraceRecord): ResponseEntity<TraceRecord> {
-        data.synced = false // 同步标志位，有修改的都需要设为false
-        return localDataSource.delete(data)
-    }
+    suspend fun delete(data: TraceRecord) = localDataSource.delete(data)
 
 }
