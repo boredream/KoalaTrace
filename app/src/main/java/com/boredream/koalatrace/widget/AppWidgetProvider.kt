@@ -18,7 +18,6 @@ class AppWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
-        LogUtils.i(appWidgetIds)
         AppWidgetUpdater.updateDefault(context)
     }
 

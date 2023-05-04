@@ -86,7 +86,6 @@ class TraceLocationService : Service() {
         scope.launch {
             traceUseCase.startTrace()
         }
-        LogUtils.i("onCreate")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

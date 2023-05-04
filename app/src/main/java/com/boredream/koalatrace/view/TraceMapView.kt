@@ -14,6 +14,7 @@ import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.utils.FileUtils
+import com.boredream.koalatrace.utils.Logger
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
@@ -28,6 +29,7 @@ import org.locationtech.jts.simplify.DouglasPeuckerSimplifier
  */
 class TraceMapView : MapView {
 
+    private val logger = Logger()
     private var zoomLevel = 17f
     private var myLocation: TraceLocation? = null
     private var myLocationMarker: Marker? = null
@@ -82,7 +84,6 @@ class TraceMapView : MapView {
             .zoom(zoomLevel)
             .build()
         map.moveCamera(CameraUpdateFactory.newCameraPosition(position))
-        LogUtils.i(position)
     }
 
     private var isFirstSetMyLocation = true
@@ -125,7 +126,7 @@ class TraceMapView : MapView {
         drawLine(pointList)
         // 绘制完成后，更新 startDrawIndex
         val newIndex = allTracePointList.lastIndex
-        LogUtils.v("drawTraceList $startDrawIndex to $newIndex")
+        logger.v("drawTraceList $startDrawIndex to $newIndex")
         startDrawIndex = newIndex
     }
 
@@ -167,7 +168,7 @@ class TraceMapView : MapView {
         val simplifiedLine: Geometry = simplifier.resultGeometry
 
         val simplePointList = simplifiedLine.coordinates.map { LatLng(it.x, it.y) }
-        LogUtils.i("simple line duration ${System.currentTimeMillis() - start}")
+        logger.i("simple line duration ${System.currentTimeMillis() - start}")
         return simplePointList
     }
 
@@ -181,7 +182,7 @@ class TraceMapView : MapView {
         val bufferOp = BufferOp(line, bufferParams)
         val width = LocationConstant.ONE_METER_LAT_LNG * 50
         val polygon = bufferOp.getResultGeometry(width) as Polygon
-        LogUtils.i("line buffer duration ${System.currentTimeMillis() - start}")
+        logger.i("line buffer duration ${System.currentTimeMillis() - start}")
 
         // 注意环的情况
         val polygonOptions = PolygonOptions()
@@ -192,14 +193,14 @@ class TraceMapView : MapView {
         if (polygon.numInteriorRing > 0) {
             // TODO: 环如果过小，可以省略
             for (index in 0 until polygon.numInteriorRing) {
-                LogUtils.i("draw polygon hole = $index")
+                logger.i("draw polygon hole = $index")
                 val inter = polygon.getInteriorRingN(index).coordinates.map { LatLng(it.x, it.y) }
                 polygonOptions.addHoles(PolygonHoleOptions().addAll(inter))
             }
         }
         start = System.currentTimeMillis()
         map.addPolygon(polygonOptions)
-        LogUtils.i("addPolygon duration ${System.currentTimeMillis() - start}")
+        logger.i("addPolygon duration ${System.currentTimeMillis() - start}")
     }
 
     private fun drawLine(
