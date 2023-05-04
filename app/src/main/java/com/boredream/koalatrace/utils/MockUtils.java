@@ -1,10 +1,6 @@
 package com.boredream.koalatrace.utils;
 
 
-import com.boredream.koalatrace.data.dto.PageResultDto;
-
-import org.jetbrains.annotations.NotNull;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -61,12 +57,6 @@ public class MockUtils {
          }
       }
       return list;
-   }
-
-   @NotNull
-   public static <T> PageResultDto<T> mockPageResult(@NotNull Class<T> clazz) {
-      int count = 10;
-      return new PageResultDto<>(1, mockList(clazz, count));
    }
 
    private static <T> void setValue(Object object, Class<T> clazz) throws IllegalAccessException {

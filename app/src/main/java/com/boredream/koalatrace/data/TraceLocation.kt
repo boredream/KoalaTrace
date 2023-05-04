@@ -9,7 +9,7 @@ open class TraceLocation(
     var latitude: Double,
     var longitude: Double,
     var time: Long = System.currentTimeMillis()
-) : BaseEntity(), java.io.Serializable {
+) : BaseEntity() {
 
     companion object {
         const val ACTION_NONE = 0

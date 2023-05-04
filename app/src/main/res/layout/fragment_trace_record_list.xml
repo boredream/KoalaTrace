@@ -22,16 +22,6 @@
             app:layout_constraintTop_toTopOf="parent"
             app:title="轨迹列表" />
 
-        <com.boredream.koalatrace.view.SyncStatusView
-            android:id="@+id/sync_status_view"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginRight="@dimen/margin_medium"
-            app:isSyncing="@{vm.isSyncingState}"
-            app:layout_constraintBottom_toBottomOf="@+id/title_bar"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/title_bar" />
-
         <com.boredream.koalatrace.view.RefreshListView
             android:id="@+id/refresh_trace_list"
             android:layout_width="match_parent"

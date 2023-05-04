@@ -66,15 +66,4 @@ class TraceRecordListFragment :
             enableRefresh = false,
         )
     }
-
-    // 接收消息
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onSyncStatusEvent(event: SyncStatusEvent) {
-        // TODO: 这种方式好吗？ service 和 activity 直接通信，可以用event；但是如果都引用相同的repo，是否用回调更好？
-        viewModel.setSyncStatus(event.isSyncing)
-        if(!event.isSyncing) {
-            // 刷新完成后，更新UI
-            viewModel.loadData()
-        }
-    }
 }

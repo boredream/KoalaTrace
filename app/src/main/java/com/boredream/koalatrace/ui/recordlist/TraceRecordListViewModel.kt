@@ -1,7 +1,5 @@
 package com.boredream.koalatrace.ui.recordlist
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.boredream.koalatrace.base.BaseViewModel
 import com.boredream.koalatrace.common.vmcompose.RefreshListVMCompose
@@ -20,9 +18,6 @@ class TraceRecordListViewModel @Inject constructor(
     val refreshListVMCompose = RefreshListVMCompose(viewModelScope)
     val deleteVMCompose = RequestVMCompose<TraceRecord>(viewModelScope)
 
-    private val _isSyncingState = MutableLiveData(false)
-    val isSyncingState: LiveData<Boolean> = _isSyncingState
-
     fun onResume() {
         loadData()
         // do other things
@@ -30,10 +25,6 @@ class TraceRecordListViewModel @Inject constructor(
 
     fun loadData() {
         refreshListVMCompose.loadList { repository.getList() }
-    }
-
-    fun setSyncStatus(isSyncing: Boolean) {
-        _isSyncingState.value = isSyncing
     }
 
     fun delete(data: TraceRecord) {
