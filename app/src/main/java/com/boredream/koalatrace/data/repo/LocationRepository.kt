@@ -26,6 +26,13 @@ class LocationRepository @Inject constructor(
         const val STATUS_LOCATION = 1
         const val STATUS_TRACE = 2
 
+        // 合理距离
+        const val DISTANCE_VALID = 1
+        // 距离过短
+        const val DISTANCE_TOO_SHORT = 2
+        // 距离过长
+        const val DISTANCE_TOO_LONG = 3
+
         // 精度可信情况-完全可信
         const val ACCURACY_TYPE_TOTALLY_CREDIBLE = 1
         // 精度可信情况-可信
@@ -138,7 +145,8 @@ class LocationRepository @Inject constructor(
      * 添加定位轨迹追踪点
      */
     private fun appendTracePoint(location: TraceLocation) {
-        var distanceValid = true
+        // 距离可信程度
+        var distanceCredible = DISTANCE_VALID
         var distance = 0f
         var maxDistance = 0L
         if(traceList.size > 0) {
@@ -151,7 +159,11 @@ class LocationRepository @Inject constructor(
             // 最大距离是时间差值可以走出的最远距离
             maxDistance = LocationConstant.MAX_WALK_SPEED * (location.time - lastPoint.time) / 1000
             // 距离在范围内则有效
-            distanceValid = distance <= maxDistance && distance > MIN_VALID_DISTANCE
+            if(distance < MIN_VALID_DISTANCE) {
+                distanceCredible = DISTANCE_TOO_SHORT
+            } else if(distance > maxDistance) {
+                distanceCredible = DISTANCE_TOO_LONG
+            }
         }
 
         // 精度可信程度
@@ -167,9 +179,9 @@ class LocationRepository @Inject constructor(
             }
         } catch (_: Exception) {}
 
-        // 完全可信精度 or 可信精度+合理距离，都视为有效数据
-        val validate = accuracyCredible == ACCURACY_TYPE_TOTALLY_CREDIBLE ||
-                (accuracyCredible == ACCURACY_TYPE_CREDIBLE && distanceValid)
+        // 完全可信精度+超过最小距离 or 可信精度+合理距离，都视为有效数据
+        val validate = (distanceCredible != DISTANCE_TOO_SHORT && accuracyCredible == ACCURACY_TYPE_TOTALLY_CREDIBLE) ||
+                (distanceCredible == DISTANCE_VALID && accuracyCredible == ACCURACY_TYPE_CREDIBLE)
         if (validate) {
             // 移动距离设置阈值，且不能超过最大值（过滤坐标漂移的数据）
             location.action = TraceLocation.ACTION_ADD
