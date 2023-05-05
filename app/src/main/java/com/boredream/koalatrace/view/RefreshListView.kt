@@ -60,6 +60,7 @@ class RefreshListView : FrameLayout {
 
         rv.layoutManager = layoutManager
         itemDecoration?.let { rv.addItemDecoration(it) }
+        adapter.setHasStableIds(true)
         rv.adapter = adapter
 
         this.adapter = adapter as BaseListAdapter<Any, ViewDataBinding>

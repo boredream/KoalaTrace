@@ -62,7 +62,7 @@ class TraceRecordDetailViewModel @Inject constructor(
 
     private fun updateTraceList() {
         _traceListUiState.value = arrayListOf(data)
-        data.traceList?.let { _startLocationUiState.value = it.last() }
+        data.traceList.let { _startLocationUiState.value = it.last() }
     }
 
 }

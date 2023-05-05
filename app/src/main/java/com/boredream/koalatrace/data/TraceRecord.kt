@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.boredream.koalatrace.base.BaseEntity
+import com.boredream.koalatrace.base.BaseListData
 
 /**
  * 轨迹记录
@@ -15,7 +16,9 @@ data class TraceRecord(
     var endTime: Long,
     var distance: Int, // 单位米
     var isRecording: Boolean = false // 正在记录中
-) : BaseEntity() {
+) : BaseEntity(), BaseListData {
+
+    override fun getItemId() = id
 
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0

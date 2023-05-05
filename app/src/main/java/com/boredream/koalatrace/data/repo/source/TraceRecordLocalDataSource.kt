@@ -38,6 +38,7 @@ class TraceRecordLocalDataSource @Inject constructor(
         if (insert <= 0) {
             return ResponseEntity(null, 500, "数据插入失败")
         }
+        data.id = insert
         return ResponseEntity.success(data)
     }
 
@@ -51,6 +52,7 @@ class TraceRecordLocalDataSource @Inject constructor(
         if (insert <= 0) {
             return ResponseEntity(null, 500, "数据插入失败")
         }
+        data.id = insert
         return ResponseEntity.success(data)
     }
 
@@ -67,14 +69,6 @@ class TraceRecordLocalDataSource @Inject constructor(
             return ResponseEntity(null, 500, "数据插入失败")
         }
         return ResponseEntity.success(dataList)
-    }
-
-    suspend fun getTraceRecordByDbId(id: Long): ResponseEntity<TraceRecord?> {
-        return try {
-            ResponseEntity.success(traceRecordDao.loadById(id))
-        } catch (e: Exception) {
-            ResponseEntity(null, 500, e.toString())
-        }
     }
 
     suspend fun getList(): ResponseEntity<ArrayList<TraceRecord>> {

@@ -110,7 +110,7 @@ class TraceMapView : MapView {
             startDrawIndex = 0
         }
 
-        val allTracePointList = traceRecord.traceList ?: return
+        val allTracePointList = traceRecord.traceList
         if (startDrawIndex >= allTracePointList.size) {
             // 如果开始绘制的位置，超过了轨迹列表大小，代表错误数据or轨迹列表更换了，此次为无效绘制
             return
@@ -139,18 +139,22 @@ class TraceMapView : MapView {
         val color = ContextCompat.getColor(context, R.color.colorPrimaryLight)
         traceList.forEach { record ->
             val pointList = ArrayList<LatLng>()
-            record.traceList?.forEach { pointList.add(it.toLatLng()) }
+            record.traceList.forEach { pointList.add(it.toLatLng()) }
             val line = drawLine(pointList, traceLineColor = color)
             line?.let { historyLineList.add(it) }
-
-//            val simplePointList = simpleLine(pointList)
-//            drawLine(
-//                ArrayList(simplePointList),
-//                traceLineColor = ContextCompat.getColor(context, R.color.txt_oran)
-//            )
-
-            // drawLineBuffer(simplifiedLine)
         }
+    }
+
+    private fun drawLine(
+        pointList: ArrayList<LatLng>,
+        traceLineWidth: Float = 15f,
+        traceLineColor: Int = ContextCompat.getColor(context, R.color.colorPrimary)
+    ): Polyline? {
+        return map.addPolyline(PolylineOptions().addAll(pointList).width(traceLineWidth).color(traceLineColor))
+    }
+
+    private fun TraceLocation.toLatLng(): LatLng {
+        return LatLng(this.latitude, this.longitude)
     }
 
     private fun simpleLine(pointList: ArrayList<LatLng>): List<LatLng> {
@@ -201,19 +205,6 @@ class TraceMapView : MapView {
         start = System.currentTimeMillis()
         map.addPolygon(polygonOptions)
         logger.i("addPolygon duration ${System.currentTimeMillis() - start}")
-    }
-
-    private fun drawLine(
-        pointList: ArrayList<LatLng>,
-        traceLineWidth: Float = 15f,
-        traceLineColor: Int = ContextCompat.getColor(context, R.color.colorPrimary)
-    ): Polyline? {
-        // TODO: 中途有多个点定位失败，然后走出很远距离后，再次定位成功（如坐地铁），应该分多条线绘制
-        return map.addPolyline(PolylineOptions().addAll(pointList).width(traceLineWidth).color(traceLineColor))
-    }
-
-    private fun TraceLocation.toLatLng(): LatLng {
-        return LatLng(this.latitude, this.longitude)
     }
 
 }
