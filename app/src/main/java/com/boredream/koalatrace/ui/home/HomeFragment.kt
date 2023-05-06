@@ -53,12 +53,14 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding>() {
         super.onResume()
         LogUtils.v("map view onResume")
         viewModel.onResume()
+        binding.mapView.setMyLocationEnable(true)
         binding.mapView.onResume()
     }
 
     override fun onPause() {
         LogUtils.v("map view onPause")
         viewModel.onPause()
+        binding.mapView.setMyLocationEnable(false)
         binding.mapView.onPause()
         super.onPause()
     }

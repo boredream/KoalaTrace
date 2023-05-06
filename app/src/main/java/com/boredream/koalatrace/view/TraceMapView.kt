@@ -4,11 +4,11 @@ import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
 import androidx.core.content.ContextCompat
+import com.amap.api.mapcore.util.it
 import com.amap.api.maps.AMap.OnCameraChangeListener
 import com.amap.api.maps.CameraUpdateFactory
 import com.amap.api.maps.MapView
 import com.amap.api.maps.model.*
-import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
@@ -32,7 +32,7 @@ class TraceMapView : MapView {
     private val logger = Logger()
     private var zoomLevel = 17f
     private var myLocation: TraceLocation? = null
-    private var myLocationMarker: Marker? = null
+    private var myLocationStyle = MyLocationStyle()
     private var startDrawIndex = 0
     private var curTraceRecord: TraceRecord? = null
     private var historyLineList: ArrayList<Polyline> = arrayListOf()
@@ -52,6 +52,12 @@ class TraceMapView : MapView {
         defStyleAttr
     ) {
         // AMap https://a.amap.com/lbs/static/unzip/Android_Map_Doc/index.html
+        myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER) // 连续定位、且将视角移动到地图中心点，定位点依照设备方向旋转，并且会跟随设备移动。（1秒1次定位）如果不设置myLocationType，默认也会执行此种模式。
+        myLocationStyle.interval(1000) // 设置连续定位模式下的定位间隔，只在连续定位模式下生效，单次定位模式下不会生效。单位为毫秒。
+        myLocationStyle.strokeWidth(0f) // 精度圈边框
+        myLocationStyle.radiusFillColor(Color.TRANSPARENT) // 精度圈填充
+        myLocationStyle.myLocationIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_my_location)) // 我的位置图标
+
         map?.let {
             it.uiSettings.isScaleControlsEnabled = false
             it.uiSettings.isZoomControlsEnabled = false
@@ -72,9 +78,17 @@ class TraceMapView : MapView {
                 override fun onCameraChangeFinish(position: CameraPosition?) {
                     position?.let { it -> zoomLevel = it.zoom }
                 }
-
             })
-            myLocationMarker = it.addMarker(MarkerOptions())
+        }
+    }
+
+    fun setMyLocationEnable(enable: Boolean) {
+        map?.let {
+            it.myLocationStyle = myLocationStyle // 设置定位蓝点的Style
+            it.addOnMyLocationChangeListener { location ->
+                logger.v("my location = $location")
+            }
+            it.isMyLocationEnabled = enable
         }
     }
 
@@ -89,7 +103,6 @@ class TraceMapView : MapView {
     private var isFirstSetMyLocation = true
     fun setMyLocation(location: TraceLocation) {
         myLocation = location
-        myLocationMarker?.position = LatLng(location.latitude, location.longitude)
         if (isFirstSetMyLocation) {
             locateMe()
             isFirstSetMyLocation = false
@@ -104,7 +117,7 @@ class TraceMapView : MapView {
      * 绘制正在跟踪的轨迹线路
      */
     fun drawTraceRecord(traceRecord: TraceRecord) {
-        if(traceRecord != curTraceRecord) {
+        if (traceRecord != curTraceRecord) {
             // 线路变化时，重新绘图
             curTraceRecord = traceRecord
             startDrawIndex = 0
@@ -121,7 +134,7 @@ class TraceMapView : MapView {
         for (i in startDrawIndex until allTracePointList.size) {
             pointList.add(allTracePointList[i].toLatLng())
         }
-        if(pointList.size <= 1) return
+        if (pointList.size <= 1) return
 
         drawLine(pointList)
         // 绘制完成后，更新 startDrawIndex
@@ -150,7 +163,9 @@ class TraceMapView : MapView {
         traceLineWidth: Float = 15f,
         traceLineColor: Int = ContextCompat.getColor(context, R.color.colorPrimary)
     ): Polyline? {
-        return map.addPolyline(PolylineOptions().addAll(pointList).width(traceLineWidth).color(traceLineColor))
+        return map.addPolyline(
+            PolylineOptions().addAll(pointList).width(traceLineWidth).color(traceLineColor)
+        )
     }
 
     private fun TraceLocation.toLatLng(): LatLng {
