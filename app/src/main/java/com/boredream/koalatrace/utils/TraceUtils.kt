@@ -4,6 +4,8 @@ import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.model.LatLng
 import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.data.TraceLocation
+import com.boredream.koalatrace.data.TraceRecord
+import com.boredream.koalatrace.data.constant.LocationConstant
 
 object TraceUtils {
 
@@ -26,6 +28,17 @@ object TraceUtils {
             totalDistance += distance
         }
         return totalDistance.toInt()
+    }
+
+    /**
+     * 是否为有效轨迹
+     */
+    fun isValidTrace(record: TraceRecord): Boolean {
+        // 总距离<xx米无效
+        if(record.distance < LocationConstant.SAVE_TRACE_MIN_DISTANCE) return false
+        // 总轨迹点数量<xx无效
+        if(record.traceList.size < LocationConstant.SAVE_TRACE_MIN_POSITION_SIZE) return false
+        return true
     }
 
 }

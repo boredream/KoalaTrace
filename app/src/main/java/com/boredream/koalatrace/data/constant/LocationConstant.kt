@@ -25,9 +25,14 @@ object LocationConstant {
     const val MIN_VALID_DISTANCE = 2
 
     /**
+     * 最小保存轨迹距离，小于等于时删除（单位：m）
+     */
+    const val SAVE_TRACE_MIN_DISTANCE = 20
+
+    /**
      * 最小保存轨迹点数量，小于等于时删除
      */
-    const val SAVE_TRACE_MIN_POSITION_SIZE = 1
+    const val SAVE_TRACE_MIN_POSITION_SIZE = 2
 
     /**
      * 判断设备移动的加速度阈值（单位：m/s²）

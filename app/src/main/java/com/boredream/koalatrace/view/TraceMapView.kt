@@ -51,6 +51,8 @@ class TraceMapView : MapView {
         attrs,
         defStyleAttr
     ) {
+        // TODO: 地图样式问题，省略一些小区名字等细节，突出线路。参考百度的一蓑烟雨 https://lbsyun.baidu.com/customv2/editor/e5dea5db69354a92addfb8e2bf7115dd/lvyexianzong
+
         // AMap https://a.amap.com/lbs/static/unzip/Android_Map_Doc/index.html
         myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER) // 连续定位、且将视角移动到地图中心点，定位点依照设备方向旋转，并且会跟随设备移动。（1秒1次定位）如果不设置myLocationType，默认也会执行此种模式。
         myLocationStyle.interval(1000) // 设置连续定位模式下的定位间隔，只在连续定位模式下生效，单次定位模式下不会生效。单位为毫秒。

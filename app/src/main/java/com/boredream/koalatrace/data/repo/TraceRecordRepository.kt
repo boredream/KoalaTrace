@@ -81,7 +81,7 @@ class TraceRecordRepository @Inject constructor(
 
     suspend fun updateByTraceList(record: TraceRecord) {
         val locationList = record.traceList
-        if (locationList.size <= LocationConstant.SAVE_TRACE_MIN_POSITION_SIZE) {
+        if (!TraceUtils.isValidTrace(record)) {
             delete(record)
         } else {
             record.endTime = locationList[locationList.lastIndex].time

@@ -107,6 +107,7 @@ class TraceUseCase @Inject constructor(
     }
 
     suspend fun addLocation2currentRecord(list: ArrayList<TraceLocation>) {
+        // TODO: 第一个点就漂移的问题
         val record = currentTraceRecord ?: return
         if (CollectionUtils.isEmpty(list)) return
         // list 是源数据，没有dbId，所以要和当前已记录数据 record.traceList 对比
