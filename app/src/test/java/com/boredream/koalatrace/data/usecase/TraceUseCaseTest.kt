@@ -81,6 +81,8 @@ class TraceUseCaseTest {
         runBlocking { useCase.stopTrace() }
         verify(exactly = 1) { runBlocking { locationRepository.stopTrace() } }
         verify(exactly = 1) { runBlocking { traceRecordRepository.updateByTraceList(any()) } }
+        verify(exactly = 1) { runBlocking { traceRecordRepository.insertOrUpdate(any()) } }
+        verify(exactly = 0) { runBlocking { traceRecordRepository.delete(any()) } }
         verify(exactly = 1) { runBlocking { locationRepository.clearTraceList() } }
         Assert.assertNull(useCase.currentTraceRecord)
     }

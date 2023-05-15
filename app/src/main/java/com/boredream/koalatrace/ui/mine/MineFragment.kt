@@ -65,7 +65,7 @@ class MineFragment : BaseFragment<MineViewModel, FragmentMineBinding>() {
                         data = Uri.parse("mailto:")
                         putExtra(Intent.EXTRA_EMAIL, arrayOf("boredream@qq.com"))
                         putExtra(Intent.EXTRA_SUBJECT, "意见反馈")
-                        putExtra(Intent.EXTRA_TEXT, "请输入您的意见：")
+                        putExtra(Intent.EXTRA_TEXT, "请在邮箱中输入您的意见：")
                         startActivity(Intent.createChooser(this, "发送邮件"))
                     }
                 }

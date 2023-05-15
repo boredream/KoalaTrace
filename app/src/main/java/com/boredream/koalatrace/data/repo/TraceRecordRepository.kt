@@ -61,31 +61,16 @@ class TraceRecordRepository @Inject constructor(
 
     suspend fun update(data: TraceRecord) = localDataSource.update(data)
 
-    /**
-     * 更新所有未完成状态的轨迹（记录中的、数据有问题的等）
-     * @return Boolean
-     */
-    suspend fun updateAllUnFinishRecord(): Boolean {
-        var hasUpdate = false
-        val list = localDataSource.getUnFinishTraceRecord()
-        if (list.isSuccess()) {
-            logger.i("updateAllUnFinishRecord ${list.getSuccessData().size}")
-            list.getSuccessData().forEach {
-                it.traceList = localDataSource.getTraceLocationList(it.id).data ?: arrayListOf()
-                updateByTraceList(it)
-                hasUpdate = true
-            }
-        }
-        return hasUpdate
-    }
+    suspend fun getUnFinishTraceRecord() = localDataSource.getUnFinishTraceRecord()
 
     suspend fun updateByTraceList(record: TraceRecord) {
         val locationList = record.traceList
+        record.distance = TraceUtils.calculateDistance(locationList)
+
         if (!TraceUtils.isValidTrace(record)) {
             delete(record)
         } else {
             record.endTime = locationList[locationList.lastIndex].time
-            record.distance = TraceUtils.calculateDistance(locationList)
             record.isRecording = false
             insertOrUpdate(record)
             logger.i("update traceRecord: ${record.name} , distance = ${record.distance}")

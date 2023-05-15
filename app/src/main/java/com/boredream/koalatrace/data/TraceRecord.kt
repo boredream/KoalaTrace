@@ -38,4 +38,9 @@ data class TraceRecord(
         return id.hashCode()
     }
 
+    override fun toString(): String {
+        return "TraceRecord(id=$id, name='$name', startTime=$startTime, endTime=$endTime, distance=$distance)"
+    }
+
+
 }

@@ -26,7 +26,7 @@ open class TraceLocation(
     var action: Int = ACTION_NONE
 
     override fun toString(): String {
-        return "${TimeUtils.millis2String(time)}  $latitude,$longitude"
+        return "${TimeUtils.millis2String(time)}  $latitude,$longitude, $extraData"
     }
 
     override fun equals(other: Any?): Boolean {

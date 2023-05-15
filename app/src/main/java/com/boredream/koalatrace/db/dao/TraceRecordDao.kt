@@ -7,7 +7,7 @@ import com.boredream.koalatrace.data.TraceRecord
 @Dao
 interface TraceRecordDao {
 
-    @Query("SELECT * FROM TraceRecord WHERE isRecording = 1 OR distance = 0")
+    @Query("SELECT * FROM TraceRecord WHERE isRecording = 1")
     suspend fun loadUnFinishTraceRecord(): List<TraceRecord>
 
     @Query("SELECT * FROM TraceRecord order by startTime desc")

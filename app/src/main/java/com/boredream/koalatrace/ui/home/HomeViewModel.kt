@@ -59,7 +59,7 @@ class HomeViewModel @Inject constructor(
 
         if (!old) {
             viewModelScope.launch {
-                val recordList = traceUseCase.getAllHistoryTraceListRecord()
+                val recordList = traceUseCase.getAllHistoryTraceRecordList()
                 _historyTraceListUiState.value = recordList.data
             }
         } else {

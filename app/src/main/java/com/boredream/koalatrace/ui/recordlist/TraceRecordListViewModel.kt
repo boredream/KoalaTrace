@@ -6,12 +6,14 @@ import com.boredream.koalatrace.common.vmcompose.RefreshListVMCompose
 import com.boredream.koalatrace.common.vmcompose.RequestVMCompose
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.repo.TraceRecordRepository
+import com.boredream.koalatrace.data.usecase.TraceUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class TraceRecordListViewModel @Inject constructor(
+    private val userCase: TraceUseCase,
     private val repository: TraceRecordRepository,
 ) : BaseViewModel() {
 
@@ -36,7 +38,7 @@ class TraceRecordListViewModel @Inject constructor(
     fun updateAllUnFinishRecord() {
         // 如果有之前未保存的，刷新轨迹数据
         viewModelScope.launch {
-            val hasUpdate = repository.updateAllUnFinishRecord()
+            val hasUpdate = userCase.refreshUnFinishTrace()
             if(hasUpdate) {
                 loadData()
             }

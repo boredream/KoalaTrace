@@ -128,6 +128,24 @@ class TraceUseCase @Inject constructor(
         traceRecordUpdate.forEach { it.invoke(record) }
     }
 
+    /**
+     * 更新所有未完成状态的轨迹（记录中的、数据有问题的等）
+     * @return Boolean
+     */
+    suspend fun refreshUnFinishTrace() : Boolean {
+        var hasUpdate = false
+        val list = traceRecordRepository.getUnFinishTraceRecord()
+        if (list.isSuccess()) {
+            val unFinishList = list.getSuccessData().filter { it != currentTraceRecord }
+            logger.i("updateAllUnFinishRecord ${unFinishList.size}")
+            unFinishList.forEach {
+                traceRecordRepository.updateByTraceList(it)
+                hasUpdate = true
+            }
+        }
+        return hasUpdate
+    }
+
     suspend fun checkStopTrace(): Boolean {
         val record = currentTraceRecord ?: return false
         val list = record.traceList
@@ -170,7 +188,7 @@ class TraceUseCase @Inject constructor(
     /**
      * 获取所有历史轨迹
      */
-    suspend fun getAllHistoryTraceListRecord(): ResponseEntity<ArrayList<TraceRecord>> {
+    suspend fun getAllHistoryTraceRecordList(): ResponseEntity<ArrayList<TraceRecord>> {
         val myLocation = getMyLocation() ?: return ResponseEntity.notExistError()
         // TODO: 我的位置不停的变化，变化后如何处理？重新获取？
         val recordList = traceRecordRepository.getNearHistoryTraceList(
@@ -218,6 +236,5 @@ class TraceUseCase @Inject constructor(
     fun removeTraceRecordUpdateListener(listener: (traceRecord: TraceRecord) -> Unit) {
         traceRecordUpdate.remove(listener)
     }
-
 
 }

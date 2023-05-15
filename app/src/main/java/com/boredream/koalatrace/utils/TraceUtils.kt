@@ -34,10 +34,10 @@ object TraceUtils {
      * 是否为有效轨迹
      */
     fun isValidTrace(record: TraceRecord): Boolean {
-        // 总距离<xx米无效
-        if(record.distance < LocationConstant.SAVE_TRACE_MIN_DISTANCE) return false
         // 总轨迹点数量<xx无效
         if(record.traceList.size < LocationConstant.SAVE_TRACE_MIN_POSITION_SIZE) return false
+        // 总距离<xx米无效
+        if(record.distance < LocationConstant.SAVE_TRACE_MIN_DISTANCE) return false
         return true
     }
 
