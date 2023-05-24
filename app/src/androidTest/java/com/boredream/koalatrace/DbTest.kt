@@ -8,6 +8,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.rule.GrantPermissionRule
 import com.amap.api.mapcore.util.it
+import com.amap.api.maps.AMapUtils
+import com.amap.api.maps.model.LatLng
 import com.blankj.utilcode.util.FileIOUtils
 import com.blankj.utilcode.util.FileUtils
 import com.blankj.utilcode.util.PathUtils
@@ -17,6 +19,7 @@ import com.boredream.koalatrace.data.constant.CommonConstant
 import com.boredream.koalatrace.data.repo.BackupRepository
 import com.boredream.koalatrace.db.AppDatabase
 import com.boredream.koalatrace.utils.DataStoreUtils
+import com.boredream.koalatrace.utils.PrintLogger
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -44,6 +47,7 @@ class DbTest {
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
 
+    private val logger = PrintLogger()
     private lateinit var context: Context
     private lateinit var db: AppDatabase
     private lateinit var repo: BackupRepository
@@ -59,6 +63,25 @@ class DbTest {
             .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
             .build()
         repo = BackupRepository(PrintLogger(), db)
+    }
+
+    @Test
+    fun optTrace() = runBlocking {
+        val locationDao = db.traceLocationDao()
+
+        val list = locationDao.loadByTraceRecordId(155)
+        for(i in 1 until list.size) {
+            val lastLocation = list[i-1]
+            val location = list[i]
+            val distance = AMapUtils.calculateLineDistance(
+                LatLng(lastLocation.latitude, lastLocation.longitude),
+                LatLng(location.latitude, location.longitude)
+            )
+            logger.i("$location distance: $distance")
+        }
+
+        val dao = db.traceRecordDao()
+
     }
 
     @Test

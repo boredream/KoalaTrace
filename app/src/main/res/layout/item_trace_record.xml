@@ -25,7 +25,7 @@
             android:layout_height="wrap_content"
             android:text="@{bean.name}"
             android:textColor="@color/txt_black"
-            android:textSize="@dimen/txt_subhead"
+            android:textSize="@dimen/txt_body"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="1990-02-14" />
@@ -36,21 +36,32 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin_tiny"
             android:text='@{"时间：" + TimeUtils.millis2String(bean.startTime) + " ~ " + TimeUtils.millis2String(bean.endTime, "HH:mm:ss") }'
-            android:textColor="@color/txt_black"
-            android:textSize="@dimen/txt_body"
+            android:textColor="@color/txt_gray"
+            android:textSize="@dimen/txt_caption"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tv_name" />
+
+        <TextView
+            android:id="@+id/tv_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text='@{"地点：" + bean.formatAddress() }'
+            android:layout_marginTop="2dp"
+            android:textColor="@color/txt_gray"
+            android:textSize="@dimen/txt_caption"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_time" />
 
         <TextView
             android:id="@+id/tv_content"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_tiny"
             android:text='@{"轨迹总长：" + bean.distance + " 米"}'
-            android:textColor="@color/txt_black"
-            android:textSize="@dimen/txt_body"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/txt_gray"
+            android:textSize="@dimen/txt_caption"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_time" />
+            app:layout_constraintTop_toBottomOf="@+id/tv_address" />
 
         <TextView
             android:layout_width="wrap_content"

@@ -2,6 +2,8 @@ package com.boredream.koalatrace.data.repo
 
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.model.LatLng
+import com.amap.api.services.geocoder.GeocodeAddress
+import com.amap.api.services.geocoder.RegeocodeAddress
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.constant.LocationConstant.MIN_VALID_DISTANCE
@@ -142,6 +144,15 @@ class LocationRepository @Inject constructor(
     }
 
     /**
+     * 经纬度反查地址
+     */
+    fun geocodeSearch(
+        latitude: Double,
+        longitude: Double,
+        callback: ((address: RegeocodeAddress?) -> Unit)?
+    ) = dataSource.geocodeSearch(latitude, longitude, callback)
+
+    /**
      * 添加定位轨迹追踪点
      */
     private fun appendTracePoint(location: TraceLocation) {
@@ -172,7 +183,7 @@ class LocationRepository @Inject constructor(
             val accuracy = location.extraData!!.split("_")[1].toFloat()
             accuracyCredible = if(accuracy < LocationConstant.TOTALLY_CREDIBLE_ACCURACY) {
                 ACCURACY_TYPE_TOTALLY_CREDIBLE
-            } else if(accuracy > LocationConstant.CREDIBLE_ACCURACY) {
+            } else if(accuracy < LocationConstant.CREDIBLE_ACCURACY) {
                 ACCURACY_TYPE_CREDIBLE
             } else {
                 ACCURACY_TYPE_UN_CREDIBLE
@@ -193,14 +204,17 @@ class LocationRepository @Inject constructor(
 
             traceList.add(location)
         } else {
-            // 无效数据，只更新最后一个位置时间
-            traceList.last().action = TraceLocation.ACTION_UPDATE
-            traceList.last().time = location.time
+            // 无效数据，且已有数据，更新最后一个位置时间
+            if(traceList.size > 0) {
+                traceList.last().action = TraceLocation.ACTION_UPDATE
+                traceList.last().time = location.time
+            }
         }
         onTraceSuccess.forEach { it.invoke(traceList) }
         logger.v("trace success, size = ${traceList.size}, " +
                 "distance = $distance, " +
                 "maxDistance = $maxDistance, " +
+                "distanceCredible = $distanceCredible, " +
                 "accuracyCredible = $accuracyCredible, " +
                 "validate = $validate, " +
                 "location = $location")

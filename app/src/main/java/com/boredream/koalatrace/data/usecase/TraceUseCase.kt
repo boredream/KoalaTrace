@@ -1,6 +1,7 @@
 package com.boredream.koalatrace.data.usecase
 
 import com.blankj.utilcode.util.CollectionUtils
+import com.blankj.utilcode.util.StringUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.base.BaseUseCase
 import com.boredream.koalatrace.data.ResponseEntity
@@ -17,6 +18,7 @@ import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.collections.ArrayList
 
 @Singleton
 class TraceUseCase @Inject constructor(
@@ -29,6 +31,7 @@ class TraceUseCase @Inject constructor(
 ) : BaseUseCase() {
 
     var currentTraceRecord: TraceRecord? = null
+    private val geocodeSearchingSet = HashSet<Long>()
 
     private fun getMyLocation() = locationRepository.myLocation
 
@@ -40,7 +43,7 @@ class TraceUseCase @Inject constructor(
 
     suspend fun onTraceSuccess(locationList: ArrayList<TraceLocation>) {
         // 判断是否有跳点，则新建轨迹
-        if(locationList.size > 0 && locationList.last().action == TraceLocation.ACTION_NEW_RECORD) {
+        if (locationList.size > 0 && locationList.last().action == TraceLocation.ACTION_NEW_RECORD) {
             stopTrace()
             startTrace()
             return
@@ -112,10 +115,10 @@ class TraceUseCase @Inject constructor(
         if (CollectionUtils.isEmpty(list)) return
         // list 是源数据，没有dbId，所以要和当前已记录数据 record.traceList 对比
         val lastLocation = list.last()
-        if(lastLocation.action == TraceLocation.ACTION_ADD) {
+        if (lastLocation.action == TraceLocation.ACTION_ADD) {
             // 新增
             record.traceList.add(lastLocation)
-        } else if(lastLocation.action == TraceLocation.ACTION_UPDATE) {
+        } else if (lastLocation.action == TraceLocation.ACTION_UPDATE) {
             // 最后一个location修改
             record.traceList.last().time = lastLocation.time
             record.traceList.last().extraData = lastLocation.extraData
@@ -132,7 +135,7 @@ class TraceUseCase @Inject constructor(
      * 更新所有未完成状态的轨迹（记录中的、数据有问题的等）
      * @return Boolean
      */
-    suspend fun refreshUnFinishTrace() : Boolean {
+    suspend fun refreshUnFinishTrace(): Boolean {
         var hasUpdate = false
         val list = traceRecordRepository.getUnFinishTraceRecord()
         if (list.isSuccess()) {
@@ -144,6 +147,51 @@ class TraceUseCase @Inject constructor(
             }
         }
         return hasUpdate
+    }
+
+    /**
+     * 更新所有地址为空轨迹的区域信息
+     */
+    suspend fun checkUpdateRecordArea(): Boolean {
+        val traceRecordList = traceRecordRepository.getNoAddressTraceRecord()
+        if (traceRecordList.isSuccess()) {
+            val list = traceRecordList.getSuccessData()
+            list.forEach {
+                val locationListResponse = traceRecordRepository.getLocationList(it.id)
+                if(locationListResponse.isSuccess() && CollectionUtils.isNotEmpty(locationListResponse.data)) {
+                    it.traceList = locationListResponse.getSuccessData()
+                    updateRecordArea(it)
+                }
+            }
+            return !CollectionUtils.isEmpty(list)
+        }
+        return false
+    }
+
+    /**
+     * 更新轨迹的区域信息
+     */
+    fun updateRecordArea(record: TraceRecord) {
+        logger.i("start updateRecordArea = $record")
+        if (!StringUtils.isEmpty(record.adminArea)) return
+        if (geocodeSearchingSet.contains(record.id)) return
+        val mid = record.traceList[record.traceList.size / 2]
+        locationRepository.geocodeSearch(mid.latitude, mid.longitude) {
+            scope.launch {
+                geocodeSearchingSet.remove(record.id)
+                record.country = it?.country
+                record.adminArea = it?.province
+                record.subAdminArea = it?.city
+                record.locality = it?.district
+                record.subLocality = it?.township
+                traceRecordRepository.update(record)
+                logger.i(
+                    "record = $record , "
+                            + "adminArea = ${record.adminArea}, subAdminArea = ${record.subAdminArea}, "
+                            + "locality = ${record.locality}, subLocality = ${record.subLocality}"
+                )
+            }
+        }
     }
 
     suspend fun checkStopTrace(): Boolean {
@@ -180,6 +228,7 @@ class TraceUseCase @Inject constructor(
         logger.i("stop trace: ${record.name}")
         traceRecordRepository.updateByTraceList(record)
         traceRecordUpdate.forEach { it.invoke(record) }
+        updateRecordArea(record)
         locationRepository.clearTraceList()
         currentTraceRecord = null
         locationRepository.removeTraceSuccessListener(onTraceSuccessListener)
@@ -189,19 +238,22 @@ class TraceUseCase @Inject constructor(
      * 获取所有历史轨迹
      */
     suspend fun getAllHistoryTraceRecordList(): ResponseEntity<ArrayList<TraceRecord>> {
+        // TODO: 显示今天的，历史数据按日期判断？
         val myLocation = getMyLocation() ?: return ResponseEntity.notExistError()
         // TODO: 我的位置不停的变化，变化后如何处理？重新获取？
-        val recordList = traceRecordRepository.getNearHistoryTraceList(
+        val response = traceRecordRepository.getNearHistoryTraceList(
             myLocation.latitude,
             myLocation.longitude
         )
-        if (recordList.isSuccess() && recordList.data != null) {
-            recordList.data.forEach {
+        if (response.isSuccess() && response.data != null) {
+            response.data.forEach {
                 val locationList = traceRecordRepository.getLocationList(it.id).data
                 it.traceList = locationList ?: arrayListOf()
             }
+            // 剃出当前轨迹
+            response.data.remove(currentTraceRecord)
         }
-        return recordList
+        return response
     }
 
     fun addLocationSuccessListener(listener: (location: TraceLocation) -> Unit) {

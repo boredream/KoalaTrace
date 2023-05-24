@@ -22,7 +22,7 @@
     <color name="green">#85C545</color>
 
     <color name="bg_gray">#F7F7F7</color>
-    <color name="bg_gray_pressed">#BDBDBD</color>
+    <color name="bg_gray_pressed">#D8D8D8</color>
     <color name="divider_gray">#0F000000</color>
 
 </resources>

@@ -25,6 +25,15 @@ class TraceRecordLocalDataSource @Inject constructor(
         }
     }
 
+    suspend fun getNoAddressTraceRecord(): ResponseEntity<ArrayList<TraceRecord>> {
+        return try {
+            val list = traceRecordDao.loadNoAddressTraceRecord()
+            ResponseEntity.success(ArrayList(list))
+        } catch (e: Exception) {
+            ResponseEntity(null, 500, e.toString())
+        }
+    }
+
     @Transaction
     override suspend fun add(data: TraceRecord): ResponseEntity<TraceRecord> {
         var insert: Long = -1
@@ -79,7 +88,7 @@ class TraceRecordLocalDataSource @Inject constructor(
         }
     }
 
-    suspend fun getNearbyList(
+    suspend fun getNearbyRecordList(
         targetLat: Double,
         targetLng: Double,
         range: Double
@@ -91,6 +100,23 @@ class TraceRecordLocalDataSource @Inject constructor(
             val maxLng = targetLng + range
             val list = traceRecordDao.loadNearby(minLat, maxLat, minLng, maxLng)
             logger.i("minLat=$minLat, maxLat=$maxLat, minLng=$minLng, maxLng=$maxLng")
+            ResponseEntity.success(ArrayList(list))
+        } catch (e: Exception) {
+            ResponseEntity(null, 500, e.toString())
+        }
+    }
+
+    suspend fun getNearbyLocationList(
+        targetLat: Double,
+        targetLng: Double,
+        range: Double
+    ): ResponseEntity<ArrayList<TraceLocation>> {
+        return try {
+            val minLat = targetLat - range
+            val maxLat = targetLat + range
+            val minLng = targetLng - range
+            val maxLng = targetLng + range
+            val list = traceLocationDao.loadNearby(minLat, maxLat, minLng, maxLng)
             ResponseEntity.success(ArrayList(list))
         } catch (e: Exception) {
             ResponseEntity(null, 500, e.toString())
@@ -141,6 +167,22 @@ class TraceRecordLocalDataSource @Inject constructor(
         } catch (e: Exception) {
             ResponseEntity(null, 500, e.toString())
         }
+    }
+
+    @Transaction
+    suspend fun deleteLocation(data: TraceLocation): ResponseEntity<TraceLocation> {
+        var delete: Int = -1
+        try {
+            delete = traceLocationDao.delete(data)
+            logger.i("delete location $data")
+        } catch (e: Exception) {
+            //
+        }
+
+        if (delete <= 0) {
+            return ResponseEntity(null, 500, "数据删除失败")
+        }
+        return ResponseEntity.success(data)
     }
 
 }

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.amap.api.mapcore.util.it
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseFragment
 import com.boredream.koalatrace.common.SimpleListAdapter
@@ -33,6 +34,7 @@ class TraceRecordListFragment :
         val view = super.onCreateView(inflater, container, savedInstanceState)
         initView()
         viewModel.updateAllUnFinishRecord()
+        viewModel.checkUpdateRecordArea()
         return view
     }
 
@@ -43,8 +45,10 @@ class TraceRecordListFragment :
 
     private fun initView() {
         adapter = SimpleListAdapter(dataList, R.layout.item_trace_record)
-        adapter.onItemClickListener = { TraceRecordDetailActivity.start(requireContext(), it) }
-        adapter.onItemLongClickListener = {
+        adapter.onItemClickListener = { _, it ->
+            TraceRecordDetailActivity.start(requireContext(), it)
+        }
+        adapter.onItemLongClickListener = { _, it ->
             DialogUtils.showDeleteConfirmDialog(requireContext(), { viewModel.delete(it) })
         }
         binding.refreshTraceList.setup(

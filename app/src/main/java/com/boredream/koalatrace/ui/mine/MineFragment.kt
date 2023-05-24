@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.amap.api.mapcore.util.it
 import com.blankj.utilcode.util.AppUtils
 import com.blankj.utilcode.util.IntentUtils
 import com.boredream.koalatrace.BuildConfig
@@ -57,7 +58,7 @@ class MineFragment : BaseFragment<MineViewModel, FragmentMineBinding>() {
             dataList.add(SettingItem("日志", ""))
         }
         adapter = SimpleListAdapter(dataList, R.layout.item_setting)
-        adapter.onItemClickListener = {
+        adapter.onItemClickListener = { _, it ->
             when (it.name) {
                 "推荐给好友" -> startActivity(IntentUtils.getShareTextIntent("我在使用一块好用的软件，快来下载吧! \nhttps://www.papikoala.cn")) // TODO: 待补充
                 "意见反馈" -> {

@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.FileUtils
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.amap.api.mapcore.util.it
 import com.autonavi.base.amap.mapcore.FileUtil
 import com.blankj.utilcode.util.FileIOUtils
 import com.blankj.utilcode.util.ToastUtils
@@ -54,7 +55,7 @@ class LogActivity : BaseActivity<LogViewModel, ActivityLogBinding>() {
     private fun initView() {
         binding.rv.layoutManager = LinearLayoutManager(this)
         adapter = SimpleListAdapter(dataList, R.layout.item_log_file)
-        adapter.onItemClickListener = {
+        adapter.onItemClickListener = { _, it ->
             val log = FileIOUtils.readFile2String(it)
             binding.tvLog.text = log
             binding.svLog.visibility = View.VISIBLE

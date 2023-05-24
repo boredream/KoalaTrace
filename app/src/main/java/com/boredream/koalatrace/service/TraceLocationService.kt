@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.data.constant.BundleKey
+import com.boredream.koalatrace.data.repo.LocationRepository
 import com.boredream.koalatrace.data.usecase.TraceUseCase
 import com.boredream.koalatrace.ui.main.MainTabActivity
 import dagger.hilt.android.AndroidEntryPoint
@@ -82,6 +83,15 @@ class TraceLocationService : Service() {
             startForeground(SERVICE_ID, notification)
         }
 
+        traceUseCase.addStatusChangeListener {
+            val status = when(it) {
+                LocationRepository.STATUS_IDLE -> "STATUS_IDLE"
+                LocationRepository.STATUS_LOCATION -> "STATUS_LOCATION"
+                LocationRepository.STATUS_TRACE -> "STATUS_TRACE"
+                else -> "unknown"
+            }
+            LogUtils.i("location status = $status")
+        }
         traceUseCase.startLocation()
         scope.launch {
             traceUseCase.startTrace()

@@ -2,11 +2,7 @@ package com.boredream.koalatrace
 
 import android.app.Activity
 import android.app.Application
-import com.blankj.utilcode.util.AppUtils
-import com.blankj.utilcode.util.FileUtils
-import com.blankj.utilcode.util.LogUtils
-import com.blankj.utilcode.util.PathUtils
-import com.blankj.utilcode.util.Utils
+import com.blankj.utilcode.util.*
 import com.boredream.koalatrace.data.constant.GlobalConstant
 import com.boredream.koalatrace.utils.DataStoreUtils
 import com.scwang.smart.refresh.footer.ClassicsFooter
@@ -29,10 +25,14 @@ class BaseApplication : Application() {
             .setStackOffset(1)
             .setConsoleSwitch(BuildConfig.DEBUG)
             .setLog2FileSwitch(BuildConfig.DEBUG)
-            .setFileFilter(LogUtils.I)
+            .setFileFilter(LogUtils.E)
             .setDir(File(PathUtils.getInternalAppCachePath(), "log"))
             .setSaveDays(7)
             .setBorderSwitch(false)
+
+        CrashUtils.init {
+            LogUtils.e(it.toString())
+        }
 
         DataStoreUtils.init(this)
         initRefresh()

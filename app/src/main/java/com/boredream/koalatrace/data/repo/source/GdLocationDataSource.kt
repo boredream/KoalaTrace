@@ -2,16 +2,17 @@ package com.boredream.koalatrace.data.repo.source
 
 import android.content.Context
 import android.util.Log
-import com.amap.api.location.AMapLocation
 import com.amap.api.location.AMapLocationClient
 import com.amap.api.location.AMapLocationClientOption
+import com.amap.api.maps.model.LatLng
+import com.amap.api.services.core.LatLonPoint
+import com.amap.api.services.geocoder.*
+import com.blankj.utilcode.util.CollectionUtils
 import com.boredream.koalatrace.data.TraceLocation
-import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.constant.LocationParam
-import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.Objects
 import javax.inject.Inject
+
 
 class GdLocationDataSource @Inject constructor(
     @ApplicationContext val context: Context,
@@ -34,6 +35,28 @@ class GdLocationDataSource @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Exception:$e")
         }
+    }
+
+    // 经纬度反查地址 https://lbs.amap.com/api/android-sdk/guide/map-data/geo#reverse-geocode
+    override fun geocodeSearch(latitude: Double, longitude: Double, callback: ((address: RegeocodeAddress?) -> Unit)?) {
+        val geocoderSearch = GeocodeSearch(context)
+        geocoderSearch.setOnGeocodeSearchListener(object : GeocodeSearch.OnGeocodeSearchListener {
+            override fun onRegeocodeSearched(result: RegeocodeResult?, rCode: Int) {
+                if(result?.regeocodeAddress == null) {
+                    callback?.invoke(null)
+                    return
+                }
+                val address = result.regeocodeAddress
+                callback?.invoke(address)
+            }
+
+            override fun onGeocodeSearched(result: GeocodeResult?, rCode: Int) {
+            }
+
+        })
+        // 第一个参数表示一个Latlng，第二参数表示范围多少米，第三个参数表示是火系坐标系还是GPS原生坐标系
+        val query = RegeocodeQuery(LatLonPoint(latitude, longitude), 200F, GeocodeSearch.AMAP)
+        geocoderSearch.getFromLocationAsyn(query)
     }
 
     private fun initClient(

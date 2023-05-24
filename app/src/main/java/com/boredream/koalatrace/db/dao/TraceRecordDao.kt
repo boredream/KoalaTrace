@@ -7,6 +7,9 @@ import com.boredream.koalatrace.data.TraceRecord
 @Dao
 interface TraceRecordDao {
 
+    @Query("SELECT * FROM TraceRecord WHERE subAdminArea IS NULL AND isRecording = 0")
+    suspend fun loadNoAddressTraceRecord(): List<TraceRecord>
+
     @Query("SELECT * FROM TraceRecord WHERE isRecording = 1")
     suspend fun loadUnFinishTraceRecord(): List<TraceRecord>
 

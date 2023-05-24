@@ -22,14 +22,17 @@ class TraceRecordRepository @Inject constructor(
 
     suspend fun getList() = localDataSource.getList()
 
+    /**
+     * 获取目标经纬度范围内所有轨迹
+     */
     suspend fun getNearHistoryTraceList(
         targetLat: Double,
-        targetLng: Double
+        targetLng: Double,
+        rangeMeter: Int = 5000
     ): ResponseEntity<ArrayList<TraceRecord>> {
         // 查询附近线路 5km
-        val rangeMeter = 5000
         val range = LocationConstant.ONE_METER_LAT_LNG * rangeMeter
-        val traceRecordList = localDataSource.getNearbyList(targetLat, targetLng, range)
+        val traceRecordList = localDataSource.getNearbyRecordList(targetLat, targetLng, range)
         // 查询线路下所有轨迹
         if (traceRecordList.isSuccess()) {
             traceRecordList.getSuccessData().forEach {
@@ -63,20 +66,23 @@ class TraceRecordRepository @Inject constructor(
 
     suspend fun getUnFinishTraceRecord() = localDataSource.getUnFinishTraceRecord()
 
-    suspend fun updateByTraceList(record: TraceRecord) {
+    suspend fun getNoAddressTraceRecord() = localDataSource.getNoAddressTraceRecord()
+
+    suspend fun updateByTraceList(record: TraceRecord): ResponseEntity<TraceRecord> {
         val locationList = record.traceList
         record.distance = TraceUtils.calculateDistance(locationList)
 
-        if (!TraceUtils.isValidTrace(record)) {
+        return if (!TraceUtils.isValidTrace(record)) {
             delete(record)
         } else {
+            record.startTime = locationList[0].time
             record.endTime = locationList[locationList.lastIndex].time
             record.isRecording = false
             insertOrUpdate(record)
-            logger.i("update traceRecord: ${record.name} , distance = ${record.distance}")
         }
     }
 
     suspend fun delete(data: TraceRecord) = localDataSource.delete(data)
+    suspend fun deleteLocation(data: TraceLocation)  = localDataSource.deleteLocation(data)
 
 }

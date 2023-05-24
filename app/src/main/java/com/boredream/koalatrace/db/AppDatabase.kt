@@ -7,7 +7,7 @@ import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.db.dao.TraceLocationDao
 import com.boredream.koalatrace.db.dao.TraceRecordDao
 
-@Database(entities = [TraceRecord::class, TraceLocation::class], version = 1, exportSchema = false)
+@Database(entities = [TraceRecord::class, TraceLocation::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun traceRecordDao(): TraceRecordDao

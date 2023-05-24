@@ -21,7 +21,11 @@ object DatabaseModule {
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
         val migration1To2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                // do nothing
+                database.execSQL("ALTER TABLE TraceRecord ADD COLUMN `country` TEXT")
+                database.execSQL("ALTER TABLE TraceRecord ADD COLUMN `adminArea` TEXT")
+                database.execSQL("ALTER TABLE TraceRecord ADD COLUMN `subAdminArea` TEXT")
+                database.execSQL("ALTER TABLE TraceRecord ADD COLUMN `locality` TEXT")
+                database.execSQL("ALTER TABLE TraceRecord ADD COLUMN `subLocality` TEXT")
             }
         }
 

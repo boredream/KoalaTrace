@@ -22,7 +22,7 @@ object LocationConstant {
     /**
      * 最小计算追踪点（单位：m）
      */
-    const val MIN_VALID_DISTANCE = 2
+    const val MIN_VALID_DISTANCE = 2f
 
     /**
      * 最小保存轨迹距离，小于等于时删除（单位：m）
@@ -42,7 +42,7 @@ object LocationConstant {
     /**
      * 可信精度的阈值（单位：m）
      */
-    const val CREDIBLE_ACCURACY = 25
+    const val CREDIBLE_ACCURACY = 30
 
     /**
      * 完全可信精度的阈值（单位：m）

@@ -1,12 +1,12 @@
 package com.boredream.koalatrace.data.repo
 
-import com.boredream.koalatrace.PrintLogger
 import com.boredream.koalatrace.TestDataConstants.getStepTraceLocation
 import com.boredream.koalatrace.TestDataConstants.getTraceLocation
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.constant.LocationParam
 import com.boredream.koalatrace.data.repo.source.LocationDataSource
+import com.boredream.koalatrace.utils.PrintLogger
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK

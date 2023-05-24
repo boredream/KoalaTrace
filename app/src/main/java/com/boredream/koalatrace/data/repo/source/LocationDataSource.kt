@@ -1,5 +1,7 @@
 package com.boredream.koalatrace.data.repo.source
 
+import com.amap.api.services.core.LatLonPoint
+import com.amap.api.services.geocoder.*
 import com.boredream.koalatrace.data.TraceLocation
 
 /**
@@ -16,5 +18,7 @@ interface LocationDataSource {
      * 停止定位
      */
     fun stopLocation()
+
+    fun geocodeSearch(latitude: Double, longitude: Double, callback: ((address: RegeocodeAddress?) -> Unit)?)
 
 }

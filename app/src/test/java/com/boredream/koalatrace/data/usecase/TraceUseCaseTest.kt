@@ -1,15 +1,14 @@
 package com.boredream.koalatrace.data.usecase
 
-import com.boredream.koalatrace.PrintLogger
 import com.boredream.koalatrace.TestDataConstants
 import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
-import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.constant.LocationParam
 import com.boredream.koalatrace.data.repo.LocationRepository
 import com.boredream.koalatrace.data.repo.SensorRepository
 import com.boredream.koalatrace.data.repo.TraceRecordRepository
+import com.boredream.koalatrace.utils.PrintLogger
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every

@@ -1,15 +1,24 @@
 package com.boredream.koalatrace.data.repo.source
 
+import android.content.Context
 import android.os.CountDownTimer
 import com.amap.api.location.AMapLocation
-import com.boredream.koalatrace.utils.TraceFilter
+import com.amap.api.services.core.LatLonPoint
+import com.amap.api.services.geocoder.*
 import com.boredream.koalatrace.data.TraceLocation
+import com.boredream.koalatrace.utils.Logger
+import com.boredream.koalatrace.utils.TraceFilter
+import com.google.gson.Gson
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.random.Random
 
-class FakeLocationDataSource @Inject constructor() : LocationDataSource {
+class FakeLocationDataSource @Inject constructor(
+    @ApplicationContext val context: Context,
+    val logger: Logger,
+) : LocationDataSource {
 
     private lateinit var traceFilter: TraceFilter
     private lateinit var countDownTimer: CountDownTimer
@@ -55,6 +64,27 @@ class FakeLocationDataSource @Inject constructor() : LocationDataSource {
         val location = TraceLocation(latitude = moveLocation.latitude, longitude = moveLocation.longitude)
         location.extraData = "1_3" // GPS_精度3米
         return location
+    }
+
+    override fun geocodeSearch(latitude: Double, longitude: Double, callback: ((address: RegeocodeAddress?) -> Unit)?) {
+        val geocoderSearch = GeocodeSearch(context)
+        geocoderSearch.setOnGeocodeSearchListener(object : GeocodeSearch.OnGeocodeSearchListener {
+            override fun onRegeocodeSearched(result: RegeocodeResult?, rCode: Int) {
+                if(result?.regeocodeAddress == null) {
+                    callback?.invoke(null)
+                    return
+                }
+                val address = result.regeocodeAddress
+                callback?.invoke(address)
+            }
+
+            override fun onGeocodeSearched(result: GeocodeResult?, rCode: Int) {
+            }
+
+        })
+        // 第一个参数表示一个Latlng，第二参数表示范围多少米，第三个参数表示是火系坐标系还是GPS原生坐标系
+        val query = RegeocodeQuery(LatLonPoint(latitude, longitude), 200F, GeocodeSearch.AMAP)
+        geocoderSearch.getFromLocationAsyn(query)
     }
 
 }

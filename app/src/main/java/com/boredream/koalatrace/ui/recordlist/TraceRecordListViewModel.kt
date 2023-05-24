@@ -45,4 +45,14 @@ class TraceRecordListViewModel @Inject constructor(
         }
     }
 
+    fun checkUpdateRecordArea() {
+        // 如果有之前未保存的，刷新轨迹数据
+        viewModelScope.launch {
+            val hasUpdate = userCase.checkUpdateRecordArea()
+            if(hasUpdate) {
+                loadData()
+            }
+        }
+    }
+
 }
