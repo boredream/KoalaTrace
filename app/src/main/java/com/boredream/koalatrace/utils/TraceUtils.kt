@@ -6,8 +6,11 @@ import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.LocationConstant
+import kotlin.math.pow
 
 object TraceUtils {
+
+    private val logger = PrintLogger()
 
     fun getTraceListName(traceList: ArrayList<TraceLocation>): String {
         val time = TimeUtils.millis2String(traceList[traceList.lastIndex].time)
@@ -35,10 +38,42 @@ object TraceUtils {
      */
     fun isValidTrace(record: TraceRecord): Boolean {
         // 总轨迹点数量<xx无效
-        if(record.traceList.size < LocationConstant.SAVE_TRACE_MIN_POSITION_SIZE) return false
+        if (record.traceList.size < LocationConstant.SAVE_TRACE_MIN_POSITION_SIZE) return false
         // 总距离<xx米无效
-        if(record.distance < LocationConstant.SAVE_TRACE_MIN_DISTANCE) return false
+        if (record.distance < LocationConstant.SAVE_TRACE_MIN_DISTANCE) return false
         return true
+    }
+
+    /**
+     * 获取离目标经纬度，在范围内最近的点
+     */
+    fun getMostNearlyLocation(
+        traceList: ArrayList<TraceLocation>,
+        latitude: Double,
+        longitude: Double,
+        zoomLevel: Float,
+    ): TraceLocation? {
+        // 范围需要根据比例尺计算
+        val maxZoomLevel = 20.0
+        val ratio = 2.0.pow(maxZoomLevel - zoomLevel)
+        val range = 5 * ratio
+
+        // 范围内最近的点位
+        var minDistanceLocation: TraceLocation? = null
+        // 最近的
+        var minDistance = Float.MAX_VALUE
+        traceList.forEach {
+            val distance = AMapUtils.calculateLineDistance(
+                LatLng(latitude, longitude),
+                LatLng(it.latitude, it.longitude)
+            )
+            if (distance < range && distance < minDistance) {
+                minDistance = distance
+                minDistanceLocation = it
+            }
+        }
+        logger.i("latitude = $latitude, longitude = $longitude, zoomLevel = $zoomLevel, range = $range")
+        return minDistanceLocation
     }
 
 }

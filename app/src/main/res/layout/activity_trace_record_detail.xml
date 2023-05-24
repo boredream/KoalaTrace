@@ -29,18 +29,6 @@
             app:rightText="修改"
             app:title="轨迹详情" />
 
-        <com.boredream.koalatrace.view.TraceMapView
-            android:id="@+id/map_view"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            app:historyTraceList="@{vm.traceListUiState}"
-            app:layout_constraintBottom_toTopOf="@+id/v_bottom_card"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/title_bar"
-            app:myLocation="@{vm.startLocationUiState}"
-            tools:background="@color/divider_gray" />
-
         <LinearLayout
             android:id="@+id/v_bottom_card"
             android:layout_width="match_parent"
@@ -75,6 +63,25 @@
                 android:text='@{"轨迹总长：" + vm.uiState.distance + " 米"}'
                 tools:text="轨迹总长：" />
         </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_location_list"
+            android:layout_width="80dp"
+            android:layout_height="0dp"
+            android:background="@color/white"
+            app:layout_constraintBottom_toTopOf="@id/v_bottom_card"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/title_bar" />
+
+        <com.boredream.koalatrace.view.TraceEditMapView
+            android:id="@+id/map_view"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@+id/v_bottom_card"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/rv_location_list"
+            app:layout_constraintTop_toBottomOf="@id/title_bar"
+            tools:background="@color/divider_gray" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -10,11 +10,28 @@ object DialogUtils {
         okListener: () -> Unit,
         cancelListener: () -> Unit = { }
     ) {
+        showDialog(
+            context,
+            message = "是否确认删除",
+            okListener = okListener,
+            cancelListener = cancelListener
+        )
+    }
+
+    fun showDialog(
+        context: Context,
+        title: String = "提醒",
+        message: String = "",
+        okText: String = "确认",
+        okListener: () -> Unit,
+        cancelText: String = "取消",
+        cancelListener: () -> Unit = { }
+    ) {
         AlertDialog.Builder(context)
-            .setTitle("提醒")
-            .setMessage("是否确认删除")
-            .setPositiveButton("确认") { _, _ -> okListener.invoke() }
-            .setNegativeButton("取消") { _, _ -> cancelListener.invoke() }
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton(okText) { _, _ -> okListener.invoke() }
+            .setNegativeButton(cancelText) { _, _ -> cancelListener.invoke() }
             .show()
     }
 
