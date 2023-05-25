@@ -1,6 +1,7 @@
 package com.boredream.koalatrace.data.repo.source
 
 import androidx.room.Transaction
+import androidx.sqlite.db.SupportSQLiteQueryBuilder
 import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
@@ -78,6 +79,29 @@ class TraceRecordLocalDataSource @Inject constructor(
             return ResponseEntity(null, 500, "数据插入失败")
         }
         return ResponseEntity.success(dataList)
+    }
+
+    suspend fun getListByCondition(startTime: Long?, endTime: Long?): ResponseEntity<ArrayList<TraceRecord>> {
+        return try {
+            val queryBuilder = SupportSQLiteQueryBuilder.builder("TraceRecord")
+            val selectionArgs = mutableListOf<Any>()
+
+            if(startTime != null && endTime != null) {
+                // 使用结束时间判断
+                queryBuilder.selection("endTime BETWEEN ? AND ?", arrayOf(startTime, endTime))
+            }
+//        if (age != null) {
+//            queryBuilder.selection("age = ?", arrayOf(age))
+//        }
+
+            // 时间倒序
+            queryBuilder.orderBy("startTime desc")
+
+            val query = queryBuilder.create()
+            ResponseEntity.success(ArrayList(traceRecordDao.query(query)))
+        } catch (e: Exception) {
+            ResponseEntity(null, 500, e.toString())
+        }
     }
 
     suspend fun getList(): ResponseEntity<ArrayList<TraceRecord>> {

@@ -1,5 +1,6 @@
 package com.boredream.koalatrace.data.repo
 
+import com.amap.api.mapcore.util.it
 import com.boredream.koalatrace.base.BaseRepository
 import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
@@ -21,6 +22,9 @@ class TraceRecordRepository @Inject constructor(
 ) : BaseRepository() {
 
     suspend fun getList() = localDataSource.getList()
+
+    suspend fun getListByCondition(startTime: Long?, endTime: Long?) =
+        localDataSource.getListByCondition(startTime, endTime)
 
     /**
      * 获取目标经纬度范围内所有轨迹

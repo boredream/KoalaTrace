@@ -1,11 +1,16 @@
 package com.boredream.koalatrace.db.dao
 
 import androidx.room.*
+import androidx.sqlite.db.SupportSQLiteQuery
+import androidx.sqlite.db.SupportSQLiteQueryBuilder
 import com.boredream.koalatrace.data.TraceRecord
 
 
 @Dao
 interface TraceRecordDao {
+
+    @RawQuery(observedEntities = [TraceRecord::class])
+    suspend fun query(query: SupportSQLiteQuery): List<TraceRecord>
 
     @Query("SELECT * FROM TraceRecord WHERE subAdminArea IS NULL AND isRecording = 0")
     suspend fun loadNoAddressTraceRecord(): List<TraceRecord>

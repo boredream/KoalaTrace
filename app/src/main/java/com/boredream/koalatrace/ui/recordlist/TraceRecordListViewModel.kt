@@ -20,9 +20,25 @@ class TraceRecordListViewModel @Inject constructor(
     val refreshListVMCompose = RefreshListVMCompose(viewModelScope)
     val deleteVMCompose = RequestVMCompose<TraceRecord>(viewModelScope)
 
+    // 条件
+    private var startTime : Long? = null
+    private var endTime : Long? = null
+
     fun onResume() {
         loadData()
         // do other things
+    }
+
+    fun updateDateFilter(startTime: Long?, endTime: Long?) {
+        this.startTime = startTime
+        this.endTime = endTime
+        loadDataByCondition()
+    }
+
+    fun loadDataByCondition() {
+        refreshListVMCompose.loadList {
+            repository.getListByCondition(startTime, endTime)
+        }
     }
 
     fun loadData() {
@@ -54,5 +70,6 @@ class TraceRecordListViewModel @Inject constructor(
             }
         }
     }
+
 
 }
