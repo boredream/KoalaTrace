@@ -173,6 +173,7 @@ class TraceUseCase @Inject constructor(
      */
     fun updateRecordArea(record: TraceRecord) {
         logger.i("start updateRecordArea = $record")
+        if (record.traceList.size == 0) return
         if (!StringUtils.isEmpty(record.adminArea)) return
         if (geocodeSearchingSet.contains(record.id)) return
         val mid = record.traceList[record.traceList.size / 2]

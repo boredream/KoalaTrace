@@ -4,10 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.amap.api.mapcore.util.it
+import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseFragment
 import com.boredream.koalatrace.common.SimpleListAdapter
+import com.boredream.koalatrace.common.SimpleUiStateObserver
 import com.boredream.koalatrace.data.TraceRecord
+import com.boredream.koalatrace.data.TraceRecordArea
 import com.boredream.koalatrace.data.constant.CommonConstant
 import com.boredream.koalatrace.databinding.FragmentTraceRecordListBinding
 import com.boredream.koalatrace.databinding.ItemTraceRecordBinding
@@ -36,9 +40,14 @@ class TraceRecordListFragment :
     ): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
         initView()
+        initData()
+        return view
+    }
+
+    private fun initData() {
         viewModel.updateAllUnFinishRecord()
         viewModel.checkUpdateRecordArea()
-        return view
+        viewModel.loadArea()
     }
 
     override fun onResume() {
@@ -47,24 +56,8 @@ class TraceRecordListFragment :
     }
 
     private fun initView() {
-        val menuList = arrayListOf("所有时间", "今天", "最近7天", "本月", "今年", "自定义日期")
-        binding.spinner.setDropMenuDataList(menuList)
-        binding.spinner.setOnDropMenuItemClickListener {position, data ->
-            if(position == menuList.lastIndex) {
-                // 自定义日期
-                val builder = MaterialDatePicker.Builder.dateRangePicker()
-                builder.setTitleText("选择日期区间")
-                val dateRangePicker = builder.build()
-                dateRangePicker.show(requireActivity().supportFragmentManager, "dateRangePicker")
-                dateRangePicker.addOnPositiveButtonClickListener { selection ->
-                    val startTime = selection.first
-                    val endTime = selection.second + CommonConstant.ONE_DAY_DURATION // 结束日期+1天，相当于当天末尾
-                    viewModel.updateDateFilter(startTime, endTime)
-                }
-            } else {
-                updateByFixDateRange(data)
-            }
-        }
+        initDateSpinner()
+        initAreaSpinner()
         adapter = SimpleListAdapter(dataList, R.layout.item_trace_record)
         adapter.onItemClickListener = { _, it ->
             TraceRecordDetailActivity.start(requireContext(), it)
@@ -76,6 +69,34 @@ class TraceRecordListFragment :
             adapter,
             enableRefresh = false,
         )
+    }
+
+    private fun initDateSpinner() {
+        val menuList = arrayListOf("所有时间", "今天", "最近7天", "本月", "今年", "自定义日期")
+        binding.spinnerDate.setDropMenuDataList(menuList)
+        binding.spinnerDate.setOnDropMenuItemClickListener { position, data ->
+            if (position == menuList.lastIndex) {
+                updateByCustomRange()
+            } else {
+                updateByFixDateRange(data)
+            }
+        }
+    }
+
+    private fun updateByCustomRange() {
+        // 自定义日期
+        val builder = MaterialDatePicker.Builder.dateRangePicker()
+        builder.setTitleText("选择日期区间")
+        val dateRangePicker = builder.build()
+        dateRangePicker.show(requireActivity().supportFragmentManager, "dateRangePicker")
+        dateRangePicker.addOnPositiveButtonClickListener { selection ->
+            val startTime = selection.first
+            val endTime = selection.second + CommonConstant.ONE_DAY_DURATION
+            viewModel.updateDateFilter(startTime, endTime)
+            val startTimeStr = TimeUtils.millis2String(startTime, "yyyy-MM-dd")
+            val endTimeStr = TimeUtils.millis2String(endTime, "MM-dd")
+            binding.spinnerDate.setText("$startTimeStr ~ $endTimeStr")
+        }
     }
 
     private fun updateByFixDateRange(data: String) {
@@ -120,5 +141,28 @@ class TraceRecordListFragment :
         viewModel.updateDateFilter(startTime, endTime)
     }
 
-    
+    private fun initAreaSpinner() {
+        SimpleUiStateObserver.setRequestObserver(
+            this,
+            this,
+            viewModel.loadAreaVMCompose
+        ) { areaList ->
+            val menuList = arrayListOf("所有区域")
+            if (areaList.isSuccess()) {
+                menuList.addAll(areaList.getSuccessData()
+                    .map { "${it.subAdminArea}-${it.locality}" })
+            }
+            binding.spinnerArea.setDropMenuDataList(menuList)
+            binding.spinnerArea.setOnDropMenuItemClickListener { position, data ->
+                var recordArea : TraceRecordArea? = null
+                if(position > 0) {
+                    // 一定是有数据的
+                    recordArea = areaList.getSuccessData()[position - 1]
+                }
+                viewModel.updateAreaFilter(recordArea)
+            }
+        }
+    }
+
+
 }

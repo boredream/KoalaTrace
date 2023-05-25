@@ -5,6 +5,7 @@ import com.boredream.koalatrace.base.BaseViewModel
 import com.boredream.koalatrace.common.vmcompose.RefreshListVMCompose
 import com.boredream.koalatrace.common.vmcompose.RequestVMCompose
 import com.boredream.koalatrace.data.TraceRecord
+import com.boredream.koalatrace.data.TraceRecordArea
 import com.boredream.koalatrace.data.repo.TraceRecordRepository
 import com.boredream.koalatrace.data.usecase.TraceUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,10 +20,12 @@ class TraceRecordListViewModel @Inject constructor(
 
     val refreshListVMCompose = RefreshListVMCompose(viewModelScope)
     val deleteVMCompose = RequestVMCompose<TraceRecord>(viewModelScope)
+    val loadAreaVMCompose = RequestVMCompose<ArrayList<TraceRecordArea>>(viewModelScope)
 
     // 条件
     private var startTime : Long? = null
     private var endTime : Long? = null
+    private var recordArea : TraceRecordArea? = null
 
     fun onResume() {
         loadData()
@@ -32,17 +35,19 @@ class TraceRecordListViewModel @Inject constructor(
     fun updateDateFilter(startTime: Long?, endTime: Long?) {
         this.startTime = startTime
         this.endTime = endTime
-        loadDataByCondition()
+        loadData()
     }
 
-    fun loadDataByCondition() {
-        refreshListVMCompose.loadList {
-            repository.getListByCondition(startTime, endTime)
-        }
+    fun updateAreaFilter(recordArea: TraceRecordArea?) {
+        this.recordArea = recordArea
+        loadData()
     }
 
     fun loadData() {
-        refreshListVMCompose.loadList { repository.getList() }
+//        refreshListVMCompose.loadList { repository.getList() }
+        refreshListVMCompose.loadList {
+            repository.getListByCondition(startTime, endTime, recordArea)
+        }
     }
 
     fun delete(data: TraceRecord) {
@@ -71,5 +76,9 @@ class TraceRecordListViewModel @Inject constructor(
         }
     }
 
-
+    fun loadArea() {
+        loadAreaVMCompose.request {
+            repository.loadArea()
+        }
+    }
 }

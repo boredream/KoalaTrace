@@ -5,6 +5,7 @@ import com.boredream.koalatrace.base.BaseRepository
 import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
+import com.boredream.koalatrace.data.TraceRecordArea
 import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.repo.source.TraceRecordLocalDataSource
 import com.boredream.koalatrace.utils.Logger
@@ -21,10 +22,13 @@ class TraceRecordRepository @Inject constructor(
     private val localDataSource: TraceRecordLocalDataSource,
 ) : BaseRepository() {
 
+    private var areaList: ArrayList<TraceRecordArea> = arrayListOf()
+    private var areaNeedUpdate = true
+
     suspend fun getList() = localDataSource.getList()
 
-    suspend fun getListByCondition(startTime: Long?, endTime: Long?) =
-        localDataSource.getListByCondition(startTime, endTime)
+    suspend fun getListByCondition(startTime: Long?, endTime: Long?, recordArea : TraceRecordArea?) =
+        localDataSource.getListByCondition(startTime, endTime, recordArea)
 
     /**
      * 获取目标经纬度范围内所有轨迹
@@ -55,15 +59,11 @@ class TraceRecordRepository @Inject constructor(
     suspend fun insertOrUpdateLocation(traceRecordDbId: Long, data: TraceLocation)
             : ResponseEntity<TraceLocation> {
         data.traceId = traceRecordDbId
-        return localDataSource.insertOrUpdateLocation(data)
-    }
-
-    suspend fun insertOrUpdateLocationList(
-        traceRecordDbId: Long,
-        dataList: ArrayList<TraceLocation>
-    ): ResponseEntity<ArrayList<TraceLocation>> {
-        dataList.forEach { it.traceId = traceRecordDbId }
-        return localDataSource.insertOrUpdateLocationList(dataList)
+        val response = localDataSource.insertOrUpdateLocation(data)
+        if(response.isSuccess()) {
+            areaNeedUpdate = true
+        }
+        return response
     }
 
     suspend fun update(data: TraceRecord) = localDataSource.update(data)
@@ -88,5 +88,17 @@ class TraceRecordRepository @Inject constructor(
 
     suspend fun delete(data: TraceRecord) = localDataSource.delete(data)
     suspend fun deleteLocation(data: TraceLocation)  = localDataSource.deleteLocation(data)
+
+    suspend fun loadArea(): ResponseEntity<ArrayList<TraceRecordArea>> {
+        if(areaNeedUpdate) {
+            val response = localDataSource.loadArea()
+            if(response.isSuccess()) {
+                areaNeedUpdate = false
+                areaList = response.getSuccessData()
+            }
+            return response
+        }
+        return ResponseEntity.success(areaList)
+    }
 
 }

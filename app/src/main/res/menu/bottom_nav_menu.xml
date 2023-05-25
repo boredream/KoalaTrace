@@ -4,16 +4,16 @@
     <item
         android:id="@+id/navigation_trace_map"
         android:icon="@drawable/ic_baseline_route_24"
-        android:title="足迹" />
+        android:title="当前轨迹" />
 
     <item
         android:id="@+id/navigation_trace_history"
         android:icon="@drawable/ic_dashboard_black_24dp"
-        android:title="历史" />
+        android:title="所有轨迹" />
 
     <item
         android:id="@+id/navigation_mine"
         android:icon="@drawable/ic_baseline_person_24"
-        android:title="我的" />
+        android:title="设置中心" />
 
 </menu>

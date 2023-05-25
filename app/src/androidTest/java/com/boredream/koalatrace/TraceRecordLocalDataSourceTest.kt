@@ -8,6 +8,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.rule.GrantPermissionRule
 import com.blankj.utilcode.util.TimeUtils
+import com.boredream.koalatrace.data.TraceRecordArea
 import com.boredream.koalatrace.data.constant.CommonConstant
 import com.boredream.koalatrace.data.repo.BackupRepository
 import com.boredream.koalatrace.data.repo.source.TraceRecordLocalDataSource
@@ -60,7 +61,13 @@ class TraceRecordLocalDataSourceTest {
     fun testConditionDb() = runBlocking {
         val startDate = TimeUtils.string2Millis("2023-05-20", "yyyy-MM-dd")
         val endDate = TimeUtils.string2Millis("2023-05-24", "yyyy-MM-dd")
-        val response = dataSource.getListByCondition(startDate, endDate)
+        val response = dataSource.getListByCondition(startDate, endDate, TraceRecordArea("上海市", "长宁区", "北新泾街道"))
+        println(Gson().toJson(response))
+    }
+
+    @Test
+    fun testLoadArea() = runBlocking {
+        val response = dataSource.loadArea()
         println(Gson().toJson(response))
     }
 

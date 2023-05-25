@@ -5,8 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.amap.api.mapcore.util.it
 import com.blankj.utilcode.util.LogUtils
+import com.blankj.utilcode.util.ToastUtils
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseActivity
 import com.boredream.koalatrace.common.SimpleUiStateObserver
@@ -67,13 +67,15 @@ class TraceRecordDetailActivity :
             this,
             this,
             viewModel.commitVMCompose
-        )
+        ) {
+            ToastUtils.showShort("修改成功")
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
     private fun onGetRecordSuccess() {
         // TODO: 删除应该局部刷新？
-        if(binding.rvLocationList.adapter == null) {
+        if (binding.rvLocationList.adapter == null) {
             adapter = TraceLocationAdapter(data.traceList)
             adapter.onItemClickListener = { position, _ ->
                 onItemClick(position)
@@ -94,12 +96,12 @@ class TraceRecordDetailActivity :
 
     private fun onItemClick(position: Int) {
         // 更新列表选中
-        if(adapter.selectedPosition != -1) {
+        if (adapter.selectedPosition != -1) {
             // old
             adapter.notifyItemChanged(adapter.selectedPosition)
         }
 
-        if(position < 0 || position >= data.traceList.size) {
+        if (position < 0 || position >= data.traceList.size) {
             return
         }
 

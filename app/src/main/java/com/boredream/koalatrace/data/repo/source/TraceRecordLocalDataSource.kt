@@ -5,9 +5,13 @@ import androidx.sqlite.db.SupportSQLiteQueryBuilder
 import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
+import com.boredream.koalatrace.data.TraceRecordArea
 import com.boredream.koalatrace.db.AppDatabase
 import com.boredream.koalatrace.utils.Logger
+import com.google.gson.Gson
+import java.util.*
 import javax.inject.Inject
+import kotlin.collections.ArrayList
 
 class TraceRecordLocalDataSource @Inject constructor(
     private val logger: Logger,
@@ -81,23 +85,35 @@ class TraceRecordLocalDataSource @Inject constructor(
         return ResponseEntity.success(dataList)
     }
 
-    suspend fun getListByCondition(startTime: Long?, endTime: Long?): ResponseEntity<ArrayList<TraceRecord>> {
+    suspend fun getListByCondition(startTime: Long?, endTime: Long?, recordArea : TraceRecordArea?): ResponseEntity<ArrayList<TraceRecord>> {
         return try {
             val queryBuilder = SupportSQLiteQueryBuilder.builder("TraceRecord")
-            val selectionArgs = mutableListOf<Any>()
+
+            val selectionSql = StringBuilder()
+            val selectionArgs = arrayListOf<Any>()
+
+            // 基础条件
+            selectionSql.append("isRecording = 0")
 
             if(startTime != null && endTime != null) {
                 // 使用结束时间判断
-                queryBuilder.selection("endTime BETWEEN ? AND ?", arrayOf(startTime, endTime))
+                selectionSql.append(" AND (endTime BETWEEN ? AND ?)")
+                selectionArgs.add(startTime)
+                selectionArgs.add(endTime)
             }
-//        if (age != null) {
-//            queryBuilder.selection("age = ?", arrayOf(age))
-//        }
 
-            // 时间倒序
+            if (recordArea != null) {
+                // 市 + 区
+                selectionSql.append(" AND (subAdminArea = ? AND locality = ?)")
+                selectionArgs.add(recordArea.subAdminArea ?: "")
+                selectionArgs.add(recordArea.locality ?: "")
+            }
+
+            queryBuilder.selection(selectionSql.toString(), selectionArgs.toArray())
             queryBuilder.orderBy("startTime desc")
-
             val query = queryBuilder.create()
+            logger.i(query.sql)
+
             ResponseEntity.success(ArrayList(traceRecordDao.query(query)))
         } catch (e: Exception) {
             ResponseEntity(null, 500, e.toString())
@@ -207,6 +223,15 @@ class TraceRecordLocalDataSource @Inject constructor(
             return ResponseEntity(null, 500, "数据删除失败")
         }
         return ResponseEntity.success(data)
+    }
+
+    suspend fun loadArea(): ResponseEntity<ArrayList<TraceRecordArea>> {
+        return try {
+            val list = traceRecordDao.loadArea()
+            ResponseEntity.success(ArrayList(list))
+        } catch (e: Exception) {
+            ResponseEntity(null, 500, e.toString())
+        }
     }
 
 }
