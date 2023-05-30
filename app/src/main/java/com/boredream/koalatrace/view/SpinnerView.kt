@@ -66,7 +66,11 @@ class SpinnerView : LinearLayout, View.OnClickListener {
         this.onItemClickListener = onItemClickListener
     }
 
+    /**
+     * 设置数据列表
+     */
     fun setDropMenuDataList(dataList: List<String>, defSelect: Int = 0) {
+        setText(dataList[defSelect])
         dropMenuView.setDataList(dataList, defSelect)
     }
 

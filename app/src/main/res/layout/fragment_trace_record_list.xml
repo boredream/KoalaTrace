@@ -7,6 +7,8 @@
         <variable
             name="vm"
             type="com.boredream.koalatrace.ui.recordlist.TraceRecordListViewModel" />
+        
+        <import type="android.view.View" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -20,6 +22,8 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:rightText="@{vm.isListModeUiState() ? `列表` : `地图`}"
+            rightClick="@{() -> vm.toggleListMode()}"
             app:title="所有轨迹" />
 
         <LinearLayout
@@ -53,17 +57,28 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@id/ll_spinner" />
 
-        <com.boredream.koalatrace.view.RefreshListView
-            android:id="@+id/refresh_trace_list"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:overScrollMode="never"
-            app:dataList="@{vm.refreshListVMCompose.dataListUiState}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/v_divider"
-            app:refreshState="@{vm.refreshListVMCompose.refreshUiState}" />
+            android:layout_height="0dp" >
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:overScrollMode="never"
+                android:visibility="@{vm.isListModeUiState() ? View.VISIBLE : View.GONE}" />
+
+            <com.boredream.koalatrace.view.TraceListMapView
+                android:id="@+id/mapview_list"
+                android:visibility="@{vm.isListModeUiState() ? View.GONE : View.VISIBLE}"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </FrameLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

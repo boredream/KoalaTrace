@@ -1,8 +1,10 @@
 package com.boredream.koalatrace.ui.recordlist
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.boredream.koalatrace.base.BaseViewModel
-import com.boredream.koalatrace.common.vmcompose.RefreshListVMCompose
+import com.boredream.koalatrace.base.ToastLiveEvent
 import com.boredream.koalatrace.common.vmcompose.RequestVMCompose
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.TraceRecordArea
@@ -18,9 +20,18 @@ class TraceRecordListViewModel @Inject constructor(
     private val repository: TraceRecordRepository,
 ) : BaseViewModel() {
 
-    val refreshListVMCompose = RefreshListVMCompose(viewModelScope)
+    val loadListVMCompose = RequestVMCompose<ArrayList<TraceRecord>>(viewModelScope)
     val deleteVMCompose = RequestVMCompose<TraceRecord>(viewModelScope)
     val loadAreaVMCompose = RequestVMCompose<ArrayList<TraceRecordArea>>(viewModelScope)
+
+    private val _traceListModeUiState = MutableLiveData<ArrayList<TraceRecord>>()
+    val traceListModeUiState: LiveData<ArrayList<TraceRecord>> = _traceListModeUiState
+
+    private val _mapListModeUiState = MutableLiveData<ArrayList<TraceRecord>>()
+    val mapListModeUiState: LiveData<ArrayList<TraceRecord>> = _mapListModeUiState
+
+    private val _isListModeUiState = MutableLiveData(true)
+    val isListModeUiState: LiveData<Boolean> = _isListModeUiState
 
     // 条件
     private var startTime : Long? = null
@@ -44,10 +55,47 @@ class TraceRecordListViewModel @Inject constructor(
     }
 
     fun loadData() {
-//        refreshListVMCompose.loadList { repository.getList() }
-        refreshListVMCompose.loadList {
-            repository.getListByCondition(startTime, endTime, recordArea)
+        loadListVMCompose.request(
+            onSuccess = { onLoadTraceListSuccess(it) } // 数据回来之后，刷新列表
+        ) {
+            val isListMode = isListModeUiState.value ?: true
+            if(isListMode) {
+                repository.getListByCondition(startTime, endTime, recordArea)
+            } else {
+                // TODO: 速度？
+                val response = repository.getListByCondition(startTime, endTime, recordArea)
+                if(response.isSuccess()) {
+                    response.getSuccessData().forEach {
+                        val listResponse = repository.getLocationList(it.id)
+                        if(listResponse.isSuccess()) {
+                            it.traceList = listResponse.getSuccessData()
+                        }
+                    }
+                }
+                response
+            }
         }
+    }
+
+    private fun onLoadTraceListSuccess(traceList: ArrayList<TraceRecord>) {
+        val isListMode = isListModeUiState.value ?: true
+        if(isListMode) {
+            _traceListModeUiState.value = traceList
+        } else {
+            _mapListModeUiState.value = traceList
+        }
+    }
+
+    fun toggleListMode() {
+        if(recordArea == null) {
+            _baseEvent.value = ToastLiveEvent("只能在xx市xx区的指定区域下，才能切换地图模式")
+            return
+        }
+
+        val isListMode = isListModeUiState.value ?: true
+        _isListModeUiState.value = !isListMode
+
+        loadData()
     }
 
     fun delete(data: TraceRecord) {

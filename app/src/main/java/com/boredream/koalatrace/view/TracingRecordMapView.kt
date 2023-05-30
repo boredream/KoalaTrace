@@ -3,7 +3,6 @@ package com.boredream.koalatrace.view
 import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
-import androidx.core.content.ContextCompat
 import com.amap.api.maps.model.*
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.data.TraceLocation
@@ -21,13 +20,12 @@ import org.locationtech.jts.simplify.DouglasPeuckerSimplifier
 /**
  * 追踪路线的地图
  */
-class TraceMapView : BaseTraceMapView {
+class TracingRecordMapView : RecordMapView {
 
     private var myLocation: TraceLocation? = null
     private var myLocationStyle = MyLocationStyle()
     private var curTraceRecord: TraceRecord? = null
     private var startDrawIndex = 0
-    private var historyLineList: ArrayList<Polyline> = arrayListOf()
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -99,19 +97,6 @@ class TraceMapView : BaseTraceMapView {
         val newIndex = allTracePointList.lastIndex
         logger.v("drawTraceList $startDrawIndex to $newIndex")
         startDrawIndex = newIndex
-    }
-
-    /**
-     * 绘制多条不会变化的线路
-     */
-    fun drawMultiFixTraceList(traceList: ArrayList<TraceRecord>) {
-        historyLineList.forEach { it.remove() }
-        historyLineList.clear()
-        val color = ContextCompat.getColor(context, R.color.colorPrimaryLight)
-        traceList.forEach { record ->
-            val line = drawTraceList(record.traceList, traceLineColor = color)
-            line?.let { historyLineList.add(it) }
-        }
     }
 
     /**

@@ -15,7 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.boredream.koalatrace.view.TraceMapView
+        <com.boredream.koalatrace.view.TracingRecordMapView
             android:id="@+id/map_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"

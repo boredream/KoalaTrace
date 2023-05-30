@@ -88,7 +88,7 @@ class TraceRecordDetailActivity :
             binding.rvLocationList.adapter = adapter
             binding.mapView.updateCamera2showCompleteTraceList(data.traceList)
         } else {
-            binding.mapView.clearLine()
+            binding.mapView.clearLineList()
             adapter.notifyDataSetChanged()
         }
         binding.mapView.drawTraceList(data.traceList)

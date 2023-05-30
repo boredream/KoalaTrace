@@ -23,7 +23,7 @@ class TitleBarView : ConstraintLayout {
         }
     }
 
-    private var dataBinding: ViewTitleBarBinding
+    var dataBinding: ViewTitleBarBinding
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)

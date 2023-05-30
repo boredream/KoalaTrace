@@ -1,6 +1,5 @@
 package com.boredream.koalatrace.data.repo
 
-import com.amap.api.mapcore.util.it
 import com.boredream.koalatrace.base.BaseRepository
 import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceLocation

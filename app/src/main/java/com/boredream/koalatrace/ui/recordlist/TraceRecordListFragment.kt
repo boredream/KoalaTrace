@@ -1,15 +1,18 @@
 package com.boredream.koalatrace.ui.recordlist
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.amap.api.mapcore.util.it
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.blankj.utilcode.util.TimeUtils
+import com.blankj.utilcode.util.ToastUtils
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseFragment
 import com.boredream.koalatrace.common.SimpleListAdapter
 import com.boredream.koalatrace.common.SimpleUiStateObserver
+import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.TraceRecordArea
 import com.boredream.koalatrace.data.constant.CommonConstant
@@ -17,10 +20,10 @@ import com.boredream.koalatrace.databinding.FragmentTraceRecordListBinding
 import com.boredream.koalatrace.databinding.ItemTraceRecordBinding
 import com.boredream.koalatrace.ui.trace.recorddetail.TraceRecordDetailActivity
 import com.boredream.koalatrace.utils.DialogUtils
+import com.boredream.koalatrace.utils.TraceUtils
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 @AndroidEntryPoint
@@ -39,7 +42,7 @@ class TraceRecordListFragment :
         savedInstanceState: Bundle?
     ): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
-        initView()
+        initView(savedInstanceState)
         initData()
         return view
     }
@@ -52,12 +55,27 @@ class TraceRecordListFragment :
 
     override fun onResume() {
         super.onResume()
+        binding.mapviewList.onResume()
         viewModel.onResume()
     }
 
-    private fun initView() {
+    @SuppressLint("NotifyDataSetChanged")
+    private fun initView(savedInstanceState: Bundle?) {
         initDateSpinner()
         initAreaSpinner()
+
+        // TODO: 地图模式的查询交互待优化，开始就默认查询所有的轨迹全部绘制？
+
+        // map
+        binding.mapviewList.onCreate(savedInstanceState)
+        viewModel.mapListModeUiState.observe(viewLifecycleOwner) { traceList ->
+            binding.mapviewList.drawMultiFixTraceList(traceList)
+            val allTraceList = ArrayList<TraceLocation>()
+            traceList.forEach { allTraceList.addAll(it.traceList) }
+            binding.mapviewList.updateCamera2showCompleteTraceList(allTraceList)
+        }
+
+        // list
         adapter = SimpleListAdapter(dataList, R.layout.item_trace_record)
         adapter.onItemClickListener = { _, it ->
             TraceRecordDetailActivity.start(requireContext(), it)
@@ -65,10 +83,18 @@ class TraceRecordListFragment :
         adapter.onItemLongClickListener = { _, it ->
             DialogUtils.showDeleteConfirmDialog(requireContext(), { viewModel.delete(it) })
         }
-        binding.refreshTraceList.setup(
-            adapter,
-            enableRefresh = false,
-        )
+        binding.rvList.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvList.adapter = adapter
+        viewModel.traceListModeUiState.observe(viewLifecycleOwner) {
+            dataList.clear()
+            dataList.addAll(it)
+            adapter.notifyDataSetChanged()
+        }
+
+        binding.titleBar.dataBinding.ivLeft.visibility = View.VISIBLE
+        binding.titleBar.dataBinding.ivLeft.setOnClickListener {
+            binding.mapviewList.drawLineBuffer()
+        }
     }
 
     private fun initDateSpinner() {
@@ -164,5 +190,20 @@ class TraceRecordListFragment :
         }
     }
 
+
+    override fun onDestroyView() {
+        binding.mapviewList.onDestroy()
+        super.onDestroyView()
+    }
+
+    override fun onPause() {
+        binding.mapviewList.onPause()
+        super.onPause()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        binding.mapviewList.onSaveInstanceState(outState)
+    }
 
 }

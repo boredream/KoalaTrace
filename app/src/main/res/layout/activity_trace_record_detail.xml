@@ -73,7 +73,7 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/title_bar" />
 
-        <com.boredream.koalatrace.view.TraceEditMapView
+        <com.boredream.koalatrace.view.TraceEditRecordMapView
             android:id="@+id/map_view"
             android:layout_width="0dp"
             android:layout_height="0dp"

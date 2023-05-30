@@ -32,7 +32,7 @@ object LocationConstant {
     /**
      * 最小保存轨迹点数量，小于等于时删除
      */
-    const val SAVE_TRACE_MIN_POSITION_SIZE = 2
+    const val SAVE_TRACE_MIN_POSITION_SIZE = 5
 
     /**
      * 判断设备移动的加速度阈值（单位：m/s²）

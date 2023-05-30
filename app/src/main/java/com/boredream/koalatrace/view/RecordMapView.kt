@@ -9,12 +9,14 @@ import com.amap.api.maps.MapView
 import com.amap.api.maps.model.*
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.data.TraceLocation
+import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.utils.FileUtils
 import com.boredream.koalatrace.utils.Logger
 
 
-open class BaseTraceMapView : MapView {
+open class RecordMapView : MapView {
 
+    private var lineList: ArrayList<Polyline> = arrayListOf()
     protected val logger = Logger()
     var zoomLevel = 17f
 
@@ -59,10 +61,30 @@ open class BaseTraceMapView : MapView {
         map.moveCamera(CameraUpdateFactory.newCameraPosition(position))
     }
 
+    open fun clearLineList() {
+        lineList.forEach { it.remove() }
+        lineList.clear()
+    }
+
+    /**
+     * 绘制多条不会变化的线路
+     */
+    open fun drawMultiFixTraceList(
+        traceList: ArrayList<TraceRecord>,
+        traceLineWidth: Float = 15f,
+        traceLineColor: Int = ContextCompat.getColor(context, R.color.colorPrimary)
+    ) {
+        clearLineList()
+        traceList.forEach { record ->
+            val line = drawTraceList(record.traceList, traceLineWidth, traceLineColor)
+            line?.let { lineList.add(it) }
+        }
+    }
+
     /**
      * traceList 绘制线路
      */
-    open fun drawTraceList(
+    fun drawTraceList(
         traceList: ArrayList<TraceLocation>,
         traceLineWidth: Float = 15f,
         traceLineColor: Int = ContextCompat.getColor(context, R.color.colorPrimary)
@@ -76,6 +98,8 @@ open class BaseTraceMapView : MapView {
      * 调整视角显示完整的轨迹列表
      */
     fun updateCamera2showCompleteTraceList(traceList: ArrayList<TraceLocation>) {
+        // TODO: 数据库直接查询范围内边缘经纬度点
+
         // 计算边界
         val builder = LatLngBounds.builder()
         traceList.forEach {
