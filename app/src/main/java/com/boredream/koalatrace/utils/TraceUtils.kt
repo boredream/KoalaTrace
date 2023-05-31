@@ -1,10 +1,13 @@
 package com.boredream.koalatrace.utils
 
+import android.graphics.Color
+import com.amap.api.mapcore.util.it
 import com.amap.api.maps.AMap
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.PolygonHoleOptions
 import com.amap.api.maps.model.PolygonOptions
+import com.blankj.utilcode.util.CollectionUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
@@ -13,8 +16,9 @@ import org.locationtech.jts.algorithm.Orientation
 import org.locationtech.jts.geom.*
 import org.locationtech.jts.operation.buffer.BufferOp
 import org.locationtech.jts.operation.buffer.BufferParameters
-import org.locationtech.jts.operation.polygonize.Polygonizer
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.pow
 
 
@@ -95,15 +99,24 @@ object TraceUtils {
         // TODO: 实际测试先union后buffer；和先buffer后union效率
 
         // 简化线路
-        val lineList = arrayListOf <LineString>()
+        val lineList = arrayListOf<LineString>()
         recordList.forEach {
             lineList.add(simpleLine(it.traceList))
         }
 
-        // merge line
-        val mergeLine = GeometryFactory().createMultiLineString(lineList.toTypedArray())
+//        // 先 line-buffer
+//        val lineBufferList = arrayListOf<Geometry>()
+//        lineList.forEach { lineBufferList.add(createLineBuffer(it)) }
+//        // 后 merge
+//        val geometryCollection = GeometryFactory().buildGeometry(lineBufferList)
+//        var mergePolygon = geometryCollection
+//        if(geometryCollection is GeometryCollection) {
+//            mergePolygon = geometryCollection.union()
+//        }
 
-        // line-buffer
+        // 先 merge line
+        val mergeLine = GeometryFactory().createMultiLineString(lineList.toTypedArray())
+        // 后 line-buffer
         val mergePolygon = createLineBuffer(mergeLine)
 
         // 多个路线拼接的图，可能合并成一个形状，也可能是分开的几个形状，需要各自单独绘制
@@ -111,10 +124,11 @@ object TraceUtils {
         if(mergePolygon is Polygon) {
             drawJstPolygon(map, mergePolygon, color)?.let { mapPolygonList.add(it) }
         } else if(mergePolygon is MultiPolygon) {
-            val polygonizer = Polygonizer()
-            polygonizer.add(mergePolygon)
-            polygonizer.polygons.forEach { polygon ->
-                drawJstPolygon(map, polygon as Polygon, color)?.let { mapPolygonList.add(it) }
+            for (i in 0 until mergePolygon.getNumGeometries()) {
+                val geometry: Geometry = mergePolygon.getGeometryN(i)
+                if(geometry is Polygon) {
+                    drawJstPolygon(map, geometry, color)?.let { mapPolygonList.add(it) }
+                }
             }
         }
         return mapPolygonList
@@ -132,7 +146,7 @@ object TraceUtils {
         val tolerance = LocationConstant.ONE_METER_LAT_LNG * 20 // 简化容差
         val simplifier = DouglasPeuckerSimplifier(line)
         simplifier.setDistanceTolerance(tolerance)
-        logger.i("simple line duration ${System.currentTimeMillis() - start}")
+        // logger.i("simple line duration ${System.currentTimeMillis() - start}")
         return simplifier.resultGeometry as LineString
     }
 
@@ -144,7 +158,7 @@ object TraceUtils {
         bufferParams.joinStyle = BufferParameters.JOIN_ROUND
         val bufferOp = BufferOp(line, bufferParams)
         val width = LocationConstant.ONE_METER_LAT_LNG * 50
-        logger.i("line buffer duration ${System.currentTimeMillis() - start}")
+        // logger.i("line buffer duration ${System.currentTimeMillis() - start}")
         return bufferOp.getResultGeometry(width)
     }
 
@@ -162,9 +176,8 @@ object TraceUtils {
             .strokeWidth(0f)
 
         // 内孔
-        var polygonHoleOptions: PolygonHoleOptions? = null
+        val polygonHoleOptionsList = arrayListOf<PolygonHoleOptions>()
         if (polygon.numInteriorRing > 0) {
-            polygonHoleOptions = PolygonHoleOptions()
             for (index in 0 until polygon.numInteriorRing) {
                 logger.i("add polygon hole = $index")
                 var interRing = polygon.getInteriorRingN(index)
@@ -173,16 +186,23 @@ object TraceUtils {
 //                val interRingPolygon = geometryFactory.createPolygon(interRing)
 //                logger.i("interRingPolygon area = ${interRingPolygon.area}")
 
-                // 高德地图对孔的要求是方向必须是逆时针的
-                if(!Orientation.isCCW(interRing.coordinates)) {
-                    // 如果是顺时针，则反转下
-                    interRing = interRing.reverse()
-                }
+                logger.i("Orientation.isCCW ${Orientation.isCCW(interRing.coordinates)}")
                 val inter = interRing.coordinates.map { LatLng(it.x, it.y) }
-                polygonHoleOptions.addAll(inter)
+                polygonHoleOptionsList.add(PolygonHoleOptions().addAll(inter))
+
+                // FIXME: 单独绘制内孔
+//                val holePolygonOptions = PolygonOptions()
+//                    .addAll(inter)
+//                    .fillColor(Color.argb(100, 0, 0, 255))
+//                    .strokeWidth(0f)
+//                map.addPolygon(holePolygonOptions)
             }
         }
-        polygonHoleOptions?.let { polygonOptions.addHoles(it) }
+
+        // TODO: 添加多个孔的时候，单个生效，有些多个一起添加时就不生效？why
+        if(polygonHoleOptionsList.size > 0) {
+            polygonHoleOptionsList.forEach { polygonOptions.addHoles(it) }
+        }
 
         logger.i("addJstPolygon duration ${System.currentTimeMillis() - start}")
         return map.addPolygon(polygonOptions)

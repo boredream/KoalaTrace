@@ -13,4 +13,8 @@ open class Logger @Inject constructor() {
         LogUtils.i(log)
     }
 
+    open fun e(log: String) {
+        LogUtils.e(log)
+    }
+
 }

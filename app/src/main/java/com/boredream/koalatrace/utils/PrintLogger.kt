@@ -11,4 +11,8 @@ class PrintLogger : Logger() {
         println("PrintLogger: $log")
     }
 
+    override fun e(log: String) {
+        println("PrintLogger: $log")
+    }
+
 }

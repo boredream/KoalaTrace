@@ -3,8 +3,12 @@ package com.boredream.koalatrace.ui.trace.recorddetail
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.amap.api.maps.model.LatLng
+import com.amap.api.maps.model.PolygonHoleOptions
+import com.amap.api.maps.model.PolygonOptions
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.boredream.koalatrace.R
@@ -14,6 +18,7 @@ import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.BundleKey
 import com.boredream.koalatrace.databinding.ActivityTraceRecordDetailBinding
 import com.boredream.koalatrace.utils.DialogUtils
+import com.boredream.koalatrace.utils.TraceUtils
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -45,6 +50,52 @@ class TraceRecordDetailActivity :
         initView(savedInstanceState)
         initObserver()
         viewModel.start(data)
+
+        binding.titleBar.dataBinding.tvTitle.setOnClickListener {
+            TraceUtils.drawTraceListLineBuffer(binding.mapView.map, arrayListOf(data), Color.RED)
+        }
+
+        binding.titleBar.dataBinding.tvTitle.setOnLongClickListener {
+            // FIXME: 测试绘制
+            val start = data.traceList[0]
+
+            val outer = arrayListOf(
+                LatLng(start.latitude, start.longitude),
+                LatLng(start.latitude + 0.002, start.longitude),
+                LatLng(start.latitude + 0.002, start.longitude + 0.002),
+                LatLng(start.latitude, start.longitude + 0.002),
+                LatLng(start.latitude, start.longitude),
+            )
+
+            val holePolygonOptions = PolygonHoleOptions()
+                .addAll(arrayListOf(
+                    LatLng(start.latitude + 0.001, start.longitude + 0.001),
+                    LatLng(start.latitude + 0.0015, start.longitude + 0.001),
+                    LatLng(start.latitude + 0.0015, start.longitude + 0.0015),
+                    LatLng(start.latitude + 0.001, start.longitude + 0.0015),
+                    LatLng(start.latitude + 0.001, start.longitude + 0.001),
+                ))
+
+            val holePolygonOptions2 = PolygonHoleOptions()
+                .addAll(arrayListOf(
+                    LatLng(start.latitude + 0.0005, start.longitude + 0.0005),
+                    LatLng(start.latitude + 0.0005, start.longitude + 0.0008),
+                    LatLng(start.latitude + 0.0008, start.longitude + 0.0008),
+                    LatLng(start.latitude + 0.0008, start.longitude + 0.0005),
+                    LatLng(start.latitude + 0.0005, start.longitude + 0.0005),
+                ))
+
+            val polygonOptions = PolygonOptions()
+                .addAll(outer)
+                .fillColor(Color.RED)
+                .strokeWidth(0f)
+
+            polygonOptions.addHoles(holePolygonOptions)
+            polygonOptions.addHoles(holePolygonOptions2)
+
+            binding.mapView.map.addPolygon(polygonOptions)
+            true
+        }
     }
 
     private fun initView(savedInstanceState: Bundle?) {
