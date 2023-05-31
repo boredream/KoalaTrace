@@ -9,17 +9,11 @@ import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.LocationConstant
-import org.locationtech.jts.geom.Coordinate
-import org.locationtech.jts.geom.Geometry
-import org.locationtech.jts.geom.GeometryFactory
-import org.locationtech.jts.geom.MultiPolygon
-import org.locationtech.jts.geom.Polygon
-import org.locationtech.jts.geom.util.GeometryCombiner
+import org.locationtech.jts.algorithm.Orientation
+import org.locationtech.jts.geom.*
 import org.locationtech.jts.operation.buffer.BufferOp
 import org.locationtech.jts.operation.buffer.BufferParameters
-import org.locationtech.jts.operation.overlay.OverlayOp
 import org.locationtech.jts.operation.polygonize.Polygonizer
-import org.locationtech.jts.operation.union.CascadedPolygonUnion.union
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier
 import kotlin.math.pow
 
@@ -96,37 +90,37 @@ object TraceUtils {
         map: AMap,
         recordList: List<TraceRecord>,
         color: Int
-    ) {
-        // 挨个生成line buffer
-        val polygonList = arrayListOf<Polygon>()
+    ): List<com.amap.api.maps.model.Polygon> {
+        // FIXME: 多条分开的线路时，绘制面+孔有问题，比如嘉定
+        // TODO: 实际测试先union后buffer；和先buffer后union效率
+
+        // 简化线路
+        val lineList = arrayListOf <LineString>()
         recordList.forEach {
-            val geometry = simpleLine(it.traceList)
-            val lineBufferPolygon = createLineBuffer(geometry)
-            polygonList.add(lineBufferPolygon)
+            lineList.add(simpleLine(it.traceList))
         }
 
-        // 合并
-        if(polygonList.size == 0) return
-        var polygon : Geometry = GeometryFactory().createPolygon()
-        val start = System.currentTimeMillis()
-        polygonList.forEach { polygon = polygon.union(it) }
-        logger.i("combine polygon duration ${System.currentTimeMillis() - start}")
+        // merge line
+        val mergeLine = GeometryFactory().createMultiLineString(lineList.toTypedArray())
+
+        // line-buffer
+        val mergePolygon = createLineBuffer(mergeLine)
 
         // 多个路线拼接的图，可能合并成一个形状，也可能是分开的几个形状，需要各自单独绘制
-        if(polygon is Polygon) {
-            drawJstPolygon(map, polygon as Polygon, color)
-        } else if(polygon is MultiPolygon) {
+        val mapPolygonList = arrayListOf<com.amap.api.maps.model.Polygon>()
+        if(mergePolygon is Polygon) {
+            drawJstPolygon(map, mergePolygon, color)?.let { mapPolygonList.add(it) }
+        } else if(mergePolygon is MultiPolygon) {
             val polygonizer = Polygonizer()
-            polygonizer.add(polygon)
-            polygonizer.polygons.forEach {
-                logger.i("merge geometry from ${polygonList.size} to ${polygonizer.polygons.size}")
-                drawJstPolygon(map, it as Polygon, color)
+            polygonizer.add(mergePolygon)
+            polygonizer.polygons.forEach { polygon ->
+                drawJstPolygon(map, polygon as Polygon, color)?.let { mapPolygonList.add(it) }
             }
-            logger.i("merge geometry from ${polygonList.size} to ${polygonizer.polygons.size}")
         }
+        return mapPolygonList
     }
 
-    private fun simpleLine(traceList: ArrayList<TraceLocation>): Geometry {
+    fun simpleLine(traceList: ArrayList<TraceLocation>): LineString {
         val start = System.currentTimeMillis()
         // 先经纬度转为jts的line对象
         val factory = GeometryFactory()
@@ -139,10 +133,10 @@ object TraceUtils {
         val simplifier = DouglasPeuckerSimplifier(line)
         simplifier.setDistanceTolerance(tolerance)
         logger.i("simple line duration ${System.currentTimeMillis() - start}")
-        return simplifier.resultGeometry
+        return simplifier.resultGeometry as LineString
     }
 
-    private fun createLineBuffer(line: Geometry): Polygon {
+    private fun createLineBuffer(line: Geometry): Geometry {
         // line-buffer 用线计算区域面积
         val start = System.currentTimeMillis()
         val bufferParams = BufferParameters()
@@ -150,33 +144,48 @@ object TraceUtils {
         bufferParams.joinStyle = BufferParameters.JOIN_ROUND
         val bufferOp = BufferOp(line, bufferParams)
         val width = LocationConstant.ONE_METER_LAT_LNG * 50
-        val polygon = bufferOp.getResultGeometry(width) as Polygon
         logger.i("line buffer duration ${System.currentTimeMillis() - start}")
-        return polygon
+        return bufferOp.getResultGeometry(width)
     }
 
     private fun drawJstPolygon(
         map: AMap,
         polygon: Polygon,
         color: Int
-    ) {
+    ): com.amap.api.maps.model.Polygon? {
         val start = System.currentTimeMillis()
-        // 注意环的情况
+
+        // 外环
         val polygonOptions = PolygonOptions()
             .addAll(polygon.exteriorRing.coordinates.map { LatLng(it.x, it.y) })
             .fillColor(color)
             .strokeWidth(0f)
 
+        // 内孔
+        var polygonHoleOptions: PolygonHoleOptions? = null
         if (polygon.numInteriorRing > 0) {
-            // TODO: 环如果过小，可以省略
+            polygonHoleOptions = PolygonHoleOptions()
             for (index in 0 until polygon.numInteriorRing) {
-                logger.i("draw polygon hole = $index")
-                val inter = polygon.getInteriorRingN(index).coordinates.map { LatLng(it.x, it.y) }
-                polygonOptions.addHoles(PolygonHoleOptions().addAll(inter))
+                logger.i("add polygon hole = $index")
+                var interRing = polygon.getInteriorRingN(index)
+
+//                // TODO: 环如果过小，可以省略
+//                val interRingPolygon = geometryFactory.createPolygon(interRing)
+//                logger.i("interRingPolygon area = ${interRingPolygon.area}")
+
+                // 高德地图对孔的要求是方向必须是逆时针的
+                if(!Orientation.isCCW(interRing.coordinates)) {
+                    // 如果是顺时针，则反转下
+                    interRing = interRing.reverse()
+                }
+                val inter = interRing.coordinates.map { LatLng(it.x, it.y) }
+                polygonHoleOptions.addAll(inter)
             }
         }
-        map.addPolygon(polygonOptions)
+        polygonHoleOptions?.let { polygonOptions.addHoles(it) }
+
         logger.i("addJstPolygon duration ${System.currentTimeMillis() - start}")
+        return map.addPolygon(polygonOptions)
     }
 
 }

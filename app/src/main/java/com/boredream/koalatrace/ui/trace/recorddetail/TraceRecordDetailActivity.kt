@@ -91,7 +91,7 @@ class TraceRecordDetailActivity :
             binding.mapView.clearLineList()
             adapter.notifyDataSetChanged()
         }
-        binding.mapView.drawTraceList(data.traceList)
+        binding.mapView.drawFixTraceList(data.traceList)
     }
 
     private fun onItemClick(position: Int) {

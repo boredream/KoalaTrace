@@ -12,6 +12,7 @@ import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.utils.FileUtils
 import com.boredream.koalatrace.utils.Logger
+import com.boredream.koalatrace.utils.TraceUtils
 
 
 open class RecordMapView : MapView {
@@ -76,7 +77,7 @@ open class RecordMapView : MapView {
     ) {
         clearLineList()
         traceList.forEach { record ->
-            val line = drawTraceList(record.traceList, traceLineWidth, traceLineColor)
+            val line = drawFixTraceList(record.traceList, traceLineWidth, traceLineColor)
             line?.let { lineList.add(it) }
         }
     }
@@ -84,7 +85,7 @@ open class RecordMapView : MapView {
     /**
      * traceList 绘制线路
      */
-    fun drawTraceList(
+    fun drawFixTraceList(
         traceList: ArrayList<TraceLocation>,
         traceLineWidth: Float = 15f,
         traceLineColor: Int = ContextCompat.getColor(context, R.color.colorPrimary)

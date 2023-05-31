@@ -19,6 +19,7 @@ import com.boredream.koalatrace.utils.TraceUtils
 open class TraceListMapView : RecordMapView {
 
     private var traceList: ArrayList<TraceRecord>? = null
+    private var lineBufferPolygon: List<Polygon>? = null
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -47,7 +48,8 @@ open class TraceListMapView : RecordMapView {
 
     fun drawLineBuffer(color: Int = Color.argb(150, 255, 0, 0)) {
         if(traceList == null) return
-        TraceUtils.drawTraceListLineBuffer(map, traceList!!, color)
+        lineBufferPolygon?.forEach { it.remove() }
+        lineBufferPolygon = TraceUtils.drawTraceListLineBuffer(map, traceList!!, color)
     }
 
 }
