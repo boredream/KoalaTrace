@@ -128,7 +128,7 @@ class TraceRecordLocalDataSource @Inject constructor(
         }
     }
 
-    suspend fun getNearbyRecordList(
+    suspend fun getNearbyRecordListWithLocation(
         targetLat: Double,
         targetLng: Double,
         range: Double
@@ -138,9 +138,17 @@ class TraceRecordLocalDataSource @Inject constructor(
             val maxLat = targetLat + range
             val minLng = targetLng - range
             val maxLng = targetLng + range
-            val list = traceRecordDao.loadNearby(minLat, maxLat, minLng, maxLng)
-            logger.i("minLat=$minLat, maxLat=$maxLat, minLng=$minLng, maxLng=$maxLng")
-            ResponseEntity.success(ArrayList(list))
+
+            val traceList = arrayListOf<TraceRecord>()
+            val list = traceRecordDao.loadNearbyRecordWithLocation(minLat, maxLat, minLng, maxLng)
+            list.forEach {
+                val record = it.record
+                record.traceList = ArrayList(it.locationList)
+                traceList.add(record)
+            }
+
+            logger.i("minLat=$minLat, maxLat=$maxLat, minLng=$minLng, maxLng=$maxLng ... size=${traceList.size}")
+            ResponseEntity.success(traceList)
         } catch (e: Exception) {
             ResponseEntity(null, 500, e.toString())
         }

@@ -39,15 +39,7 @@ class TraceRecordRepository @Inject constructor(
     ): ResponseEntity<ArrayList<TraceRecord>> {
         // 查询附近线路 5km
         val range = LocationConstant.ONE_METER_LAT_LNG * rangeMeter
-        val traceRecordList = localDataSource.getNearbyRecordList(targetLat, targetLng, range)
-        // 查询线路下所有轨迹
-        if (traceRecordList.isSuccess()) {
-            traceRecordList.getSuccessData().forEach {
-                it.traceList = localDataSource.getTraceLocationList(it.id).data ?: arrayListOf()
-            }
-            logger.i("near 「${rangeMeter}米」 history list size = ${traceRecordList.getSuccessData().size}")
-        }
-        return traceRecordList
+        return localDataSource.getNearbyRecordListWithLocation(targetLat, targetLng, range)
     }
 
     suspend fun getLocationList(traceRecordDbId: Long) =

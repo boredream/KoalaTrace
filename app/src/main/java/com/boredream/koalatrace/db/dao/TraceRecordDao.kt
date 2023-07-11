@@ -4,6 +4,7 @@ import androidx.room.*
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.TraceRecordArea
+import com.boredream.koalatrace.data.TraceRecordWithLocation
 
 
 @Dao
@@ -39,11 +40,12 @@ interface TraceRecordDao {
     @Update
     suspend fun update(data: TraceRecord): Int
 
+    @Transaction
     @Query("SELECT * FROM TraceRecord WHERE id IN (SELECT DISTINCT traceId FROM TraceLocation WHERE " +
-                "latitude BETWEEN :minLat AND :maxLat AND longitude BETWEEN :minLng AND :maxLng)")
-    suspend fun loadNearby(
+            "latitude BETWEEN :minLat AND :maxLat AND longitude BETWEEN :minLng AND :maxLng)")
+    suspend fun loadNearbyRecordWithLocation(
         minLat: Double, maxLat: Double,
         minLng: Double, maxLng: Double
-    ): List<TraceRecord>
+    ): List<TraceRecordWithLocation>
 
 }

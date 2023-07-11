@@ -25,9 +25,9 @@ class BaseApplication : Application() {
             .setStackOffset(1)
             .setConsoleSwitch(BuildConfig.DEBUG)
             .setLog2FileSwitch(BuildConfig.DEBUG)
-            .setFileFilter(LogUtils.E)
+            .setFileFilter(LogUtils.I)
             .setDir(File(PathUtils.getInternalAppCachePath(), "log"))
-            .setSaveDays(7)
+            .setSaveDays(30)
             .setBorderSwitch(false)
 
         CrashUtils.init {
