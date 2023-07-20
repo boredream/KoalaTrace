@@ -24,7 +24,7 @@ class FragmentController(
                 ft.add(containerId, fragmentList[i], tag)
             }
         }
-        ft.commitAllowingStateLoss()
+        ft.commit()
         nav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_trace_map -> {
@@ -45,7 +45,7 @@ class FragmentController(
         showFragment(0)
     }
 
-    fun showFragment(position: Int) {
+    private fun showFragment(position: Int) {
         val ft: FragmentTransaction = fm.beginTransaction()
         for (i in 0 until fragmentList.size) {
             val fragment = fragmentList[i]
@@ -57,7 +57,7 @@ class FragmentController(
                 ft.hide(fragment)
             }
         }
-        ft.commitAllowingStateLoss()
+        ft.commit()
     }
 
     fun getFragment(position: Int): BaseFragment<*, *> {

@@ -247,10 +247,11 @@ class TraceUseCase @Inject constructor(
             myLocation.longitude
         )
         if (response.isSuccess() && response.data != null) {
-            response.data.forEach {
-                val locationList = traceRecordRepository.getLocationList(it.id).data
-                it.traceList = locationList ?: arrayListOf()
-            }
+            // TODO: 不需要额外再搜一次position list了，但上述结果里的位置列表只是在范围内，并不全？好像没影响，更能体现范围
+//            response.data.forEach {
+//                val locationList = traceRecordRepository.getLocationList(it.id).data
+//                it.traceList = locationList ?: arrayListOf()
+//            }
             // 剃出当前轨迹
             response.data.remove(currentTraceRecord)
         }

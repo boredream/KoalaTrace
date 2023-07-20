@@ -117,7 +117,7 @@ class TraceRecordListFragment :
         dateRangePicker.show(requireActivity().supportFragmentManager, "dateRangePicker")
         dateRangePicker.addOnPositiveButtonClickListener { selection ->
             val startTime = selection.first
-            val endTime = selection.second + CommonConstant.ONE_DAY_DURATION
+            val endTime = selection.second + CommonConstant.ONE_DAY_DURATION - 1000
             viewModel.updateDateFilter(startTime, endTime)
             val startTimeStr = TimeUtils.millis2String(startTime, "yyyy-MM-dd")
             val endTimeStr = TimeUtils.millis2String(endTime, "MM-dd")

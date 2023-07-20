@@ -20,8 +20,8 @@ class TraceRecordListViewModel @Inject constructor(
     private val repository: TraceRecordRepository,
 ) : BaseViewModel() {
 
-    val loadListVMCompose = RequestVMCompose<ArrayList<TraceRecord>>(viewModelScope)
-    val deleteVMCompose = RequestVMCompose<TraceRecord>(viewModelScope)
+    private val loadListVMCompose = RequestVMCompose<ArrayList<TraceRecord>>(viewModelScope)
+    private val deleteVMCompose = RequestVMCompose<TraceRecord>(viewModelScope)
     val loadAreaVMCompose = RequestVMCompose<ArrayList<TraceRecordArea>>(viewModelScope)
 
     private val _traceListModeUiState = MutableLiveData<ArrayList<TraceRecord>>()
@@ -87,8 +87,8 @@ class TraceRecordListViewModel @Inject constructor(
     }
 
     fun toggleListMode() {
-        if(recordArea == null) {
-            _baseEvent.value = ToastLiveEvent("只能在xx市xx区的指定区域下，才能切换地图模式")
+        if(recordArea == null && startTime == null && endTime == null) {
+            _baseEvent.value = ToastLiveEvent("只能在条件筛选下，才能切换地图模式")
             return
         }
 
