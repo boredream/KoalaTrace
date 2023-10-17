@@ -46,7 +46,7 @@ open class TraceListMapView : RecordMapView {
         this.traceList = traceList
     }
 
-    fun drawLineBuffer(color: Int = Color.argb(150, 255, 0, 0)) {
+    fun drawLineBuffer(color: Int = Color.argb(100, 0, 0, 0)) {
         if(traceList == null) return
         lineBufferPolygon?.forEach { it.remove() }
         lineBufferPolygon = TraceUtils.drawTraceListLineBuffer(map, traceList!!, color)

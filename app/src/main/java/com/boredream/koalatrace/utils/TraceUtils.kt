@@ -110,8 +110,6 @@ object TraceUtils {
         recordList: List<TraceRecord>,
         color: Int
     ): List<com.amap.api.maps.model.Polygon> {
-        // FIXME: 多条分开的线路时，绘制面+孔有问题，比如嘉定
-        // TODO: 实际测试先union后buffer；和先buffer后union效率
 
         // 简化线路
         val lineList = arrayListOf<LineString>()
@@ -137,12 +135,14 @@ object TraceUtils {
         // 多个路线拼接的图，可能合并成一个形状，也可能是分开的几个形状，需要各自单独绘制
         val mapPolygonList = arrayListOf<com.amap.api.maps.model.Polygon>()
         if (mergePolygon is Polygon) {
-            drawJstPolygon(map, mergePolygon, color)?.let { mapPolygonList.add(it) }
+            mapPolygonList.addAll(drawJstPolygonMask(map, mergePolygon, color))
+//            drawJstPolygon(map, mergePolygon, color)?.let { mapPolygonList.add(it) }
         } else if (mergePolygon is MultiPolygon) {
             for (i in 0 until mergePolygon.getNumGeometries()) {
                 val geometry: Geometry = mergePolygon.getGeometryN(i)
                 if (geometry is Polygon) {
-                    drawJstPolygon(map, geometry, color)?.let { mapPolygonList.add(it) }
+                    mapPolygonList.addAll(drawJstPolygonMask(map, geometry, color))
+//                    drawJstPolygon(map, geometry, color)?.let { mapPolygonList.add(it) }
                 }
             }
         }
@@ -211,5 +211,54 @@ object TraceUtils {
         logger.i("addJstPolygon duration ${System.currentTimeMillis() - start}")
         return map.addPolygon(polygonOptions)
     }
+
+    private fun drawJstPolygonMask(
+        map: AMap,
+        polygon: Polygon,
+        color: Int
+    ): List<com.amap.api.maps.model.Polygon> {
+        val start = System.currentTimeMillis()
+
+        // 默认遮罩
+        val maskPolygonOptions = PolygonOptions()
+            .add(LatLng(90.0, -180.0))
+            .add(LatLng(-90.0, -180.0))
+            .add(LatLng(-90.0, 179.9999999999999))
+            .add(LatLng(90.0, 179.9999999999999))
+            .fillColor(color)
+            .strokeWidth(0f)
+
+        // 外环
+        val polygonOptions = PolygonHoleOptions()
+            .addAll(polygon.exteriorRing.coordinates.map { LatLng(it.x, it.y) })
+
+        // 外环作为孔，进行基本遮罩绘制
+        maskPolygonOptions.addHoles(polygonOptions)
+        val list = arrayListOf<com.amap.api.maps.model.Polygon>(
+            map.addPolygon(maskPolygonOptions)
+        )
+
+        // 内孔
+        if (polygon.numInteriorRing > 0) {
+            for (index in 0 until polygon.numInteriorRing) {
+                val interRing = polygon.getInteriorRingN(index)
+
+//                // TODO: 环如果过小，可以省略
+//                val interRingPolygon = geometryFactory.createPolygon(interRing)
+//                logger.i("interRingPolygon area = ${interRingPolygon.area}")
+
+                val inter = interRing.coordinates.map { LatLng(it.x, it.y) }
+
+                // 内孔作为遮罩内形状，单独绘制
+                list.add(map.addPolygon(PolygonOptions().addAll(inter).fillColor(color).strokeWidth(0f)))
+
+                logger.i("add polygon hole = $index")
+            }
+        }
+
+        logger.i("addJstPolygon duration ${System.currentTimeMillis() - start}")
+        return list
+    }
+
 
 }
