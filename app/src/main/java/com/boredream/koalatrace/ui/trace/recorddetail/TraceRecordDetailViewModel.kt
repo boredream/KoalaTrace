@@ -3,7 +3,6 @@ package com.boredream.koalatrace.ui.trace.recorddetail
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.amap.api.mapcore.util.it
 import com.blankj.utilcode.util.StringUtils
 import com.boredream.koalatrace.base.BaseViewModel
 import com.boredream.koalatrace.base.ToastLiveEvent

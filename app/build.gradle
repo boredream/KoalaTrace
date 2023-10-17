@@ -149,7 +149,7 @@ dependencies {
     implementation "org.greenrobot:eventbus:3.0.0"
 
     // utils
-    implementation 'com.blankj:utilcodex:1.30.6'
+    implementation 'com.blankj:utilcodex:1.31.1'
 
     // photo view
     implementation 'com.github.chrisbanes:PhotoView:2.2.0'
@@ -160,10 +160,9 @@ dependencies {
     // rebirth
     implementation 'com.jakewharton:process-phoenix:2.0.0'
 
-    // map version + 0.1需要隐私协议
-    implementation 'com.amap.api:3dmap:8.0.0'
-    implementation 'com.amap.api:location:5.5.0'
-    implementation 'com.amap.api:search:7.9.0'
+    // map version > 8.0.1需要隐私协议
+    implementation 'com.amap.api:3dmap:9.8.2'
+    implementation 'com.amap.api:search:9.7.0'
 
     // view refresh
     implementation 'com.scwang.smart:refresh-layout-kernel:2.0.1'

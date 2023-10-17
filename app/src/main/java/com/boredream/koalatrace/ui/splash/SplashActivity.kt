@@ -2,6 +2,8 @@ package com.boredream.koalatrace.ui.splash
 
 import android.Manifest
 import android.os.Bundle
+import com.amap.api.location.AMapLocationClient
+import com.amap.api.maps.MapsInitializer
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseActivity
 import com.boredream.koalatrace.databinding.ActivitySplashBinding
@@ -23,6 +25,11 @@ class SplashActivity : BaseActivity<SplashViewModel, ActivitySplashBinding>() {
             MainTabActivity.start(this)
             finish()
         }
+
+        AMapLocationClient.updatePrivacyShow(this, true, true)
+        AMapLocationClient.updatePrivacyAgree(this, true)
+        MapsInitializer.updatePrivacyShow(this, true, true)
+        MapsInitializer.updatePrivacyAgree(this, true)
 
         PermissionUtil.request(this, listOf(Manifest.permission.ACCESS_FINE_LOCATION)) {
             if (it) init() else finish()

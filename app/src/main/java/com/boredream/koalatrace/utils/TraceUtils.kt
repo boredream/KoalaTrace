@@ -1,24 +1,25 @@
 package com.boredream.koalatrace.utils
 
 import android.graphics.Color
-import com.amap.api.mapcore.util.it
 import com.amap.api.maps.AMap
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.PolygonHoleOptions
 import com.amap.api.maps.model.PolygonOptions
-import com.blankj.utilcode.util.CollectionUtils
+import com.amap.api.maps.model.PolylineOptions
 import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.LocationConstant
-import org.locationtech.jts.algorithm.Orientation
-import org.locationtech.jts.geom.*
+import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.LineString
+import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.operation.buffer.BufferOp
 import org.locationtech.jts.operation.buffer.BufferParameters
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier
-import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.pow
 
 
@@ -135,12 +136,12 @@ object TraceUtils {
 
         // 多个路线拼接的图，可能合并成一个形状，也可能是分开的几个形状，需要各自单独绘制
         val mapPolygonList = arrayListOf<com.amap.api.maps.model.Polygon>()
-        if(mergePolygon is Polygon) {
+        if (mergePolygon is Polygon) {
             drawJstPolygon(map, mergePolygon, color)?.let { mapPolygonList.add(it) }
-        } else if(mergePolygon is MultiPolygon) {
+        } else if (mergePolygon is MultiPolygon) {
             for (i in 0 until mergePolygon.getNumGeometries()) {
                 val geometry: Geometry = mergePolygon.getGeometryN(i)
-                if(geometry is Polygon) {
+                if (geometry is Polygon) {
                     drawJstPolygon(map, geometry, color)?.let { mapPolygonList.add(it) }
                 }
             }
@@ -148,7 +149,7 @@ object TraceUtils {
         return mapPolygonList
     }
 
-    fun simpleLine(traceList: ArrayList<TraceLocation>): LineString {
+    private fun simpleLine(traceList: ArrayList<TraceLocation>): LineString {
         val start = System.currentTimeMillis()
         // 先经纬度转为jts的line对象
         val factory = GeometryFactory()
@@ -193,30 +194,19 @@ object TraceUtils {
         val polygonHoleOptionsList = arrayListOf<PolygonHoleOptions>()
         if (polygon.numInteriorRing > 0) {
             for (index in 0 until polygon.numInteriorRing) {
-                logger.i("add polygon hole = $index")
-                var interRing = polygon.getInteriorRingN(index)
+                val interRing = polygon.getInteriorRingN(index)
 
 //                // TODO: 环如果过小，可以省略
 //                val interRingPolygon = geometryFactory.createPolygon(interRing)
 //                logger.i("interRingPolygon area = ${interRingPolygon.area}")
 
-                logger.i("Orientation.isCCW ${Orientation.isCCW(interRing.coordinates)}")
                 val inter = interRing.coordinates.map { LatLng(it.x, it.y) }
                 polygonHoleOptionsList.add(PolygonHoleOptions().addAll(inter))
 
-                // FIXME: 单独绘制内孔
-//                val holePolygonOptions = PolygonOptions()
-//                    .addAll(inter)
-//                    .fillColor(Color.argb(100, 0, 0, 255))
-//                    .strokeWidth(0f)
-//                map.addPolygon(holePolygonOptions)
+                logger.i("add polygon hole = $index")
             }
         }
-
-        // TODO: 添加多个孔的时候，单个生效，有些多个一起添加时就不生效？why
-        if(polygonHoleOptionsList.size > 0) {
-            polygonHoleOptionsList.forEach { polygonOptions.addHoles(it) }
-        }
+        polygonOptions.addHoles(polygonHoleOptionsList)
 
         logger.i("addJstPolygon duration ${System.currentTimeMillis() - start}")
         return map.addPolygon(polygonOptions)

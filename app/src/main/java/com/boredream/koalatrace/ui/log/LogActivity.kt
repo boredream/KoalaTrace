@@ -4,25 +4,15 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.FileUtils
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.amap.api.mapcore.util.it
-import com.autonavi.base.amap.mapcore.FileUtil
 import com.blankj.utilcode.util.FileIOUtils
-import com.blankj.utilcode.util.ToastUtils
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseActivity
-import com.boredream.koalatrace.base.RepoCacheHelper
 import com.boredream.koalatrace.common.SimpleListAdapter
-import com.boredream.koalatrace.common.SimpleUiStateObserver
-import com.boredream.koalatrace.data.SettingItem
 import com.boredream.koalatrace.databinding.ActivityLogBinding
 import com.boredream.koalatrace.databinding.ItemLogFileBinding
-import com.boredream.koalatrace.databinding.ItemSettingBinding
 import com.boredream.koalatrace.ui.log.LogActivity
-import com.boredream.koalatrace.ui.log.LogViewModel
-import com.boredream.koalatrace.ui.main.MainTabActivity
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 
