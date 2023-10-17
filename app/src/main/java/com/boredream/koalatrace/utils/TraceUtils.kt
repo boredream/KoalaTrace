@@ -1,12 +1,10 @@
 package com.boredream.koalatrace.utils
 
-import android.graphics.Color
 import com.amap.api.maps.AMap
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.PolygonHoleOptions
 import com.amap.api.maps.model.PolygonOptions
-import com.amap.api.maps.model.PolylineOptions
 import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
@@ -133,20 +131,18 @@ object TraceUtils {
         val mergePolygon = createLineBuffer(mergeLine)
 
         // 多个路线拼接的图，可能合并成一个形状，也可能是分开的几个形状，需要各自单独绘制
-        val mapPolygonList = arrayListOf<com.amap.api.maps.model.Polygon>()
+        val polygonList = arrayListOf<Polygon>()
         if (mergePolygon is Polygon) {
-            mapPolygonList.addAll(drawJstPolygonMask(map, mergePolygon, color))
-//            drawJstPolygon(map, mergePolygon, color)?.let { mapPolygonList.add(it) }
+            polygonList.add(mergePolygon)
         } else if (mergePolygon is MultiPolygon) {
             for (i in 0 until mergePolygon.getNumGeometries()) {
                 val geometry: Geometry = mergePolygon.getGeometryN(i)
                 if (geometry is Polygon) {
-                    mapPolygonList.addAll(drawJstPolygonMask(map, geometry, color))
-//                    drawJstPolygon(map, geometry, color)?.let { mapPolygonList.add(it) }
+                    polygonList.add(geometry)
                 }
             }
         }
-        return mapPolygonList
+        return drawJstPolygonMask(map, polygonList, color)
     }
 
     private fun simpleLine(traceList: ArrayList<TraceLocation>): LineString {
@@ -214,10 +210,12 @@ object TraceUtils {
 
     private fun drawJstPolygonMask(
         map: AMap,
-        polygon: Polygon,
+        polygonList: ArrayList<Polygon>,
         color: Int
     ): List<com.amap.api.maps.model.Polygon> {
         val start = System.currentTimeMillis()
+
+        val list = arrayListOf<com.amap.api.maps.model.Polygon>()
 
         // 默认遮罩
         val maskPolygonOptions = PolygonOptions()
@@ -228,33 +226,32 @@ object TraceUtils {
             .fillColor(color)
             .strokeWidth(0f)
 
-        // 外环
-        val polygonOptions = PolygonHoleOptions()
-            .addAll(polygon.exteriorRing.coordinates.map { LatLng(it.x, it.y) })
-
         // 外环作为孔，进行基本遮罩绘制
-        maskPolygonOptions.addHoles(polygonOptions)
-        val list = arrayListOf<com.amap.api.maps.model.Polygon>(
-            map.addPolygon(maskPolygonOptions)
-        )
+        polygonList.forEach { polygon ->
+            val coordinates = polygon.exteriorRing.coordinates.map { LatLng(it.x, it.y) }
+            maskPolygonOptions.addHoles(PolygonHoleOptions().addAll(coordinates))
+        }
+        list.add(map.addPolygon(maskPolygonOptions))
 
         // 内孔
-        if (polygon.numInteriorRing > 0) {
-            for (index in 0 until polygon.numInteriorRing) {
-                val interRing = polygon.getInteriorRingN(index)
+        polygonList.filter { it.numInteriorRing > 0 }
+            .forEach { polygon ->
+                for (index in 0 until polygon.numInteriorRing) {
+                    val interRing = polygon.getInteriorRingN(index)
 
 //                // TODO: 环如果过小，可以省略
 //                val interRingPolygon = geometryFactory.createPolygon(interRing)
 //                logger.i("interRingPolygon area = ${interRingPolygon.area}")
 
-                val inter = interRing.coordinates.map { LatLng(it.x, it.y) }
-
-                // 内孔作为遮罩内形状，单独绘制
-                list.add(map.addPolygon(PolygonOptions().addAll(inter).fillColor(color).strokeWidth(0f)))
-
-                logger.i("add polygon hole = $index")
+                    // 内孔作为遮罩内形状，单独绘制
+                    val polygonOptions = PolygonOptions()
+                        .addAll(interRing.coordinates.map { LatLng(it.x, it.y) })
+                        .fillColor(color)
+                        .strokeWidth(0f)
+                    list.add(map.addPolygon(polygonOptions))
+                    logger.i("add polygon hole = $index , area = ${interRing.area}")
+                }
             }
-        }
 
         logger.i("addJstPolygon duration ${System.currentTimeMillis() - start}")
         return list
