@@ -67,7 +67,9 @@ class TraceRecordRepository @Inject constructor(
         val locationList = record.traceList
         record.distance = TraceUtils.calculateDistance(locationList)
 
-        return if (!TraceUtils.isValidTrace(record)) {
+        val notValidReason = TraceUtils.isValidTrace(record)
+        return if (notValidReason != null) {
+            logger.i("record not valid, reason = $notValidReason")
             delete(record)
         } else {
             record.startTime = locationList[0].time

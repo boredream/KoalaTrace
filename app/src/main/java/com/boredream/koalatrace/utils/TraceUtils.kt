@@ -50,12 +50,26 @@ object TraceUtils {
     /**
      * 是否为有效轨迹
      */
-    fun isValidTrace(record: TraceRecord): Boolean {
+    fun isValidTrace(record: TraceRecord): String? {
         // 总轨迹点数量<xx无效
-        if (record.traceList.size < LocationConstant.SAVE_TRACE_MIN_POSITION_SIZE) return false
+        if (record.traceList.size < LocationConstant.SAVE_TRACE_MIN_POSITION_SIZE) {
+            return "轨迹点数量过少 ${record.traceList.size} < ${LocationConstant.SAVE_TRACE_MIN_POSITION_SIZE} 个"
+        }
         // 总距离<xx米无效
-        if (record.distance < LocationConstant.SAVE_TRACE_MIN_DISTANCE) return false
-        return true
+        if (record.distance < LocationConstant.SAVE_TRACE_MIN_DISTANCE) {
+            return "轨迹距离过短 ${record.distance} < ${LocationConstant.SAVE_TRACE_MIN_DISTANCE} 米"
+        }
+        // 总距离<可疑距离时，进一步判断起始点位置举例，如果<xx米则无效
+        if (record.distance < LocationConstant.SAVE_TRACE_SUSPICIOUS_MIN_DISTANCE) {
+            val distance = AMapUtils.calculateLineDistance(
+                LatLng(record.traceList.first().latitude, record.traceList.first().longitude),
+                LatLng(record.traceList.last().latitude, record.traceList.last().longitude)
+            )
+            if (distance < LocationConstant.SAVE_TRACE_MIN_DISTANCE) {
+                return "轨迹起始点距离过短 $distance < ${LocationConstant.SAVE_TRACE_MIN_DISTANCE} 米"
+            }
+        }
+        return null
     }
 
     /**

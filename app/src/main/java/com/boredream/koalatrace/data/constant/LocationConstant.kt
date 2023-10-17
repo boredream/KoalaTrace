@@ -27,7 +27,12 @@ object LocationConstant {
     /**
      * 最小保存轨迹距离，小于等于时删除（单位：m）
      */
-    const val SAVE_TRACE_MIN_DISTANCE = 20
+    const val SAVE_TRACE_MIN_DISTANCE = 50
+
+    /**
+     * 最小保存轨迹距离（可疑），小于等于时进一步判断删除（单位：m）
+     */
+    const val SAVE_TRACE_SUSPICIOUS_MIN_DISTANCE = 200
 
     /**
      * 最小保存轨迹点数量，小于等于时删除
