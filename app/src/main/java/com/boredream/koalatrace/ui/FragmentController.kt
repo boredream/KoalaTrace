@@ -31,10 +31,12 @@ class FragmentController(
                     showFragment(0)
                     return@setOnItemSelectedListener true
                 }
+
                 R.id.navigation_trace_history -> {
                     showFragment(1)
                     return@setOnItemSelectedListener true
                 }
+
                 R.id.navigation_mine -> {
                     showFragment(2)
                     return@setOnItemSelectedListener true
@@ -50,8 +52,10 @@ class FragmentController(
         for (i in 0 until fragmentList.size) {
             val fragment = fragmentList[i]
             if (i == position) {
+                if (fragment.isAdded) ft.setMaxLifecycle(fragment, Lifecycle.State.RESUMED)
                 ft.show(fragment)
             } else {
+                if (fragment.isAdded) ft.setMaxLifecycle(fragment, Lifecycle.State.STARTED)
                 ft.hide(fragment)
             }
         }

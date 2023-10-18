@@ -253,6 +253,7 @@ object TraceUtils {
                 }
             }
 
+        list.forEach { it.zIndex = 999f }
         logger.i("addJstPolygon duration ${System.currentTimeMillis() - start}")
         return list
     }
