@@ -146,6 +146,7 @@ object TraceUtils {
     }
 
     private fun simpleLine(traceList: ArrayList<TraceLocation>): LineString {
+        // TODO: https://lbs.amap.com/demo/sdk/path-smooth#android 轨迹平滑处理
         val start = System.currentTimeMillis()
         // 先经纬度转为jts的line对象
         val factory = GeometryFactory()

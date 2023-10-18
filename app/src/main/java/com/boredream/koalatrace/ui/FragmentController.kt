@@ -52,10 +52,10 @@ class FragmentController(
         for (i in 0 until fragmentList.size) {
             val fragment = fragmentList[i]
             if (i == position) {
-                if (fragment.isAdded) ft.setMaxLifecycle(fragment, Lifecycle.State.RESUMED)
+//                if (fragment.isAdded) ft.setMaxLifecycle(fragment, Lifecycle.State.RESUMED)
                 ft.show(fragment)
             } else {
-                if (fragment.isAdded) ft.setMaxLifecycle(fragment, Lifecycle.State.STARTED)
+//                if (fragment.isAdded) ft.setMaxLifecycle(fragment, Lifecycle.State.STARTED)
                 ft.hide(fragment)
             }
         }

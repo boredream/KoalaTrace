@@ -49,8 +49,22 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding>() {
         super.onDestroyView()
     }
 
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if(isAdded) {
+            if(hidden) onFragmentPause()
+            else onFragmentResume()
+        }
+    }
+
     override fun onResume() {
         super.onResume()
+        if(isAdded && !isHidden) {
+            onFragmentResume()
+        }
+    }
+
+    private fun onFragmentResume() {
         LogUtils.v("map view onResume")
         viewModel.onResume()
         binding.mapView.setMyLocationEnable(true)
@@ -58,11 +72,17 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding>() {
     }
 
     override fun onPause() {
+        super.onPause()
+        if(isAdded && !isHidden) {
+            onFragmentPause()
+        }
+    }
+
+    private fun onFragmentPause() {
         LogUtils.v("map view onPause")
         viewModel.onPause()
         binding.mapView.setMyLocationEnable(false)
         binding.mapView.onPause()
-        super.onPause()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

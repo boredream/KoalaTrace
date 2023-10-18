@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.boredream.koalatrace.R
@@ -51,12 +52,6 @@ class TraceRecordListFragment :
         viewModel.updateAllUnFinishRecord()
         viewModel.checkUpdateRecordArea()
         viewModel.loadArea()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        binding.mapviewList.onResume()
-        viewModel.onResume()
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -196,9 +191,37 @@ class TraceRecordListFragment :
         super.onDestroyView()
     }
 
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if(isAdded) {
+            if(hidden) onFragmentPause()
+            else onFragmentResume()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if(isAdded && !isHidden) {
+            onFragmentResume()
+        }
+    }
+
+    private fun onFragmentResume() {
+        LogUtils.v("map view onResume")
+        binding.mapviewList.onResume()
+        viewModel.onResume()
+    }
+
     override fun onPause() {
-        binding.mapviewList.onPause()
         super.onPause()
+        if(isAdded && !isHidden) {
+            onFragmentPause()
+        }
+    }
+
+    private fun onFragmentPause() {
+        LogUtils.v("map view onPause")
+        binding.mapviewList.onPause()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
