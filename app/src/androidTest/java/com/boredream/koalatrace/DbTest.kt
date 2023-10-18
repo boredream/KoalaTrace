@@ -7,11 +7,9 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.rule.GrantPermissionRule
-import com.amap.api.mapcore.util.it
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.model.LatLng
 import com.blankj.utilcode.util.FileIOUtils
-import com.blankj.utilcode.util.FileUtils
 import com.blankj.utilcode.util.PathUtils
 import com.blankj.utilcode.util.ZipUtils
 import com.boredream.koalatrace.data.TraceRecord

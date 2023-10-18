@@ -114,7 +114,13 @@ class TraceRecordLocalDataSource @Inject constructor(
             val query = queryBuilder.create()
             logger.i(query.sql)
 
-            ResponseEntity.success(ArrayList(traceRecordDao.query(query)))
+            val result = ArrayList<TraceRecord>()
+            val queryWithLocation = traceRecordDao.queryWithLocation(query)
+            queryWithLocation.forEach {
+                it.record.traceList = ArrayList(it.locationList)
+                result.add(it.record)
+            }
+            ResponseEntity.success(result)
         } catch (e: Exception) {
             ResponseEntity(null, 500, e.toString())
         }

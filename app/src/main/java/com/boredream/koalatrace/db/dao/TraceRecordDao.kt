@@ -13,6 +13,9 @@ interface TraceRecordDao {
     @RawQuery(observedEntities = [TraceRecord::class])
     suspend fun query(query: SupportSQLiteQuery): List<TraceRecord>
 
+    @RawQuery(observedEntities = [TraceRecordWithLocation::class])
+    suspend fun queryWithLocation(query: SupportSQLiteQuery): List<TraceRecordWithLocation>
+
     @Query("SELECT DISTINCT subAdminArea, locality FROM TraceRecord WHERE subAdminArea IS NOT NULL AND locality IS NOT NULL GROUP BY subAdminArea, locality")
     suspend fun loadArea(): List<TraceRecordArea>
 

@@ -11,6 +11,7 @@ import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.LocationConstant
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.GeometryCollection
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.LineString
 import org.locationtech.jts.geom.MultiPolygon
@@ -115,20 +116,20 @@ object TraceUtils {
             lineList.add(simpleLine(it.traceList))
         }
 
-//        // 先 line-buffer
-//        val lineBufferList = arrayListOf<Geometry>()
-//        lineList.forEach { lineBufferList.add(createLineBuffer(it)) }
-//        // 后 merge
-//        val geometryCollection = GeometryFactory().buildGeometry(lineBufferList)
-//        var mergePolygon = geometryCollection
-//        if(geometryCollection is GeometryCollection) {
-//            mergePolygon = geometryCollection.union()
-//        }
+        // 先 line-buffer
+        val lineBufferList = arrayListOf<Geometry>()
+        lineList.forEach { lineBufferList.add(createLineBuffer(it)) }
+        // 后 merge
+        val geometryCollection = GeometryFactory().buildGeometry(lineBufferList)
+        var mergePolygon = geometryCollection
+        if(geometryCollection is GeometryCollection) {
+            mergePolygon = geometryCollection.union()
+        }
 
-        // 先 merge line
-        val mergeLine = GeometryFactory().createMultiLineString(lineList.toTypedArray())
-        // 后 line-buffer
-        val mergePolygon = createLineBuffer(mergeLine)
+//        // 先 merge line
+//        val mergeLine = GeometryFactory().createMultiLineString(lineList.toTypedArray())
+//        // 后 line-buffer
+//        val mergePolygon = createLineBuffer(mergeLine)
 
         // 多个路线拼接的图，可能合并成一个形状，也可能是分开的几个形状，需要各自单独绘制
         val polygonList = arrayListOf<Polygon>()
@@ -145,7 +146,7 @@ object TraceUtils {
         return drawJstPolygonMask(map, polygonList, color)
     }
 
-    private fun simpleLine(traceList: ArrayList<TraceLocation>): LineString {
+    fun simpleLine(traceList: ArrayList<TraceLocation>): LineString {
         // TODO: https://lbs.amap.com/demo/sdk/path-smooth#android 轨迹平滑处理
         val start = System.currentTimeMillis()
         // 先经纬度转为jts的line对象
@@ -162,7 +163,7 @@ object TraceUtils {
         return simplifier.resultGeometry as LineString
     }
 
-    private fun createLineBuffer(line: Geometry): Geometry {
+    fun createLineBuffer(line: Geometry): Geometry {
         // line-buffer 用线计算区域面积
         val start = System.currentTimeMillis()
         val bufferParams = BufferParameters()

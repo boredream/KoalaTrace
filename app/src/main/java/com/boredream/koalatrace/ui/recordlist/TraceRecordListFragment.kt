@@ -86,6 +86,7 @@ class TraceRecordListFragment :
             adapter.notifyDataSetChanged()
         }
 
+        // FIXME: remove me
         binding.titleBar.dataBinding.ivLeft.visibility = View.VISIBLE
         binding.titleBar.dataBinding.ivLeft.setOnClickListener {
             binding.mapviewList.drawLineBuffer()

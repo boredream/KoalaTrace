@@ -5,15 +5,18 @@ import android.util.AttributeSet
 import androidx.core.content.ContextCompat
 import com.amap.api.maps.AMap.OnCameraChangeListener
 import com.amap.api.maps.CameraUpdateFactory
-import com.amap.api.maps.MapView
 import com.amap.api.maps.TextureMapView
-import com.amap.api.maps.model.*
+import com.amap.api.maps.model.CameraPosition
+import com.amap.api.maps.model.CustomMapStyleOptions
+import com.amap.api.maps.model.LatLng
+import com.amap.api.maps.model.LatLngBounds
+import com.amap.api.maps.model.Polyline
+import com.amap.api.maps.model.PolylineOptions
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.utils.FileUtils
 import com.boredream.koalatrace.utils.Logger
-import com.boredream.koalatrace.utils.TraceUtils
 
 
 open class RecordMapView : TextureMapView {
