@@ -8,8 +8,6 @@ import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.TraceRecordArea
 import com.boredream.koalatrace.db.AppDatabase
 import com.boredream.koalatrace.utils.Logger
-import com.google.gson.Gson
-import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
 
@@ -85,7 +83,12 @@ class TraceRecordLocalDataSource @Inject constructor(
         return ResponseEntity.success(dataList)
     }
 
-    suspend fun getListByCondition(startTime: Long?, endTime: Long?, recordArea : TraceRecordArea?): ResponseEntity<ArrayList<TraceRecord>> {
+    suspend fun getListByCondition(
+        startTime: Long?,
+        endTime: Long?,
+        recordArea: TraceRecordArea?,
+        needLocationList: Boolean,
+    ): ResponseEntity<ArrayList<TraceRecord>> {
         return try {
             val queryBuilder = SupportSQLiteQueryBuilder.builder("TraceRecord")
 
@@ -115,11 +118,17 @@ class TraceRecordLocalDataSource @Inject constructor(
             logger.i(query.sql)
 
             val result = ArrayList<TraceRecord>()
-            val queryWithLocation = traceRecordDao.queryWithLocation(query)
-            queryWithLocation.forEach {
-                it.record.traceList = ArrayList(it.locationList)
-                result.add(it.record)
+
+            // 判断是否要关联查询轨迹下的坐标点
+            if(needLocationList) {
+                traceRecordDao.queryWithLocation(query).forEach {
+                    it.record.traceList = ArrayList(it.locationList)
+                    result.add(it.record)
+                }
+            } else {
+                result.addAll(traceRecordDao.query(query))
             }
+
             ResponseEntity.success(result)
         } catch (e: Exception) {
             ResponseEntity(null, 500, e.toString())

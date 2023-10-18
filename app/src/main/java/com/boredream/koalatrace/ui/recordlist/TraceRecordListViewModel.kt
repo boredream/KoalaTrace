@@ -59,21 +59,7 @@ class TraceRecordListViewModel @Inject constructor(
             onSuccess = { onLoadTraceListSuccess(it) } // 数据回来之后，刷新列表
         ) {
             val isListMode = isListModeUiState.value ?: true
-            if(isListMode) {
-                repository.getListByCondition(startTime, endTime, recordArea)
-            } else {
-                // TODO: 速度？
-                val response = repository.getListByCondition(startTime, endTime, recordArea)
-                if(response.isSuccess()) {
-                    response.getSuccessData().forEach {
-                        val listResponse = repository.getLocationList(it.id)
-                        if(listResponse.isSuccess()) {
-                            it.traceList = listResponse.getSuccessData()
-                        }
-                    }
-                }
-                response
-            }
+            repository.getListByCondition(startTime, endTime, recordArea, !isListMode)
         }
     }
 
