@@ -125,7 +125,7 @@ open class RecordMapView : TextureMapView {
         traceLineWidth: Float = 15f,
         traceLineColor: Int = ContextCompat.getColor(context, R.color.colorPrimary)
     ): Polyline? {
-        logger.i("size = ${pointList.size}")
+        logger.v("size = ${pointList.size}")
         return map.addPolyline(
             PolylineOptions().addAll(pointList).width(traceLineWidth).color(traceLineColor)
         )

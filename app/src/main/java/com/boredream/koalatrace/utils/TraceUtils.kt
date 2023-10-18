@@ -9,6 +9,7 @@ import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.LocationConstant
+import com.boredream.koalatrace.data.constant.MapConstant
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryCollection
@@ -25,6 +26,7 @@ import kotlin.math.pow
 object TraceUtils {
 
     private val logger = PrintLogger()
+    private val geometryFactory = GeometryFactory()
 
     fun getTraceListName(traceList: ArrayList<TraceLocation>): String {
         val time = TimeUtils.millis2String(traceList[traceList.lastIndex].time)
@@ -194,10 +196,6 @@ object TraceUtils {
             for (index in 0 until polygon.numInteriorRing) {
                 val interRing = polygon.getInteriorRingN(index)
 
-//                // TODO: 环如果过小，可以省略
-//                val interRingPolygon = geometryFactory.createPolygon(interRing)
-//                logger.i("interRingPolygon area = ${interRingPolygon.area}")
-
                 val inter = interRing.coordinates.map { LatLng(it.x, it.y) }
                 polygonHoleOptionsList.add(PolygonHoleOptions().addAll(inter))
 
@@ -241,9 +239,11 @@ object TraceUtils {
                 for (index in 0 until polygon.numInteriorRing) {
                     val interRing = polygon.getInteriorRingN(index)
 
-//                // TODO: 环如果过小，可以省略
-//                val interRingPolygon = geometryFactory.createPolygon(interRing)
-//                logger.i("interRingPolygon area = ${interRingPolygon.area}")
+                    // 环如果过小，可以省略
+                    val interRingPolygon = geometryFactory.createPolygon(interRing)
+                    if(interRingPolygon.area < MapConstant.IGNORE_INTER_RING_AREA) {
+                        continue
+                    }
 
                     // 内孔作为遮罩内形状，单独绘制
                     val polygonOptions = PolygonOptions()
@@ -251,7 +251,7 @@ object TraceUtils {
                         .fillColor(color)
                         .strokeWidth(0f)
                     list.add(map.addPolygon(polygonOptions))
-                    logger.i("add polygon hole = $index , area = ${interRing.area}")
+                    logger.i("add polygon hole = $index , area = ${interRingPolygon.area}")
                 }
             }
 
