@@ -10,7 +10,7 @@ object MapConstant {
     /**
      * 区域分割正方形后，和形状区划交集 / 正方形面积的忽略比例阈值
      */
-    const val AREA_SPLIT_IGNORE_AREA_RATIO = 0.15
+    const val AREA_SPLIT_IGNORE_AREA_RATIO = 0.01
 
     /**
      * 区域分割正方形边长（单位：m）

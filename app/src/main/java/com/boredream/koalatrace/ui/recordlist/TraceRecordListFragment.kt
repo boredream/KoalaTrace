@@ -26,6 +26,9 @@ import com.boredream.koalatrace.utils.DialogUtils
 import com.boredream.koalatrace.utils.TraceUtils
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.AndroidEntryPoint
+import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Polygon
 import java.util.*
 
 
@@ -114,15 +117,23 @@ class TraceRecordListFragment :
                 .strokeWidth(0f)
         )
 
-        val splitRectList = TraceUtils.splitCityDistinct(boundary)
-        splitRectList.forEach {
-            binding.mapviewList.map.addPolygon(
-                PolygonOptions()
-                    .addAll(it)
-                    .fillColor(Color.argb(30, 0, 255, 255))
-                    .strokeColor(Color.BLACK)
-                    .strokeWidth(2f)
-            )
+        val splitAreaList = TraceUtils.splitCityDistinct(boundary)
+        val areaLatLngList = arrayListOf<List<LatLng>>()
+        splitAreaList.forEach { polygon ->
+            if(polygon is Polygon) {
+                val areaLatLng = arrayListOf<LatLng>()
+                polygon.coordinates.forEach{ areaLatLng.add(LatLng(it.y, it.x)) }
+                areaLatLngList.add(areaLatLng)
+            } else if(polygon is MultiPolygon) {
+                for (i in 0 until polygon.numGeometries) {
+                    val areaLatLng = arrayListOf<LatLng>()
+                    val geometry: Geometry = polygon.getGeometryN(i)
+                    if (geometry is Polygon) {
+                        geometry.coordinates.forEach{ areaLatLng.add(LatLng(it.y, it.x)) }
+                        areaLatLngList.add(areaLatLng)
+                    }
+                }
+            }
         }
     }
 

@@ -18,6 +18,7 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.LineString
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
+import org.locationtech.jts.geom.Polygonal
 import org.locationtech.jts.operation.buffer.BufferOp
 import org.locationtech.jts.operation.buffer.BufferParameters
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier
@@ -261,8 +262,8 @@ object TraceUtils {
     /**
      * 把区域按方格分割
      */
-    fun splitCityDistinct(boundary: ArrayList<LatLng>): ArrayList<ArrayList<LatLng>> {
-        val splitRectList = arrayListOf<ArrayList<LatLng>>()
+    fun splitCityDistinct(boundary: ArrayList<LatLng>): ArrayList<Polygonal> {
+        val splitRectList = arrayListOf<Polygonal>()
 
         // 先计算边界
         var left: Double = Double.MAX_VALUE
@@ -308,18 +309,14 @@ object TraceUtils {
                     startLocation.longitude + x * squareWidth
                 )
 
-                val rect = arrayListOf(
-                    iStartLoc,
-                    LatLng(iStartLoc.latitude + squareHeight, iStartLoc.longitude),
-                    LatLng(iStartLoc.latitude + squareHeight, iStartLoc.longitude + squareWidth),
-                    LatLng(iStartLoc.latitude, iStartLoc.longitude + squareWidth),
-                    iStartLoc,
-                )
-
                 // 计算边界形状和每个正方形，无交集，或者交集过小都忽略
-                val rectPolygon = geometryFactory.createPolygon(
-                    rect.map { Coordinate(it.longitude, it.latitude) }.toTypedArray()
-                )
+                val rectPolygon = geometryFactory.createPolygon(arrayOf(
+                    Coordinate(iStartLoc.longitude, iStartLoc.latitude),
+                    Coordinate(iStartLoc.longitude, iStartLoc.latitude + squareHeight),
+                    Coordinate(iStartLoc.longitude + squareWidth, iStartLoc.latitude + squareHeight),
+                    Coordinate(iStartLoc.longitude + squareWidth, iStartLoc.latitude),
+                    Coordinate(iStartLoc.longitude, iStartLoc.latitude),
+                ))
                 val intersection = boundaryPolygon.intersection(rectPolygon)
                 if (intersection.isEmpty) {
                     continue
@@ -328,7 +325,8 @@ object TraceUtils {
                 if (areaRatio < MapConstant.AREA_SPLIT_IGNORE_AREA_RATIO) {
                     continue
                 }
-                splitRectList.add(rect)
+
+                splitRectList.add(intersection as Polygonal)
             }
         }
         return splitRectList
