@@ -6,16 +6,22 @@ import com.amap.api.location.AMapLocationClient
 import com.amap.api.location.AMapLocationClientOption
 import com.amap.api.maps.model.LatLng
 import com.amap.api.services.core.LatLonPoint
+import com.amap.api.services.district.DistrictResult
+import com.amap.api.services.district.DistrictSearch
+import com.amap.api.services.district.DistrictSearchQuery
 import com.amap.api.services.geocoder.*
 import com.blankj.utilcode.util.CollectionUtils
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.constant.LocationParam
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
 class GdLocationDataSource @Inject constructor(
     @ApplicationContext val context: Context,
+    private val dispatcher: CoroutineDispatcher,
     private val locationParam: LocationParam,
 ) : LocationDataSource {
 
@@ -24,6 +30,16 @@ class GdLocationDataSource @Inject constructor(
     }
 
     private var locationClient: AMapLocationClient? = null
+
+    suspend fun getDistrictArea(keywords: String): DistrictResult? = withContext(dispatcher) {
+        val query = DistrictSearchQuery()
+        query.keywords = keywords
+        query.isShowBoundary = true
+
+        val search = DistrictSearch(context)
+        search.query = query
+        search.searchDistrict()
+    }
 
     override fun startLocation(onSuccess: (location: TraceLocation) -> Unit) {
         try {

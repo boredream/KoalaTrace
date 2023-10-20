@@ -86,6 +86,7 @@
         <activity android:name=".ui.trace.recorddetail.TraceRecordDetailActivity" />
         <activity android:name=".ui.trace.editmap.TraceEditMapActivity" />
         <activity android:name=".ui.log.LogActivity" />
+        <activity android:name=".ui.MapTestActivity" />
     </application>
 
 </manifest>

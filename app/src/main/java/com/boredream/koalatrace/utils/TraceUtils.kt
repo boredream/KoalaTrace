@@ -1,5 +1,6 @@
 package com.boredream.koalatrace.utils
 
+import android.util.Log
 import com.amap.api.maps.AMap
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.model.LatLng
@@ -20,6 +21,7 @@ import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.operation.buffer.BufferOp
 import org.locationtech.jts.operation.buffer.BufferParameters
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier
+import kotlin.math.cos
 import kotlin.math.pow
 
 
@@ -124,7 +126,7 @@ object TraceUtils {
         // 后 merge
         val geometryCollection = GeometryFactory().buildGeometry(lineBufferList)
         var mergePolygon = geometryCollection
-        if(geometryCollection is GeometryCollection) {
+        if (geometryCollection is GeometryCollection) {
             mergePolygon = geometryCollection.union()
         }
 
@@ -150,7 +152,6 @@ object TraceUtils {
 
     fun simpleLine(traceList: ArrayList<TraceLocation>): LineString {
         // TODO: https://lbs.amap.com/demo/sdk/path-smooth#android 轨迹平滑处理
-        val start = System.currentTimeMillis()
         // 先经纬度转为jts的line对象
         val factory = GeometryFactory()
         val coordinateList = arrayListOf<Coordinate>()
@@ -161,19 +162,16 @@ object TraceUtils {
         val tolerance = LocationConstant.ONE_METER_LAT_LNG * 20 // 简化容差
         val simplifier = DouglasPeuckerSimplifier(line)
         simplifier.setDistanceTolerance(tolerance)
-        // logger.i("simple line duration ${System.currentTimeMillis() - start}")
         return simplifier.resultGeometry as LineString
     }
 
     fun createLineBuffer(line: Geometry): Geometry {
         // line-buffer 用线计算区域面积
-        val start = System.currentTimeMillis()
         val bufferParams = BufferParameters()
         bufferParams.endCapStyle = BufferParameters.CAP_ROUND
         bufferParams.joinStyle = BufferParameters.JOIN_ROUND
         val bufferOp = BufferOp(line, bufferParams)
         val width = LocationConstant.ONE_METER_LAT_LNG * 50
-        // logger.i("line buffer duration ${System.currentTimeMillis() - start}")
         return bufferOp.getResultGeometry(width)
     }
 
@@ -199,7 +197,7 @@ object TraceUtils {
                 val inter = interRing.coordinates.map { LatLng(it.x, it.y) }
                 polygonHoleOptionsList.add(PolygonHoleOptions().addAll(inter))
 
-                logger.i("add polygon hole = $index")
+                logger.v("add polygon hole = $index")
             }
         }
         polygonOptions.addHoles(polygonHoleOptionsList)
@@ -241,7 +239,7 @@ object TraceUtils {
 
                     // 环如果过小，可以省略
                     val interRingPolygon = geometryFactory.createPolygon(interRing)
-                    if(interRingPolygon.area < MapConstant.IGNORE_INTER_RING_AREA) {
+                    if (interRingPolygon.area < MapConstant.IGNORE_INTER_RING_AREA) {
                         continue
                     }
 
@@ -251,13 +249,87 @@ object TraceUtils {
                         .fillColor(color)
                         .strokeWidth(0f)
                     list.add(map.addPolygon(polygonOptions))
-                    logger.i("add polygon hole = $index , area = ${interRingPolygon.area}")
+                    logger.v("add polygon hole = $index , area = ${interRingPolygon.area}")
                 }
             }
 
-        list.forEach { it.zIndex = 999f }
+        list.forEach { it.zIndex = 99999f }
         logger.i("addJstPolygon duration ${System.currentTimeMillis() - start}")
         return list
+    }
+
+    /**
+     * 把区域按方格分割
+     */
+    fun splitCityDistinct(boundary: ArrayList<LatLng>): ArrayList<ArrayList<LatLng>> {
+        val splitRectList = arrayListOf<ArrayList<LatLng>>()
+
+        // 先计算边界
+        var left: Double = Double.MAX_VALUE
+        var bottom: Double = Double.MAX_VALUE
+        var right: Double = Double.MIN_VALUE
+        var top: Double = Double.MIN_VALUE
+        boundary.forEach {
+            left = left.coerceAtMost(it.longitude)
+            bottom = bottom.coerceAtMost(it.latitude)
+            right = right.coerceAtLeast(it.longitude)
+            top = top.coerceAtLeast(it.latitude)
+        }
+
+        // 计算分割的正方形边长，经纬度的数字和米的对应关系不同，需要处理
+        // 维度比较固定，1度约等于111公里
+        val deltaLatitude = 1.0 / 111000
+        // 经度需要根据当前维度，进行计算
+        val deltaLongitude = 1.0 / (cos(Math.toRadians(bottom)) * 111000)
+        // 计算 AREA_SPLIT_SQUARE_LENGTH 米 需要的实际经纬度数字
+        val squareHeight = deltaLatitude * MapConstant.AREA_SPLIT_SQUARE_LENGTH
+        val squareWidth = deltaLongitude * MapConstant.AREA_SPLIT_SQUARE_LENGTH
+
+        // 计算方形阵列的起点，要刚刚好包裹住边界，且尽量居中显示
+        val totalWidth = right - left
+        val xCount = (totalWidth / squareWidth).toInt()
+        val startLongitudeOffset = ((xCount + 1) * squareWidth - totalWidth) / 2
+        val totalHeight = top - bottom
+        val yCount = (totalHeight / squareHeight).toInt()
+        val startLatitudeOffset = ((yCount + 1) * squareHeight - totalHeight) / 2
+
+        // 从左下角开始，生成阵列
+        val startLocation = LatLng(bottom - startLatitudeOffset, left - startLongitudeOffset)
+        val geometryFactory = GeometryFactory()
+        // 总的边界形状，用于和每个正方形的交集计算
+        val boundaryPolygon = geometryFactory.createPolygon(
+            boundary
+                .map { Coordinate(it.longitude, it.latitude) }.toTypedArray()
+        )
+        for (x in 0..xCount) {
+            for (y in 0..yCount) {
+                val iStartLoc = LatLng(
+                    startLocation.latitude + y * squareHeight,
+                    startLocation.longitude + x * squareWidth
+                )
+
+                // 计算边界形状和每个正方形，无交集，或者交集过小都忽略
+                val rectPolygon = geometryFactory.createPolygon(arrayOf(
+                    Coordinate(iStartLoc.longitude, iStartLoc.latitude),
+                    Coordinate(iStartLoc.longitude, iStartLoc.latitude + squareHeight),
+                    Coordinate(iStartLoc.longitude + squareWidth, iStartLoc.latitude + squareHeight),
+                    Coordinate(iStartLoc.longitude + squareWidth, iStartLoc.latitude),
+                    Coordinate(iStartLoc.longitude, iStartLoc.latitude),
+                ))
+                val intersection = boundaryPolygon.intersection(rectPolygon)
+                if (intersection.isEmpty) {
+                    continue
+                }
+                val areaRatio = intersection.area / rectPolygon.area
+                if (areaRatio < MapConstant.AREA_SPLIT_IGNORE_AREA_RATIO) {
+                    continue
+                }
+
+                val split = intersection.coordinates.map { LatLng(it.y, it.x) }
+                splitRectList.add(ArrayList(split))
+            }
+        }
+        return splitRectList
     }
 
 

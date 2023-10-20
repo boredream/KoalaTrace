@@ -68,7 +68,7 @@ class TraceRecordLocalDataSourceTest {
     fun testConditionDb() = runBlocking {
         val startDate = TimeUtils.string2Millis("2023-05-20", "yyyy-MM-dd")
         val endDate = TimeUtils.string2Millis("2023-05-24", "yyyy-MM-dd")
-        val response = dataSource.getListByCondition(startDate, endDate, TraceRecordArea("上海市", "长宁区"))
+        val response = dataSource.getListByCondition(startDate, endDate, TraceRecordArea("上海市", "长宁区"), false)
         println(Gson().toJson(response))
     }
 
@@ -85,15 +85,8 @@ class TraceRecordLocalDataSourceTest {
         // 测试探索区域
         val startDate = TimeUtils.string2Millis("2023-09-01", "yyyy-MM-dd")
         val endDate = TimeUtils.string2Millis("2023-10-18", "yyyy-MM-dd")
-        val response = dataSource.getListByCondition(startDate, endDate, TraceRecordArea("上海市", "长宁区"))
+        val response = dataSource.getListByCondition(startDate, endDate, TraceRecordArea("上海市", "长宁区"), true)
         val list = response.data!!
-
-//        list.forEach {
-//            val listResponse = dataSource.getTraceLocationList(it.id)
-//            if(listResponse.isSuccess()) {
-//                it.traceList = listResponse.getSuccessData()
-//            }
-//        }
         println("load location list ${list.size} lines , duration = ${SystemClock.elapsedRealtime() - startTime}")
 
         val lineList = arrayListOf<LineString>()

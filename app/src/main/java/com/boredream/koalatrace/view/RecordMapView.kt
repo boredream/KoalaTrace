@@ -19,11 +19,9 @@ import com.boredream.koalatrace.utils.FileUtils
 import com.boredream.koalatrace.utils.Logger
 
 
-open class RecordMapView : TextureMapView {
+open class RecordMapView : BaseMapView {
 
     private var lineList: ArrayList<Polyline> = arrayListOf()
-    protected val logger = Logger()
-    var zoomLevel = 17f
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -31,40 +29,7 @@ open class RecordMapView : TextureMapView {
         context,
         attrs,
         defStyleAttr
-    ) {
-        // TODO: 地图样式问题，省略一些小区名字等细节，突出线路。参考百度的一蓑烟雨 https://lbsyun.baidu.com/customv2/editor/e5dea5db69354a92addfb8e2bf7115dd/lvyexianzong
-
-        map?.let {
-            it.uiSettings.isScaleControlsEnabled = false
-            it.uiSettings.isZoomControlsEnabled = false
-            // 高德自定义样式 https://geohub.amap.com/mapstyle
-            val styleData = FileUtils.readBytesFromAssets(context, "mapstyle/style.data")
-            val styleExtraData = FileUtils.readBytesFromAssets(context, "mapstyle/style_extra.data")
-            val styleOptions = CustomMapStyleOptions()
-                .setEnable(true)
-                .setStyleData(styleData)
-                .setStyleExtraData(styleExtraData)
-            it.setCustomMapStyle(styleOptions)
-            it.setRoadArrowEnable(false)
-            it.addOnCameraChangeListener(object : OnCameraChangeListener {
-                override fun onCameraChange(position: CameraPosition?) {
-
-                }
-
-                override fun onCameraChangeFinish(position: CameraPosition?) {
-                    position?.let { it -> zoomLevel = it.zoom }
-                }
-            })
-        }
-    }
-
-    protected fun moveCamera(location: TraceLocation) {
-        val position = CameraPosition.Builder()
-            .target(LatLng(location.latitude, location.longitude))
-            .zoom(zoomLevel)
-            .build()
-        map.moveCamera(CameraUpdateFactory.newCameraPosition(position))
-    }
+    )
 
     open fun clearLineList() {
         lineList.forEach { it.remove() }
@@ -129,10 +94,6 @@ open class RecordMapView : TextureMapView {
         return map.addPolyline(
             PolylineOptions().addAll(pointList).width(traceLineWidth).color(traceLineColor)
         )
-    }
-
-    protected fun TraceLocation.toLatLng(): LatLng {
-        return LatLng(this.latitude, this.longitude)
     }
 
 }
