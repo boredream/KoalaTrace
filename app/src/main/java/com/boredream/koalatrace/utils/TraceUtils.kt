@@ -308,14 +308,18 @@ object TraceUtils {
                     startLocation.longitude + x * squareWidth
                 )
 
+                val rect = arrayListOf(
+                    iStartLoc,
+                    LatLng(iStartLoc.latitude + squareHeight, iStartLoc.longitude),
+                    LatLng(iStartLoc.latitude + squareHeight, iStartLoc.longitude + squareWidth),
+                    LatLng(iStartLoc.latitude, iStartLoc.longitude + squareWidth),
+                    iStartLoc,
+                )
+
                 // 计算边界形状和每个正方形，无交集，或者交集过小都忽略
-                val rectPolygon = geometryFactory.createPolygon(arrayOf(
-                    Coordinate(iStartLoc.longitude, iStartLoc.latitude),
-                    Coordinate(iStartLoc.longitude, iStartLoc.latitude + squareHeight),
-                    Coordinate(iStartLoc.longitude + squareWidth, iStartLoc.latitude + squareHeight),
-                    Coordinate(iStartLoc.longitude + squareWidth, iStartLoc.latitude),
-                    Coordinate(iStartLoc.longitude, iStartLoc.latitude),
-                ))
+                val rectPolygon = geometryFactory.createPolygon(
+                    rect.map { Coordinate(it.longitude, it.latitude) }.toTypedArray()
+                )
                 val intersection = boundaryPolygon.intersection(rectPolygon)
                 if (intersection.isEmpty) {
                     continue
@@ -324,9 +328,7 @@ object TraceUtils {
                 if (areaRatio < MapConstant.AREA_SPLIT_IGNORE_AREA_RATIO) {
                     continue
                 }
-
-                val split = intersection.coordinates.map { LatLng(it.y, it.x) }
-                splitRectList.add(ArrayList(split))
+                splitRectList.add(rect)
             }
         }
         return splitRectList
