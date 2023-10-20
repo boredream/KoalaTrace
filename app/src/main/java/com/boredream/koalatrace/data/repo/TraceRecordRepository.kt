@@ -27,9 +27,9 @@ class TraceRecordRepository @Inject constructor(
     suspend fun getList() = localDataSource.getList()
 
     suspend fun getListByCondition(
-        startTime: Long?,
-        endTime: Long?,
-        recordArea: TraceRecordArea?,
+        startTime: Long? = null,
+        endTime: Long? = null,
+        recordArea: TraceRecordArea? = null,
         needLocationList: Boolean
     ) = localDataSource.getListByCondition(startTime, endTime, recordArea, needLocationList)
 

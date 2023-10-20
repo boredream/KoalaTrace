@@ -29,18 +29,10 @@ class ExploreRepository @Inject constructor(
         if(areaInfo == null) {
             remoteDataSource.getDistrictInfo(keywords)?.let { district ->
                 // TODO: district boundary 是数组，代表一个区域可能是多个形状？
-                val boundary = arrayListOf<LatLng>()
-                // districtBoundary 的格式为 121.41257,31.191118;121.412083,31.191139; ...
-                for (coordinate in district.districtBoundary()[0].split(";")) {
-                    boundary.add(
-                        LatLng(
-                            coordinate.split(',')[1].toDouble(),
-                            coordinate.split(',')[0].toDouble()
-                        )
-                    )
-                }
+                val boundaryStr = district.districtBoundary()[0]
+                val boundary = TraceUtils.str2LatLngList(boundaryStr)
                 // TODO: parentAreaCode
-                areaInfo = ExploreAreaInfo(keywords, "")
+                areaInfo = ExploreAreaInfo(keywords, "", boundaryStr)
                 areaInfo!!.blockList = TraceUtils.splitCityDistinct(keywords, boundary)
 
                 localDataSource.saveAreaInfo(areaInfo!!)

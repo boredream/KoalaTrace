@@ -10,6 +10,7 @@ import com.boredream.koalatrace.base.BaseEntity
 open class ExploreAreaInfo(
     val areaCode: String,
     val parentAreaCode: String,
+    val boundary: String,
 ) : BaseEntity() {
 
     @PrimaryKey(autoGenerate = true)

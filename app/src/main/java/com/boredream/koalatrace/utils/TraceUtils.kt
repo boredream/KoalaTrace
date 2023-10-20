@@ -109,12 +109,10 @@ object TraceUtils {
         return minDistanceLocation
     }
 
-    fun drawTraceListLineBuffer(
-        map: AMap,
-        recordList: List<TraceRecord>,
-        color: Int
-    ): List<com.amap.api.maps.model.Polygon> {
-
+    /**
+     * 根据轨迹线路列表生成探索区域形状列表
+     */
+    fun genExplorePolygon(recordList: List<TraceRecord>): ArrayList<Polygon> {
         // 简化线路
         val lineList = arrayListOf<LineString>()
         recordList.forEach {
@@ -148,7 +146,7 @@ object TraceUtils {
                 }
             }
         }
-        return drawJstPolygonMask(map, polygonList, color)
+        return polygonList
     }
 
     fun simpleLine(traceList: ArrayList<TraceLocation>): LineString {
@@ -257,6 +255,20 @@ object TraceUtils {
         list.forEach { it.zIndex = 99999f }
         logger.i("addJstPolygon duration ${System.currentTimeMillis() - start}")
         return list
+    }
+
+    fun str2LatLngList(str: String): ArrayList<LatLng> {
+        // 高德 districtBoundary 的格式为 121.41257,31.191118;121.412083,31.191139; ...
+        val boundary = arrayListOf<LatLng>()
+        for (coordinate in str.split(";")) {
+            boundary.add(
+                LatLng(
+                    coordinate.split(',')[1].toDouble(),
+                    coordinate.split(',')[0].toDouble()
+                )
+            )
+        }
+        return boundary
     }
 
     /**
