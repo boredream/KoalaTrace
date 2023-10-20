@@ -1,12 +1,12 @@
 package com.boredream.koalatrace.utils
 
-import android.util.Log
 import com.amap.api.maps.AMap
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.PolygonHoleOptions
 import com.amap.api.maps.model.PolygonOptions
 import com.blankj.utilcode.util.TimeUtils
+import com.boredream.koalatrace.data.ExploreBlockInfo
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.LocationConstant
@@ -262,8 +262,9 @@ object TraceUtils {
     /**
      * 把区域按方格分割
      */
-    fun splitCityDistinct(boundary: ArrayList<LatLng>): ArrayList<Polygonal> {
-        val splitRectList = arrayListOf<Polygonal>()
+    fun splitCityDistinct(areaCode: String, boundary: ArrayList<LatLng>): ArrayList<ExploreBlockInfo> {
+        // Pair<方形外框，实际形状>
+        val splitRectList = arrayListOf<ExploreBlockInfo>()
 
         // 先计算边界
         var left: Double = Double.MAX_VALUE
@@ -325,7 +326,35 @@ object TraceUtils {
                     continue
                 }
 
-                splitRectList.add(intersection as Polygonal)
+                val sbRect = StringBuffer()
+                rectPolygon.coordinates.forEach {
+                    sbRect.append(";").append(it.y).append(",").append(it.x)
+                }
+
+                val sbActual = StringBuilder()
+                if (intersection is Polygon) {
+                    intersection.coordinates.forEach {
+                        sbActual.append(";").append(it.y).append(",").append(it.x)
+                    }
+                } else if (intersection is MultiPolygon) {
+                    for (i in 0 until intersection.getNumGeometries()) {
+                        val geometry: Geometry = intersection.getGeometryN(i)
+                        if (geometry is Polygon) {
+                            if (i > 0) sbActual.append("==")
+                            geometry.coordinates.forEach {
+                                sbActual.append(";").append(it.y).append(",").append(it.x)
+                            }
+                        }
+                    }
+                }
+                splitRectList.add(
+                    ExploreBlockInfo(
+                        areaCode,
+                        sbRect.substring(1),
+                        sbActual.substring(1),
+                        intersection.area
+                    )
+                )
             }
         }
         return splitRectList

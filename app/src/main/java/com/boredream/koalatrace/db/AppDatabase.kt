@@ -14,8 +14,8 @@ import com.boredream.koalatrace.db.dao.TraceRecordDao
     entities = [
         TraceRecord::class,
         TraceLocation::class,
-        ExploreAreaInfo::class,
-        ExploreBlockInfo::class,
+//        ExploreAreaInfo::class,
+//        ExploreBlockInfo::class,
     ], version = 2, exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -15,13 +15,20 @@ class ExploreLocalDataSource @Inject constructor(
 
     @Transaction
     suspend fun getAreaInfo(keywords: String): ExploreAreaInfo? {
-        val areaInfo = dao.loadExploreArea(keywords)
-        if(areaInfo != null) {
-            areaInfo.blockList = dao.loadExploreBlockList(keywords)
-            return areaInfo
-        }
+//        val areaInfo = dao.loadExploreArea(keywords)
+//        if(areaInfo != null) {
+//            areaInfo.blockList = dao.loadExploreBlockList(keywords)
+//            return areaInfo
+//        }
         return null
     }
 
+    @Transaction
+    suspend fun saveAreaInfo(areaInfo: ExploreAreaInfo) {
+//        val add = dao.insertOrUpdateArea(areaInfo)
+//        if(add != -1L) {
+//            dao.insertOrUpdateBlock(areaInfo.blockList)
+//        }
+    }
 
 }

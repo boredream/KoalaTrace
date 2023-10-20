@@ -2,6 +2,7 @@ package com.boredream.koalatrace.data.repo
 
 import com.amap.api.maps.model.LatLng
 import com.boredream.koalatrace.base.BaseRepository
+import com.boredream.koalatrace.data.ExploreAreaInfo
 import com.boredream.koalatrace.data.repo.source.ExploreLocalDataSource
 import com.boredream.koalatrace.data.repo.source.ExploreRemoteDataSource
 import com.boredream.koalatrace.utils.Logger
@@ -22,15 +23,15 @@ class ExploreRepository @Inject constructor(
     private val remoteDataSource: ExploreRemoteDataSource,
 ) : BaseRepository() {
 
-    suspend fun get(keywords: String) = withContext(Dispatchers.Default) {
+    suspend fun getAreaInfo(keywords: String) = withContext(Dispatchers.Default) {
         // 获取行政区划边界信息后，还需要进行一系列计算，计算逻辑放在 Dispatchers.Default
-        val areaInfo = localDataSource.getAreaInfo(keywords)
+        var areaInfo = localDataSource.getAreaInfo(keywords)
         if(areaInfo == null) {
-            remoteDataSource.getDistrictInfo(keywords)?.let {
+            remoteDataSource.getDistrictInfo(keywords)?.let { district ->
                 // TODO: district boundary 是数组，代表一个区域可能是多个形状？
                 val boundary = arrayListOf<LatLng>()
                 // districtBoundary 的格式为 121.41257,31.191118;121.412083,31.191139; ...
-                for (coordinate in it.districtBoundary()[0].split(";")) {
+                for (coordinate in district.districtBoundary()[0].split(";")) {
                     boundary.add(
                         LatLng(
                             coordinate.split(',')[1].toDouble(),
@@ -38,9 +39,15 @@ class ExploreRepository @Inject constructor(
                         )
                     )
                 }
-                val splitCityDistinct = TraceUtils.splitCityDistinct(boundary)
+                // TODO: parentAreaCode
+                areaInfo = ExploreAreaInfo(keywords, "")
+                areaInfo!!.blockList = TraceUtils.splitCityDistinct(keywords, boundary)
+
+                localDataSource.saveAreaInfo(areaInfo!!)
+                logger.i("get from remote $keywords")
             }
         }
+        areaInfo
     }
 
 }

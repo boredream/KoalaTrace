@@ -8,7 +8,6 @@ import com.boredream.koalatrace.base.BaseEntity
 /**
  * 区域探索信息 - 区块
  */
-@Entity
 open class ExploreBlockInfo(
     val areaCode: String, // 所属区域
     val rectBoundary: String, // 区块的方形边界 经纬度用;分割
@@ -21,5 +20,9 @@ open class ExploreBlockInfo(
 
     // 探索度
     var explorePercent: Float = 0.0f
+    override fun toString(): String {
+        return "ExploreBlockInfo(, id=$id, areaCode='$areaCode', rectBoundary='$rectBoundary', explorePercent=$explorePercent, actualBoundary='$actualBoundary', actualArea=$actualArea)"
+    }
+
 
 }

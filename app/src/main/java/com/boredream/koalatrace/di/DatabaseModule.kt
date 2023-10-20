@@ -28,11 +28,30 @@ object DatabaseModule {
                 database.execSQL("ALTER TABLE TraceRecord ADD COLUMN `subLocality` TEXT")
             }
         }
+//        val migration2To3 = object : Migration(2, 3) {
+//            override fun migrate(database: SupportSQLiteDatabase) {
+//                database.execSQL("CREATE TABLE IF NOT EXISTS ExploreAreaInfo (\n" +
+//                        "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+//                        "    areaCode TEXT NOT NULL,\n" +
+//                        "    parentAreaCode TEXT NOT NULL,\n" +
+//                        "    explorePercent REAL NOT NULL\n" +
+//                        ")")
+//                database.execSQL("CREATE TABLE IF NOT EXISTS ExploreBlockInfo (\n" +
+//                        "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+//                        "    areaCode TEXT NOT NULL,\n" +
+//                        "    rectBoundary TEXT NOT NULL,\n" +
+//                        "    actualBoundary TEXT NOT NULL,\n" +
+//                        "    actualArea REAL NOT NULL,\n" +
+//                        "    explorePercent REAL NOT NULL\n" +
+//                        ")")
+//            }
+//        }
 
         val dbName = CommonConstant.DB_NAME
         return Room.databaseBuilder(context, AppDatabase::class.java, dbName)
             .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
             .addMigrations(migration1To2)
+//            .addMigrations(migration2To3)
             .build()
     }
 }
