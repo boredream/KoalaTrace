@@ -6,10 +6,13 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.rule.GrantPermissionRule
 import com.boredream.koalatrace.data.constant.LocationParam
+import com.boredream.koalatrace.data.repo.source.ExploreRemoteDataSource
 import com.boredream.koalatrace.data.repo.source.GdLocationDataSource
 import com.boredream.koalatrace.utils.DataStoreUtils
+import com.boredream.koalatrace.utils.PrintLogger
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
@@ -19,19 +22,13 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 @HiltAndroidTest
-class GdLocalDataSourceTest {
-
-    @get:Rule
-    val permissionRule: GrantPermissionRule = GrantPermissionRule.grant(
-        android.Manifest.permission.READ_EXTERNAL_STORAGE,
-        android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-    )
+class ExploreRemoteDataSourceTest {
 
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
 
     private lateinit var context: Context
-    private lateinit var dataSource: GdLocationDataSource
+    private lateinit var dataSource: ExploreRemoteDataSource
 
     @Before
     fun init() {
@@ -40,14 +37,14 @@ class GdLocalDataSourceTest {
         context = ApplicationProvider.getApplicationContext()
         DataStoreUtils.init(context)
 
-        dataSource = GdLocationDataSource(context, LocationParam())
+        dataSource = ExploreRemoteDataSource(PrintLogger(), context, Dispatchers.Default)
     }
 
     @Test
-    fun testGetDistrictArea() = runBlocking {
-//        val districtResult = dataSource.getDistrictArea("长宁区")!!
-//        println(districtResult.district[0])
-//        println(districtResult.district[0].districtBoundary()[0])
+    fun testGetDistrictInfo() = runBlocking {
+        // TODO: 如果区重名怎么办？
+        val districtInfo = dataSource.getDistrictInfo("长宁区")!!
+        println(districtInfo)
     }
 
 }

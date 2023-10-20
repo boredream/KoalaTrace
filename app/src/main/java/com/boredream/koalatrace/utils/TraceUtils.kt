@@ -299,8 +299,7 @@ object TraceUtils {
         val geometryFactory = GeometryFactory()
         // 总的边界形状，用于和每个正方形的交集计算
         val boundaryPolygon = geometryFactory.createPolygon(
-            boundary
-                .map { Coordinate(it.longitude, it.latitude) }.toTypedArray()
+            boundary.map { Coordinate(it.longitude, it.latitude) }.toTypedArray()
         )
         for (x in 0..xCount) {
             for (y in 0..yCount) {
