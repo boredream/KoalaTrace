@@ -9,6 +9,7 @@ import com.amap.api.maps.CameraUpdateFactory
 import com.amap.api.maps.model.CameraPosition
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.PolygonOptions
+import com.amap.api.maps.model.PolylineOptions
 import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseFragment
@@ -58,19 +59,25 @@ class ExploreFragment : BaseFragment<ExploreViewModel, FragmentExploreBinding>()
             .build()
         binding.mapView.map.moveCamera(CameraUpdateFactory.newCameraPosition(position))
 
-        binding.mapView.map.addPolygon(
-            PolygonOptions()
+        binding.mapView.map.addPolyline(
+            PolylineOptions()
                 .addAll(data.boundaryLatLngList)
-                .fillColor(Color.argb(30, 0, 0, 255))
-                .strokeWidth(0f)
+                .color(Color.argb(100, 0, 0, 255))
+                .width(5f)
         )
 
         data.blockList.forEach { blockInfo ->
-            val actualBoundaryStrList = blockInfo.actualBoundary.split("==")
-            actualBoundaryStrList.forEach {
+            binding.mapView.map.addPolyline(
+                PolylineOptions()
+                    .addAll(TraceUtils.str2LatLngList(blockInfo.rectBoundary))
+                    .color(Color.argb(30, 0, 0, 255))
+                    .width(5f)
+            )
+
+            blockInfo.explorePolygon.forEach { polygon ->
                 binding.mapView.map.addPolygon(PolygonOptions()
-                    .addAll(TraceUtils.str2LatLngList(it))
-                    .fillColor(Color.argb(30, 0, 255, 0))
+                    .addAll(polygon.coordinates.map { LatLng(it.y, it.x) })
+                    .fillColor(Color.argb(50, 0, 0, 255))
                     .strokeWidth(0f))
             }
         }

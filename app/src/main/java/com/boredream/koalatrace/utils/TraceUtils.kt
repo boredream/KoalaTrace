@@ -126,7 +126,7 @@ object TraceUtils {
         // 先经纬度转为jts的line对象
         val factory = GeometryFactory()
         val coordinateList = arrayListOf<Coordinate>()
-        traceList.forEach { coordinateList.add(Coordinate(it.latitude, it.longitude)) }
+        traceList.forEach { coordinateList.add(Coordinate(it.longitude, it.latitude)) }
         val line = factory.createLineString(coordinateList.toTypedArray())
 
         // 简化线的几何形状

@@ -79,6 +79,9 @@ class TraceUseCaseRealTest {
     @Test
     fun testCalculateAreaExplore() = runTest {
         val area = useCase.calculateAreaExplore("长宁区")
+        area.getSuccessData().blockList.forEach {
+            println(it.explorePercent)
+        }
     }
 
 }

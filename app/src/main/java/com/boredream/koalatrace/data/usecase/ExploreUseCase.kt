@@ -41,11 +41,12 @@ class ExploreUseCase @Inject constructor(
         // 获取这个区域的所有轨迹
         // FIXME: for test more quick
         val startCalendar = Calendar.getInstance()
-        startCalendar.add(-30, Calendar.DAY_OF_YEAR)
+        startCalendar.add(Calendar.DAY_OF_YEAR, -30)
 
         val traceRecordList = traceRecordRepository.getListByCondition(
             recordArea = TraceRecordArea("上海市", "长宁区"),
             startTime = startCalendar.timeInMillis,
+            endTime = Calendar.getInstance().timeInMillis,
             needLocationList = true
         )
         // 按轨迹生成探索形状
@@ -63,7 +64,7 @@ class ExploreUseCase @Inject constructor(
                     val intersection = polygon.intersection(blockActualPolygon)
                     if (!intersection.isEmpty) {
                         blockInfo.explorePercent += (intersection.area / blockRectPolygon.area).toFloat()
-                        blockInfo.explorePolygon = JtsUtils.geometry2polygonList(intersection)
+                        blockInfo.explorePolygon.addAll(JtsUtils.geometry2polygonList(intersection))
                     }
                 }
             }

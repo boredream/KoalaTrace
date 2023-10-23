@@ -22,7 +22,7 @@ open class ExploreBlockInfo(
     var explorePercent: Float = 0.0f
 
     @Ignore
-    var explorePolygon: List<Polygon> = emptyList()
+    var explorePolygon: ArrayList<Polygon> = arrayListOf()
 
     override fun toString(): String {
         return "ExploreBlockInfo(, id=$id, areaCode='$areaCode', rectBoundary='$rectBoundary', explorePercent=$explorePercent, actualBoundary='$actualBoundary', actualArea=$actualArea)"
