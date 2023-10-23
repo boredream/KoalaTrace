@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import com.amap.api.maps.CameraUpdateFactory
 import com.amap.api.maps.model.CameraPosition
 import com.amap.api.maps.model.LatLng
-import com.amap.api.maps.model.PolygonOptions
 import com.amap.api.maps.model.PolylineOptions
 import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.R
@@ -53,9 +52,12 @@ class ExploreFragment : BaseFragment<ExploreViewModel, FragmentExploreBinding>()
 
     private fun testDraw(data: ExploreAreaInfo) {
         val position = CameraPosition.Builder()
-            .target(LatLng(
-                data.boundaryLatLngList[0].latitude,
-                data.boundaryLatLngList[0].longitude))
+            .target(
+                LatLng(
+                    data.boundaryLatLngList[0].latitude,
+                    data.boundaryLatLngList[0].longitude
+                )
+            )
             .zoom(12f)
             .build()
         binding.mapView.map.moveCamera(CameraUpdateFactory.newCameraPosition(position))
@@ -74,8 +76,9 @@ class ExploreFragment : BaseFragment<ExploreViewModel, FragmentExploreBinding>()
                 binding.mapView.map.addPolyline(
                     PolylineOptions()
                         .addAll(TraceUtils.str2LatLngList(it))
-                        .color(Color.argb(50, 255, 255, 0))
-                        .width(1f)
+                        .color(Color.argb(255, 255, 255, 0))
+                        .width(2f)
+                        .zIndex(MapConstant.FROG_MAP_Z_INDEX + 1f)
                 )
             }
         }
@@ -89,15 +92,15 @@ class ExploreFragment : BaseFragment<ExploreViewModel, FragmentExploreBinding>()
 
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
-        if(isAdded) {
-            if(hidden) onFragmentPause()
+        if (isAdded) {
+            if (hidden) onFragmentPause()
             else onFragmentResume()
         }
     }
 
     override fun onResume() {
         super.onResume()
-        if(isAdded && !isHidden) {
+        if (isAdded && !isHidden) {
             onFragmentResume()
         }
     }
@@ -109,7 +112,7 @@ class ExploreFragment : BaseFragment<ExploreViewModel, FragmentExploreBinding>()
 
     override fun onPause() {
         super.onPause()
-        if(isAdded && !isHidden) {
+        if (isAdded && !isHidden) {
             onFragmentPause()
         }
     }

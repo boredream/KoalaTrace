@@ -217,7 +217,7 @@ object TraceUtils {
                 }
             }
 
-        list.forEach { it.zIndex = 99999f }
+        list.forEach { it.zIndex = MapConstant.FROG_MAP_Z_INDEX }
         logger.i("addJstPolygon duration ${System.currentTimeMillis() - start}")
         return list
     }

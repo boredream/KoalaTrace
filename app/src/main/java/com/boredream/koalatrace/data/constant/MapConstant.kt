@@ -10,6 +10,11 @@ object MapConstant {
     val FROG_COLOR = Color.argb(100, 0, 0, 0)
 
     /**
+     * 绘制蒙版图层zIndex
+     */
+    const val FROG_MAP_Z_INDEX = 999f
+
+    /**
      * 绘制区域时，最小可忽略内环面积（大概70米*70米）
      */
     const val IGNORE_INTER_RING_AREA = 5E-7

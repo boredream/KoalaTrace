@@ -46,8 +46,8 @@ class ExploreUseCase @Inject constructor(
 
         val traceRecordList = traceRecordRepository.getListByCondition(
             recordArea = TraceRecordArea("上海市", "长宁区"),
-            startTime = startCalendar.timeInMillis,
-            endTime = Calendar.getInstance().timeInMillis,
+//            startTime = startCalendar.timeInMillis,
+//            endTime = Calendar.getInstance().timeInMillis,
             needLocationList = true
         )
         // 按轨迹生成探索形状
