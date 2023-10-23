@@ -21,6 +21,7 @@ open class ExploreAreaInfo(
 
     // 探索度
     var explorePercent: Float = 0.0f
+
     override fun toString(): String {
         return "ExploreAreaInfo(id=$id, areaCode='$areaCode', parentAreaCode='$parentAreaCode', explorePercent=$explorePercent, blockList=$blockList)"
     }

@@ -1,6 +1,5 @@
 package com.boredream.koalatrace.data.repo
 
-import com.amap.api.maps.model.LatLng
 import com.boredream.koalatrace.base.BaseRepository
 import com.boredream.koalatrace.data.ExploreAreaInfo
 import com.boredream.koalatrace.data.repo.source.ExploreLocalDataSource
@@ -33,7 +32,7 @@ class ExploreRepository @Inject constructor(
                 val boundary = TraceUtils.str2LatLngList(boundaryStr)
                 // TODO: parentAreaCode
                 areaInfo = ExploreAreaInfo(keywords, "", boundaryStr)
-                areaInfo!!.blockList = TraceUtils.splitCityDistinct(keywords, boundary)
+                areaInfo!!.blockList = TraceUtils.splitDistinctToBlockList(keywords, boundary)
 
                 localDataSource.saveAreaInfo(areaInfo!!)
                 logger.i("get from remote $keywords")

@@ -11,16 +11,13 @@ import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.TraceRecord
 import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.constant.MapConstant
+import com.boredream.koalatrace.utils.JtsUtils.genMergePolygonWithLineList
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
-import org.locationtech.jts.geom.GeometryCollection
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.LineString
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
-import org.locationtech.jts.geom.Polygonal
-import org.locationtech.jts.operation.buffer.BufferOp
-import org.locationtech.jts.operation.buffer.BufferParameters
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier
 import kotlin.math.cos
 import kotlin.math.pow
@@ -119,37 +116,12 @@ object TraceUtils {
             lineList.add(simpleLine(it.traceList))
         }
 
-        // 先 line-buffer
-        val lineBufferList = arrayListOf<Geometry>()
-        lineList.forEach { lineBufferList.add(createLineBuffer(it)) }
-        // 后 merge
-        val geometryCollection = GeometryFactory().buildGeometry(lineBufferList)
-        var mergePolygon = geometryCollection
-        if (geometryCollection is GeometryCollection) {
-            mergePolygon = geometryCollection.union()
-        }
-
-//        // 先 merge line
-//        val mergeLine = GeometryFactory().createMultiLineString(lineList.toTypedArray())
-//        // 后 line-buffer
-//        val mergePolygon = createLineBuffer(mergeLine)
-
-        // 多个路线拼接的图，可能合并成一个形状，也可能是分开的几个形状，需要各自单独绘制
-        val polygonList = arrayListOf<Polygon>()
-        if (mergePolygon is Polygon) {
-            polygonList.add(mergePolygon)
-        } else if (mergePolygon is MultiPolygon) {
-            for (i in 0 until mergePolygon.getNumGeometries()) {
-                val geometry: Geometry = mergePolygon.getGeometryN(i)
-                if (geometry is Polygon) {
-                    polygonList.add(geometry)
-                }
-            }
-        }
-        return polygonList
+        val lineBufferWidth = LocationConstant.ONE_METER_LAT_LNG * 50
+        return genMergePolygonWithLineList(lineList, lineBufferWidth)
     }
 
     fun simpleLine(traceList: ArrayList<TraceLocation>): LineString {
+        // TODO: only public for test
         // TODO: https://lbs.amap.com/demo/sdk/path-smooth#android 轨迹平滑处理
         // 先经纬度转为jts的line对象
         val factory = GeometryFactory()
@@ -162,16 +134,6 @@ object TraceUtils {
         val simplifier = DouglasPeuckerSimplifier(line)
         simplifier.setDistanceTolerance(tolerance)
         return simplifier.resultGeometry as LineString
-    }
-
-    fun createLineBuffer(line: Geometry): Geometry {
-        // line-buffer 用线计算区域面积
-        val bufferParams = BufferParameters()
-        bufferParams.endCapStyle = BufferParameters.CAP_ROUND
-        bufferParams.joinStyle = BufferParameters.JOIN_ROUND
-        val bufferOp = BufferOp(line, bufferParams)
-        val width = LocationConstant.ONE_METER_LAT_LNG * 50
-        return bufferOp.getResultGeometry(width)
     }
 
     private fun drawJstPolygon(
@@ -205,7 +167,7 @@ object TraceUtils {
         return map.addPolygon(polygonOptions)
     }
 
-    private fun drawJstPolygonMask(
+    fun drawJstPolygonMask(
         map: AMap,
         polygonList: ArrayList<Polygon>,
         color: Int
@@ -271,10 +233,35 @@ object TraceUtils {
         return boundary
     }
 
+    fun str2Polygon(str: String): Polygon {
+        val geometryFactory = GeometryFactory()
+        val coordinates = arrayListOf<Coordinate>()
+        for (coordinate in str.split(";")) {
+            coordinates.add(
+                Coordinate(
+                    coordinate.split(',')[0].toDouble(),
+                    coordinate.split(',')[1].toDouble(),
+                )
+            )
+        }
+        return geometryFactory.createPolygon(coordinates.toTypedArray())
+    }
+
+    private fun coordinate2str(coordinates: Array<Coordinate>): String {
+        val sbRect = StringBuffer()
+        coordinates.forEach {
+            sbRect.append(";").append(it.y).append(",").append(it.x)
+        }
+        return sbRect.substring(1)
+    }
+
     /**
      * 把区域按方格分割
      */
-    fun splitCityDistinct(areaCode: String, boundary: ArrayList<LatLng>): ArrayList<ExploreBlockInfo> {
+    fun splitDistinctToBlockList(
+        areaCode: String,
+        boundary: ArrayList<LatLng>
+    ): ArrayList<ExploreBlockInfo> {
         // Pair<方形外框，实际形状>
         val splitRectList = arrayListOf<ExploreBlockInfo>()
 
@@ -322,13 +309,18 @@ object TraceUtils {
                 )
 
                 // 计算边界形状和每个正方形，无交集，或者交集过小都忽略
-                val rectPolygon = geometryFactory.createPolygon(arrayOf(
-                    Coordinate(iStartLoc.longitude, iStartLoc.latitude),
-                    Coordinate(iStartLoc.longitude, iStartLoc.latitude + squareHeight),
-                    Coordinate(iStartLoc.longitude + squareWidth, iStartLoc.latitude + squareHeight),
-                    Coordinate(iStartLoc.longitude + squareWidth, iStartLoc.latitude),
-                    Coordinate(iStartLoc.longitude, iStartLoc.latitude),
-                ))
+                val rectPolygon = geometryFactory.createPolygon(
+                    arrayOf(
+                        Coordinate(iStartLoc.longitude, iStartLoc.latitude),
+                        Coordinate(iStartLoc.longitude, iStartLoc.latitude + squareHeight),
+                        Coordinate(
+                            iStartLoc.longitude + squareWidth,
+                            iStartLoc.latitude + squareHeight
+                        ),
+                        Coordinate(iStartLoc.longitude + squareWidth, iStartLoc.latitude),
+                        Coordinate(iStartLoc.longitude, iStartLoc.latitude),
+                    )
+                )
                 val intersection = boundaryPolygon.intersection(rectPolygon)
                 if (intersection.isEmpty) {
                     continue
@@ -338,39 +330,24 @@ object TraceUtils {
                     continue
                 }
 
-                val sbRect = StringBuffer()
-                rectPolygon.coordinates.forEach {
-                    sbRect.append(";").append(it.y).append(",").append(it.x)
-                }
+                val rectStr = coordinate2str(rectPolygon.coordinates)
 
-                val sbActual = StringBuilder()
+                var actualStr = ""
                 if (intersection is Polygon) {
-                    intersection.coordinates.forEach {
-                        sbActual.append(";").append(it.y).append(",").append(it.x)
-                    }
+                    actualStr = coordinate2str(intersection.coordinates)
                 } else if (intersection is MultiPolygon) {
                     for (i in 0 until intersection.getNumGeometries()) {
                         val geometry: Geometry = intersection.getGeometryN(i)
                         if (geometry is Polygon) {
-                            if (i > 0) sbActual.append("==")
-                            geometry.coordinates.forEach {
-                                sbActual.append(";").append(it.y).append(",").append(it.x)
-                            }
+                            if (i > 0) actualStr += "=="
+                            actualStr += coordinate2str(geometry.coordinates)
                         }
                     }
                 }
-                splitRectList.add(
-                    ExploreBlockInfo(
-                        areaCode,
-                        sbRect.substring(1),
-                        sbActual.substring(1),
-                        intersection.area
-                    )
-                )
+                splitRectList.add(ExploreBlockInfo(areaCode, rectStr, actualStr, intersection.area))
             }
         }
         return splitRectList
     }
-
 
 }
