@@ -9,6 +9,7 @@ import com.amap.api.maps.CameraUpdateFactory
 import com.amap.api.maps.model.CameraPosition
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.PolylineOptions
+import com.amap.api.maps.model.TextOptions
 import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseFragment
@@ -17,6 +18,7 @@ import com.boredream.koalatrace.data.constant.MapConstant
 import com.boredream.koalatrace.databinding.FragmentExploreBinding
 import com.boredream.koalatrace.utils.TraceUtils
 import dagger.hilt.android.AndroidEntryPoint
+import java.text.DecimalFormat
 
 
 @AndroidEntryPoint
@@ -70,8 +72,10 @@ class ExploreFragment : BaseFragment<ExploreViewModel, FragmentExploreBinding>()
             MapConstant.FROG_COLOR
         )
 
+        // 区域内每个区块
+        val format = DecimalFormat("0.#")
         data.blockList.forEach { blockInfo ->
-            // 区域内每个区块绘制边界
+            // 绘制边界
             blockInfo.actualBoundary.split("==").forEach {
                 binding.mapView.map.addPolyline(
                     PolylineOptions()
@@ -81,6 +85,19 @@ class ExploreFragment : BaseFragment<ExploreViewModel, FragmentExploreBinding>()
                         .zIndex(MapConstant.FROG_MAP_Z_INDEX + 1f)
                 )
             }
+
+            // 绘制探索信息
+            val rectLatLngList = TraceUtils.str2LatLngList(blockInfo.rectBoundary)
+            val center = LatLng(
+                (rectLatLngList[0].latitude + rectLatLngList[2].latitude) / 2,
+                (rectLatLngList[0].longitude + rectLatLngList[2].longitude) / 2
+            )
+            binding.mapView.map.addText(
+                TextOptions()
+                    .position(center)
+                    .text(format.format(blockInfo.explorePercent * 100) + "%")
+                    .zIndex(MapConstant.FROG_MAP_Z_INDEX + 1f)
+            )
         }
     }
 
