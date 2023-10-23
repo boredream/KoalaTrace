@@ -31,7 +31,7 @@ class ExploreUseCase @Inject constructor(
     // 计算一个区域的探索情况
     suspend fun calculateAreaExplore(keywords: String): ArrayList<ExploreBlockInfo> {
         // 获取区域信息
-        val areaInfo = exploreRepository.getAreaInfo(keywords)!!
+        val areaInfo = exploreRepository.getAreaInfo(keywords)
         // 把区域按方案分割
         val boundaryLatLngList = TraceUtils.str2LatLngList(areaInfo.boundary)
         val blockInfoList = TraceUtils.splitDistinctToBlockList(keywords, boundaryLatLngList)
@@ -39,22 +39,22 @@ class ExploreUseCase @Inject constructor(
         // 获取这个区域的所有轨迹
         val traceRecordList = traceRecordRepository.getListByCondition(
             recordArea = TraceRecordArea("上海市", "长宁区"),
-            needLocationList = true)
+            needLocationList = true
+        )
         // 按轨迹生成探索形状
         val explorePolygonList = TraceUtils.genExplorePolygon(traceRecordList.data!!)
 
         // 区域方格和探索轨迹取交集 TODO 算法优化
         val startTime = SystemClock.elapsedRealtime()
-        explorePolygonList.forEach { polygon ->
-            blockInfoList.forEach { blockInfo ->
+        blockInfoList.forEach { blockInfo ->
+            blockInfo.explorePercent = 0.0f
+            explorePolygonList.forEach { polygon ->
                 val blockRectPolygon = TraceUtils.str2Polygon(blockInfo.rectBoundary)
                 val actualBoundaryStrList = blockInfo.actualBoundary.split("==")
-                blockInfo.explorePercent = 0.0f
                 actualBoundaryStrList.forEach {
                     val blockActualPolygon = TraceUtils.str2Polygon(it)
                     val intersection = polygon.intersection(blockActualPolygon)
                     if (!intersection.isEmpty) {
-
                         blockInfo.explorePercent += (intersection.area / blockRectPolygon.area).toFloat()
                     }
                 }
