@@ -1,23 +1,27 @@
 package com.boredream.koalatrace.ui.explore
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.amap.api.maps.CameraUpdateFactory
+import com.amap.api.maps.model.CameraPosition
+import com.amap.api.maps.model.LatLng
+import com.amap.api.maps.model.PolygonOptions
 import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseFragment
-import com.boredream.koalatrace.common.SimpleUiStateObserver
+import com.boredream.koalatrace.data.ExploreAreaInfo
 import com.boredream.koalatrace.databinding.FragmentExploreBinding
-import com.boredream.koalatrace.ui.explore.ExploreViewModel
-import com.boredream.koalatrace.ui.home.LocateMe
+import com.boredream.koalatrace.utils.TraceUtils
 import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
 class ExploreFragment : BaseFragment<ExploreViewModel, FragmentExploreBinding>() {
 
-    override fun getLayoutId() = R.layout.fragment_home
+    override fun getLayoutId() = R.layout.fragment_explore
 
     override fun getViewModelClass() = ExploreViewModel::class.java
 
@@ -34,15 +38,42 @@ class ExploreFragment : BaseFragment<ExploreViewModel, FragmentExploreBinding>()
     }
 
     private fun initObserver() {
-        viewModel.uiEvent.observe(viewLifecycleOwner) {
-            when (it) {
-                is LocateMe -> binding.mapView.apply {
-                    post { locateMe() }
-                }
-            }
+        // FIXME: remove me
+        binding.titleBar.dataBinding.ivLeft.visibility = View.VISIBLE
+        binding.titleBar.dataBinding.ivLeft.setOnClickListener {
+            viewModel.drawExplore()
         }
 
-        SimpleUiStateObserver.setRequestObserver(this, this, viewModel.commitVMCompose)
+        viewModel.loadVMCompose.successUiState.observe(viewLifecycleOwner) {
+            testDraw(it.data!!)
+        }
+    }
+
+    private fun testDraw(data: ExploreAreaInfo) {
+        val position = CameraPosition.Builder()
+            .target(LatLng(
+                data.boundaryLatLngList[0].latitude,
+                data.boundaryLatLngList[0].longitude))
+            .zoom(12f)
+            .build()
+        binding.mapView.map.moveCamera(CameraUpdateFactory.newCameraPosition(position))
+
+        binding.mapView.map.addPolygon(
+            PolygonOptions()
+                .addAll(data.boundaryLatLngList)
+                .fillColor(Color.argb(30, 0, 0, 255))
+                .strokeWidth(0f)
+        )
+
+        data.blockList.forEach { blockInfo ->
+            val actualBoundaryStrList = blockInfo.actualBoundary.split("==")
+            actualBoundaryStrList.forEach {
+                binding.mapView.map.addPolygon(PolygonOptions()
+                    .addAll(TraceUtils.str2LatLngList(it))
+                    .fillColor(Color.argb(30, 0, 255, 0))
+                    .strokeWidth(0f))
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -68,8 +99,6 @@ class ExploreFragment : BaseFragment<ExploreViewModel, FragmentExploreBinding>()
 
     private fun onFragmentResume() {
         LogUtils.v("map view onResume")
-        viewModel.onResume()
-        binding.mapView.setMyLocationEnable(true)
         binding.mapView.onResume()
     }
 
@@ -82,8 +111,6 @@ class ExploreFragment : BaseFragment<ExploreViewModel, FragmentExploreBinding>()
 
     private fun onFragmentPause() {
         LogUtils.v("map view onPause")
-        viewModel.onPause()
-        binding.mapView.setMyLocationEnable(false)
         binding.mapView.onPause()
     }
 

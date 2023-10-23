@@ -250,7 +250,7 @@ object TraceUtils {
     private fun coordinate2str(coordinates: Array<Coordinate>): String {
         val sbRect = StringBuffer()
         coordinates.forEach {
-            sbRect.append(";").append(it.y).append(",").append(it.x)
+            sbRect.append(";").append(it.x).append(",").append(it.y)
         }
         return sbRect.substring(1)
     }

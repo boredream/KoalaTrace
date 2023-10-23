@@ -11,6 +11,7 @@ import com.boredream.koalatrace.data.constant.BundleKey
 import com.boredream.koalatrace.databinding.ActivityMainTabBinding
 import com.boredream.koalatrace.service.TraceLocationService
 import com.boredream.koalatrace.ui.FragmentController
+import com.boredream.koalatrace.ui.explore.ExploreFragment
 import com.boredream.koalatrace.ui.home.HomeFragment
 import com.boredream.koalatrace.ui.mine.MineFragment
 import com.boredream.koalatrace.ui.recordlist.TraceRecordListFragment
@@ -40,6 +41,7 @@ class MainTabActivity : BaseActivity<MainTabViewModel, ActivityMainTabBinding>()
         val fragmentList = ArrayList<BaseFragment<*, *>>()
         fragmentList.add(HomeFragment())
         fragmentList.add(TraceRecordListFragment())
+        fragmentList.add(ExploreFragment())
         fragmentList.add(MineFragment())
 
         val controller = FragmentController(navView, supportFragmentManager, R.id.fl_fragment, fragmentList)

@@ -13,9 +13,11 @@ import com.boredream.koalatrace.data.constant.LocationParam
 import com.boredream.koalatrace.data.repo.ExploreRepository
 import com.boredream.koalatrace.data.repo.LocationRepository
 import com.boredream.koalatrace.data.repo.TraceRecordRepository
+import com.boredream.koalatrace.utils.JtsUtils
 import com.boredream.koalatrace.utils.Logger
 import com.boredream.koalatrace.utils.TraceUtils
 import kotlinx.coroutines.CoroutineScope
+import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,15 +32,20 @@ class ExploreUseCase @Inject constructor(
 ) : BaseUseCase() {
 
     // 计算一个区域的探索情况
-    suspend fun calculateAreaExplore(keywords: String): ExploreAreaInfo {
+    suspend fun calculateAreaExplore(keywords: String): ResponseEntity<ExploreAreaInfo> {
         // 获取区域信息
         val areaInfo = exploreRepository.getAreaInfo(keywords)
         // 把区域按方案分割
         val blockInfoList = TraceUtils.splitDistinctToBlockList(keywords, areaInfo.boundaryLatLngList)
 
         // 获取这个区域的所有轨迹
+        // FIXME: for test more quick
+        val startCalendar = Calendar.getInstance()
+        startCalendar.add(-30, Calendar.DAY_OF_YEAR)
+
         val traceRecordList = traceRecordRepository.getListByCondition(
             recordArea = TraceRecordArea("上海市", "长宁区"),
+            startTime = startCalendar.timeInMillis,
             needLocationList = true
         )
         // 按轨迹生成探索形状
@@ -56,13 +63,14 @@ class ExploreUseCase @Inject constructor(
                     val intersection = polygon.intersection(blockActualPolygon)
                     if (!intersection.isEmpty) {
                         blockInfo.explorePercent += (intersection.area / blockRectPolygon.area).toFloat()
+                        blockInfo.explorePolygon = JtsUtils.geometry2polygonList(intersection)
                     }
                 }
             }
         }
         logger.v("calculateAreaExplore core code duration = ${SystemClock.elapsedRealtime() - startTime}")
         areaInfo.blockList = blockInfoList
-        return areaInfo
+        return ResponseEntity.success(areaInfo)
     }
 
 }

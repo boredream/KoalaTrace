@@ -1,7 +1,9 @@
 package com.boredream.koalatrace.data
 
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.boredream.koalatrace.base.BaseEntity
+import org.locationtech.jts.geom.Polygon
 
 /**
  * 区域探索信息 - 区块
@@ -18,6 +20,9 @@ open class ExploreBlockInfo(
 
     // 探索度
     var explorePercent: Float = 0.0f
+
+    @Ignore
+    var explorePolygon: List<Polygon> = emptyList()
 
     override fun toString(): String {
         return "ExploreBlockInfo(, id=$id, areaCode='$areaCode', rectBoundary='$rectBoundary', explorePercent=$explorePercent, actualBoundary='$actualBoundary', actualArea=$actualArea)"

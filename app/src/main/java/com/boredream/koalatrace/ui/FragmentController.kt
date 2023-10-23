@@ -37,8 +37,13 @@ class FragmentController(
                     return@setOnItemSelectedListener true
                 }
 
-                R.id.navigation_mine -> {
+                R.id.navigation_trace_explore -> {
                     showFragment(2)
+                    return@setOnItemSelectedListener true
+                }
+
+                R.id.navigation_mine -> {
+                    showFragment(3)
                     return@setOnItemSelectedListener true
                 }
             }
