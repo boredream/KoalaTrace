@@ -145,7 +145,7 @@ object TraceUtils {
 
         // 外环
         val polygonOptions = PolygonOptions()
-            .addAll(polygon.exteriorRing.coordinates.map { LatLng(it.x, it.y) })
+            .addAll(coord2LatLngList(polygon.exteriorRing.coordinates))
             .fillColor(color)
             .strokeWidth(0f)
 
@@ -155,7 +155,7 @@ object TraceUtils {
             for (index in 0 until polygon.numInteriorRing) {
                 val interRing = polygon.getInteriorRingN(index)
 
-                val inter = interRing.coordinates.map { LatLng(it.x, it.y) }
+                val inter = coord2LatLngList(interRing.coordinates)
                 polygonHoleOptionsList.add(PolygonHoleOptions().addAll(inter))
 
                 logger.v("add polygon hole = $index")
@@ -169,6 +169,12 @@ object TraceUtils {
 
     fun drawJstPolygonMask(
         map: AMap,
+        maskLatLngList: ArrayList<LatLng> = arrayListOf(
+            LatLng(90.0, -180.0),
+            LatLng(-90.0, -180.0),
+            LatLng(-90.0, 179.9999999999999),
+            LatLng(90.0, 179.9999999999999),
+        ),
         polygonList: ArrayList<Polygon>,
         color: Int
     ): List<com.amap.api.maps.model.Polygon> {
@@ -178,16 +184,13 @@ object TraceUtils {
 
         // 默认遮罩
         val maskPolygonOptions = PolygonOptions()
-            .add(LatLng(90.0, -180.0))
-            .add(LatLng(-90.0, -180.0))
-            .add(LatLng(-90.0, 179.9999999999999))
-            .add(LatLng(90.0, 179.9999999999999))
+            .addAll(maskLatLngList)
             .fillColor(color)
             .strokeWidth(0f)
 
         // 外环作为孔，进行基本遮罩绘制
         polygonList.forEach { polygon ->
-            val coordinates = polygon.exteriorRing.coordinates.map { LatLng(it.x, it.y) }
+            val coordinates = coord2LatLngList(polygon.exteriorRing.coordinates)
             maskPolygonOptions.addHoles(PolygonHoleOptions().addAll(coordinates))
         }
         list.add(map.addPolygon(maskPolygonOptions))
@@ -206,7 +209,7 @@ object TraceUtils {
 
                     // 内孔作为遮罩内形状，单独绘制
                     val polygonOptions = PolygonOptions()
-                        .addAll(interRing.coordinates.map { LatLng(it.x, it.y) })
+                        .addAll(coord2LatLngList(interRing.coordinates))
                         .fillColor(color)
                         .strokeWidth(0f)
                     list.add(map.addPolygon(polygonOptions))
@@ -217,42 +220,6 @@ object TraceUtils {
         list.forEach { it.zIndex = 99999f }
         logger.i("addJstPolygon duration ${System.currentTimeMillis() - start}")
         return list
-    }
-
-    fun str2LatLngList(str: String): ArrayList<LatLng> {
-        // 高德 districtBoundary 的格式为 121.41257,31.191118;121.412083,31.191139; ...
-        val boundary = arrayListOf<LatLng>()
-        for (coordinate in str.split(";")) {
-            boundary.add(
-                LatLng(
-                    coordinate.split(',')[1].toDouble(),
-                    coordinate.split(',')[0].toDouble()
-                )
-            )
-        }
-        return boundary
-    }
-
-    fun str2Polygon(str: String): Polygon {
-        val geometryFactory = GeometryFactory()
-        val coordinates = arrayListOf<Coordinate>()
-        for (coordinate in str.split(";")) {
-            coordinates.add(
-                Coordinate(
-                    coordinate.split(',')[0].toDouble(),
-                    coordinate.split(',')[1].toDouble(),
-                )
-            )
-        }
-        return geometryFactory.createPolygon(coordinates.toTypedArray())
-    }
-
-    private fun coordinate2str(coordinates: Array<Coordinate>): String {
-        val sbRect = StringBuffer()
-        coordinates.forEach {
-            sbRect.append(";").append(it.x).append(",").append(it.y)
-        }
-        return sbRect.substring(1)
     }
 
     /**
@@ -298,9 +265,8 @@ object TraceUtils {
         val startLocation = LatLng(bottom - startLatitudeOffset, left - startLongitudeOffset)
         val geometryFactory = GeometryFactory()
         // 总的边界形状，用于和每个正方形的交集计算
-        val boundaryPolygon = geometryFactory.createPolygon(
-            boundary.map { Coordinate(it.longitude, it.latitude) }.toTypedArray()
-        )
+        val coordinates = latLng2coordrList(boundary).toTypedArray()
+        val boundaryPolygon = geometryFactory.createPolygon(coordinates)
         for (x in 0..xCount) {
             for (y in 0..yCount) {
                 val iStartLoc = LatLng(
@@ -350,4 +316,34 @@ object TraceUtils {
         return splitRectList
     }
 
+    // 经纬度转换
+    fun latLng2coordrList(latLngList: ArrayList<LatLng>): List<Coordinate> {
+        return latLngList.map { Coordinate(it.longitude, it.latitude) }
+    }
+
+    fun coord2LatLngList(coordinates: Array<Coordinate>): List<LatLng> {
+        return coordinates.map { LatLng(it.y, it.x) }
+    }
+
+    fun str2LatLngList(str: String): ArrayList<LatLng> {
+        // 高德 districtBoundary 的格式为 121.41257,31.191118;121.412083,31.191139; ...
+        val boundary = arrayListOf<LatLng>()
+        for (coordinate in str.split(";")) {
+            boundary.add(
+                LatLng(
+                    coordinate.split(',')[1].toDouble(),
+                    coordinate.split(',')[0].toDouble()
+                )
+            )
+        }
+        return boundary
+    }
+
+    private fun coordinate2str(coordinates: Array<Coordinate>): String {
+        val sbRect = StringBuffer()
+        coordinates.forEach {
+            sbRect.append(";").append(it.x).append(",").append(it.y)
+        }
+        return sbRect.substring(1)
+    }
 }

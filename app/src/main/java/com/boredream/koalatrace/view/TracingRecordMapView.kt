@@ -106,56 +106,6 @@ class TracingRecordMapView : RecordMapView {
 
     }
 
-    private fun simpleLine(pointList: ArrayList<LatLng>): List<LatLng> {
-        val start = System.currentTimeMillis()
-        // 先经纬度转为jts的line对象
-        val factory = GeometryFactory()
-        val coordinateList = arrayListOf<Coordinate>()
-        pointList.forEach { coordinateList.add(Coordinate(it.latitude, it.longitude)) }
-        val line = factory.createLineString(coordinateList.toTypedArray())
-
-        // 简化线的几何形状
-        val tolerance = LocationConstant.ONE_METER_LAT_LNG * 20 // 简化容差
-        val simplifier = DouglasPeuckerSimplifier(line)
-        simplifier.setDistanceTolerance(tolerance)
-        val simplifiedLine: Geometry = simplifier.resultGeometry
-
-        val simplePointList = simplifiedLine.coordinates.map { LatLng(it.x, it.y) }
-        logger.i("simple line duration ${System.currentTimeMillis() - start}")
-        return simplePointList
-    }
-
-    private fun drawLineBuffer(line: Geometry) {
-        // 绘制区域
-        // 计算线的缓冲区
-        var start = System.currentTimeMillis()
-        val bufferParams = BufferParameters()
-        bufferParams.endCapStyle = BufferParameters.CAP_ROUND
-        bufferParams.joinStyle = BufferParameters.JOIN_ROUND
-        val bufferOp = BufferOp(line, bufferParams)
-        val width = LocationConstant.ONE_METER_LAT_LNG * 50
-        val polygon = bufferOp.getResultGeometry(width) as Polygon
-        logger.i("line buffer duration ${System.currentTimeMillis() - start}")
-
-        // 注意环的情况
-        val polygonOptions = PolygonOptions()
-            .addAll(polygon.exteriorRing.coordinates.map { LatLng(it.x, it.y) })
-            .fillColor(Color.argb(150, 255, 0, 0))
-            .strokeWidth(0f)
-
-        if (polygon.numInteriorRing > 0) {
-            // TODO: 环如果过小，可以省略
-            for (index in 0 until polygon.numInteriorRing) {
-                logger.i("draw polygon hole = $index")
-                val inter = polygon.getInteriorRingN(index).coordinates.map { LatLng(it.x, it.y) }
-                polygonOptions.addHoles(PolygonHoleOptions().addAll(inter))
-            }
-        }
-        start = System.currentTimeMillis()
-        map.addPolygon(polygonOptions)
-        logger.i("addPolygon duration ${System.currentTimeMillis() - start}")
-    }
-
     fun updateSelectPosition(position: Int) {
 //        val latLng = LatLng(39.906901, 116.397972)
 //        val marker = aMap.addMarker(MarkerOptions().position(latLng).title("北京").snippet("DefaultMarker"))

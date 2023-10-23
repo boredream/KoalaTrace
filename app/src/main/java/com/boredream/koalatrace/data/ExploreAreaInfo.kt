@@ -5,6 +5,7 @@ import com.amap.api.maps.model.LatLng
 import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.base.BaseEntity
 import com.boredream.koalatrace.utils.TraceUtils
+import org.locationtech.jts.geom.Polygon
 
 /**
  * 区域探索信息
@@ -20,6 +21,9 @@ open class ExploreAreaInfo(
 
     @Ignore
     var blockList: List<ExploreBlockInfo> = arrayListOf()
+
+    @Ignore
+    var explorePolygon: ArrayList<Polygon> = arrayListOf()
 
     // 探索度
     var explorePercent: Float = 0.0f

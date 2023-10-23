@@ -1,6 +1,7 @@
 package com.boredream.koalatrace.utils
 
 import com.boredream.koalatrace.data.constant.LocationConstant
+import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryCollection
 import org.locationtech.jts.geom.GeometryFactory
@@ -42,6 +43,20 @@ object JtsUtils {
         bufferParams.joinStyle = BufferParameters.JOIN_ROUND
         val bufferOp = BufferOp(line, bufferParams)
         return bufferOp.getResultGeometry(width)
+    }
+
+    fun str2Polygon(str: String): Polygon {
+        val geometryFactory = GeometryFactory()
+        val coordinates = arrayListOf<Coordinate>()
+        for (coordinate in str.split(";")) {
+            coordinates.add(
+                Coordinate(
+                    coordinate.split(',')[0].toDouble(),
+                    coordinate.split(',')[1].toDouble(),
+                )
+            )
+        }
+        return geometryFactory.createPolygon(coordinates.toTypedArray())
     }
 
     fun geometry2polygonList(geometry: Geometry): ArrayList<Polygon> {

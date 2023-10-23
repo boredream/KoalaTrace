@@ -1,6 +1,13 @@
 package com.boredream.koalatrace.data.constant
 
+import android.graphics.Color
+
 object MapConstant {
+
+    /**
+     * 绘制蒙版颜色
+     */
+    val FROG_COLOR = Color.argb(100, 0, 0, 0)
 
     /**
      * 绘制区域时，最小可忽略内环面积（大概70米*70米）

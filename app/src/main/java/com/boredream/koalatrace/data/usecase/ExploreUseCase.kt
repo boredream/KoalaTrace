@@ -17,6 +17,7 @@ import com.boredream.koalatrace.utils.JtsUtils
 import com.boredream.koalatrace.utils.Logger
 import com.boredream.koalatrace.utils.TraceUtils
 import kotlinx.coroutines.CoroutineScope
+import org.locationtech.jts.geom.Polygon
 import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -52,19 +53,27 @@ class ExploreUseCase @Inject constructor(
         // 按轨迹生成探索形状
         val explorePolygonList = TraceUtils.genExplorePolygon(traceRecordList.data!!)
 
+        // 探索形状和整个边界形状，做一次交集
+        val polygonList = arrayListOf<Polygon>()
+        val boundaryPolygon = JtsUtils.str2Polygon(areaInfo.boundary)
+        for (explorePolygon in explorePolygonList) {
+            val intersection = boundaryPolygon.intersection(explorePolygon)
+            polygonList.addAll(JtsUtils.geometry2polygonList(intersection))
+        }
+        areaInfo.explorePolygon = polygonList
+
         // 区域方格和探索轨迹取交集 TODO 算法优化
         val startTime = SystemClock.elapsedRealtime()
         blockInfoList.forEach { blockInfo ->
             blockInfo.explorePercent = 0.0f
             explorePolygonList.forEach { polygon ->
-                val blockRectPolygon = TraceUtils.str2Polygon(blockInfo.rectBoundary)
+                val blockRectPolygon = JtsUtils.str2Polygon(blockInfo.rectBoundary)
                 val actualBoundaryStrList = blockInfo.actualBoundary.split("==")
                 actualBoundaryStrList.forEach {
-                    val blockActualPolygon = TraceUtils.str2Polygon(it)
+                    val blockActualPolygon = JtsUtils.str2Polygon(it)
                     val intersection = polygon.intersection(blockActualPolygon)
                     if (!intersection.isEmpty) {
                         blockInfo.explorePercent += (intersection.area / blockRectPolygon.area).toFloat()
-                        blockInfo.explorePolygon.addAll(JtsUtils.geometry2polygonList(intersection))
                     }
                 }
             }

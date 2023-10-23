@@ -14,6 +14,7 @@ import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseFragment
 import com.boredream.koalatrace.data.ExploreAreaInfo
+import com.boredream.koalatrace.data.constant.MapConstant
 import com.boredream.koalatrace.databinding.FragmentExploreBinding
 import com.boredream.koalatrace.utils.TraceUtils
 import dagger.hilt.android.AndroidEntryPoint
@@ -59,26 +60,23 @@ class ExploreFragment : BaseFragment<ExploreViewModel, FragmentExploreBinding>()
             .build()
         binding.mapView.map.moveCamera(CameraUpdateFactory.newCameraPosition(position))
 
-        binding.mapView.map.addPolyline(
-            PolylineOptions()
-                .addAll(data.boundaryLatLngList)
-                .color(Color.argb(100, 0, 0, 255))
-                .width(5f)
+        // 整个区域绘制迷雾，已探索区域挖孔
+        TraceUtils.drawJstPolygonMask(
+            binding.mapView.map,
+            data.boundaryLatLngList,
+            data.explorePolygon,
+            MapConstant.FROG_COLOR
         )
 
         data.blockList.forEach { blockInfo ->
-            binding.mapView.map.addPolyline(
-                PolylineOptions()
-                    .addAll(TraceUtils.str2LatLngList(blockInfo.rectBoundary))
-                    .color(Color.argb(30, 0, 0, 255))
-                    .width(5f)
-            )
-
-            blockInfo.explorePolygon.forEach { polygon ->
-                binding.mapView.map.addPolygon(PolygonOptions()
-                    .addAll(polygon.coordinates.map { LatLng(it.y, it.x) })
-                    .fillColor(Color.argb(50, 0, 0, 255))
-                    .strokeWidth(0f))
+            // 区域内每个区块绘制边界
+            blockInfo.actualBoundary.split("==").forEach {
+                binding.mapView.map.addPolyline(
+                    PolylineOptions()
+                        .addAll(TraceUtils.str2LatLngList(it))
+                        .color(Color.argb(50, 255, 255, 0))
+                        .width(1f)
+                )
             }
         }
     }
