@@ -4,6 +4,7 @@ import android.os.SystemClock
 import com.blankj.utilcode.util.CollectionUtils
 import com.blankj.utilcode.util.StringUtils
 import com.boredream.koalatrace.base.BaseUseCase
+import com.boredream.koalatrace.data.ExploreAreaInfo
 import com.boredream.koalatrace.data.ExploreBlockInfo
 import com.boredream.koalatrace.data.ResponseEntity
 import com.boredream.koalatrace.data.TraceRecord
@@ -29,12 +30,11 @@ class ExploreUseCase @Inject constructor(
 ) : BaseUseCase() {
 
     // 计算一个区域的探索情况
-    suspend fun calculateAreaExplore(keywords: String): ArrayList<ExploreBlockInfo> {
+    suspend fun calculateAreaExplore(keywords: String): ExploreAreaInfo {
         // 获取区域信息
         val areaInfo = exploreRepository.getAreaInfo(keywords)
         // 把区域按方案分割
-        val boundaryLatLngList = TraceUtils.str2LatLngList(areaInfo.boundary)
-        val blockInfoList = TraceUtils.splitDistinctToBlockList(keywords, boundaryLatLngList)
+        val blockInfoList = TraceUtils.splitDistinctToBlockList(keywords, areaInfo.boundaryLatLngList)
 
         // 获取这个区域的所有轨迹
         val traceRecordList = traceRecordRepository.getListByCondition(
@@ -61,7 +61,8 @@ class ExploreUseCase @Inject constructor(
             }
         }
         logger.v("calculateAreaExplore core code duration = ${SystemClock.elapsedRealtime() - startTime}")
-        return blockInfoList
+        areaInfo.blockList = blockInfoList
+        return areaInfo
     }
 
 }

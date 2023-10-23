@@ -1,8 +1,6 @@
 package com.boredream.koalatrace.data
 
-import androidx.room.*
-import com.amap.api.maps.model.LatLng
-import com.blankj.utilcode.util.TimeUtils
+import androidx.room.PrimaryKey
 import com.boredream.koalatrace.base.BaseEntity
 
 /**
@@ -20,6 +18,7 @@ open class ExploreBlockInfo(
 
     // 探索度
     var explorePercent: Float = 0.0f
+
     override fun toString(): String {
         return "ExploreBlockInfo(, id=$id, areaCode='$areaCode', rectBoundary='$rectBoundary', explorePercent=$explorePercent, actualBoundary='$actualBoundary', actualArea=$actualArea)"
     }
