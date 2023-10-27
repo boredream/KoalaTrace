@@ -188,7 +188,6 @@ class TraceRecordListFragment :
         }
     }
 
-
     override fun onDestroyView() {
         binding.mapviewList.onDestroy()
         super.onDestroyView()

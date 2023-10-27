@@ -27,7 +27,7 @@ class TraceEditRecordMapView : RecordMapView {
         marker?.remove()
         val latLng = LatLng(location.latitude, location.longitude)
         marker = map.addMarker(MarkerOptions().position(latLng))
-        moveCamera(location)
+        moveCamera(location.latitude, location.longitude)
     }
 
 }

@@ -25,12 +25,28 @@
             app:rightText="test"
             app:title="区域探索情况" />
 
+        <LinearLayout
+            android:id="@+id/ll_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/title_bar">
+
+            <com.boredream.koalatrace.view.SpinnerView
+                android:id="@+id/spinner_area"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/title_bar" />
+        </LinearLayout>
+
         <com.boredream.koalatrace.view.ExploreMapView
             android:id="@+id/map_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/title_bar" />
+            app:layout_constraintTop_toBottomOf="@id/ll_spinner" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -57,9 +57,9 @@ open class BaseMapView : TextureMapView {
         }
     }
 
-    protected fun moveCamera(location: TraceLocation) {
+    protected fun moveCamera(latitude: Double, longitude: Double) {
         val position = CameraPosition.Builder()
-            .target(LatLng(location.latitude, location.longitude))
+            .target(LatLng(latitude, longitude))
             .zoom(zoomLevel)
             .build()
         map.moveCamera(CameraUpdateFactory.newCameraPosition(position))

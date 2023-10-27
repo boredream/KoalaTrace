@@ -5,6 +5,7 @@ import com.amap.api.maps.model.LatLng
 import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.base.BaseEntity
 import com.boredream.koalatrace.utils.TraceUtils
+import com.google.gson.annotations.Expose
 import org.locationtech.jts.geom.Polygon
 
 /**
@@ -28,12 +29,14 @@ open class ExploreAreaInfo(
     // 探索度
     var explorePercent: Float = 0.0f
 
-    val boundaryLatLngList: ArrayList<LatLng>
-        get() = boundaryLatLngListDelegate
-
-    private val boundaryLatLngListDelegate by lazy {
-        TraceUtils.str2LatLngList(boundary)
-    }
+    @Transient
+    var boundaryLatLngList: ArrayList<LatLng>? = null
+        get() {
+            if (field == null) {
+                field = TraceUtils.str2LatLngList(boundary)
+            }
+            return field
+        }
 
     override fun toString(): String {
         return "ExploreAreaInfo(id=$id, areaCode='$areaCode', parentAreaCode='$parentAreaCode', explorePercent=$explorePercent, blockList=$blockList)"

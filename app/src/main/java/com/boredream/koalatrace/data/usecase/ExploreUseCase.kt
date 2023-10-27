@@ -32,9 +32,12 @@ class ExploreUseCase @Inject constructor(
     private val scope: CoroutineScope,
 ) : BaseUseCase() {
 
+    suspend fun loadArea() = traceRecordRepository.loadArea()
+
     // 计算一个区域的探索情况
-    suspend fun calculateAreaExplore(keywords: String): ResponseEntity<ExploreAreaInfo> {
+    suspend fun calculateAreaExplore(area: TraceRecordArea): ResponseEntity<ExploreAreaInfo> {
         // 获取区域信息
+        val keywords = area.locality!!
         val areaInfo = exploreRepository.getAreaInfo(keywords)
         // 把区域按方案分割
         val blockInfoList = TraceUtils.splitDistinctToBlockList(keywords, areaInfo.boundaryLatLngList)
@@ -45,7 +48,7 @@ class ExploreUseCase @Inject constructor(
         startCalendar.add(Calendar.DAY_OF_YEAR, -30)
 
         val traceRecordList = traceRecordRepository.getListByCondition(
-            recordArea = TraceRecordArea("上海市", "长宁区"),
+            recordArea = area,
 //            startTime = startCalendar.timeInMillis,
 //            endTime = Calendar.getInstance().timeInMillis,
             needLocationList = true
@@ -65,15 +68,14 @@ class ExploreUseCase @Inject constructor(
         // 区域方格和探索轨迹取交集 TODO 算法优化
         val startTime = SystemClock.elapsedRealtime()
         blockInfoList.forEach { blockInfo ->
-            blockInfo.explorePercent = 0.0f
+            blockInfo.explorePercent = 0.0
             explorePolygonList.forEach { polygon ->
-                val blockRectPolygon = JtsUtils.str2Polygon(blockInfo.rectBoundary)
                 val actualBoundaryStrList = blockInfo.actualBoundary.split("==")
                 actualBoundaryStrList.forEach {
                     val blockActualPolygon = JtsUtils.str2Polygon(it)
                     val intersection = polygon.intersection(blockActualPolygon)
                     if (!intersection.isEmpty) {
-                        blockInfo.explorePercent += (intersection.area / blockRectPolygon.area).toFloat()
+                        blockInfo.explorePercent += (intersection.area / blockActualPolygon.area)
                     }
                 }
             }

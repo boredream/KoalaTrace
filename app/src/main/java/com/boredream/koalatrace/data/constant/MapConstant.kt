@@ -5,6 +5,11 @@ import android.graphics.Color
 object MapConstant {
 
     /**
+     * 高德 newLatLngBounds padding 参数
+     */
+    const val MAP_PADDING = 50
+
+    /**
      * 绘制蒙版颜色
      */
     val FROG_COLOR = Color.argb(100, 0, 0, 0)

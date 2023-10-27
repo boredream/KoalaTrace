@@ -46,7 +46,7 @@ class TracingRecordMapView : RecordMapView {
         set(value) {
             field = value
             // set true 时，先移动一次camera
-            if (value) myLocation?.let { moveCamera(it) }
+            if (value) myLocation?.let { moveCamera(it.latitude, it.longitude) }
         }
 
     fun setMyLocationEnable(enable: Boolean) {
@@ -66,7 +66,7 @@ class TracingRecordMapView : RecordMapView {
     }
 
     fun locateMe() {
-        myLocation?.let { moveCamera(it) }
+        myLocation?.let { moveCamera(it.latitude, it.longitude) }
     }
 
     /**

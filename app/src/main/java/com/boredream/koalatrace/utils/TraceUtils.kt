@@ -227,10 +227,11 @@ object TraceUtils {
      */
     fun splitDistinctToBlockList(
         areaCode: String,
-        boundary: ArrayList<LatLng>
+        boundary: ArrayList<LatLng>?
     ): ArrayList<ExploreBlockInfo> {
         // Pair<方形外框，实际形状>
         val splitRectList = arrayListOf<ExploreBlockInfo>()
+        if(boundary == null) return splitRectList
 
         // 先计算边界
         var left: Double = Double.MAX_VALUE
@@ -310,7 +311,7 @@ object TraceUtils {
                         }
                     }
                 }
-                splitRectList.add(ExploreBlockInfo(areaCode, rectStr, actualStr, intersection.area))
+                splitRectList.add(ExploreBlockInfo(areaCode, rectStr, actualStr, intersection.area, areaRatio))
             }
         }
         return splitRectList
