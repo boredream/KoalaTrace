@@ -45,6 +45,7 @@
             android:layout_height="wrap_content"
             android:background="@color/white"
             android:orientation="vertical"
+            android:visibility="@{vm.uiState != null ? View.VISIBLE : View.GONE}"
             app:behavior_peekHeight="100dp"
             app:layout_behavior="@string/bottom_sheet_behavior">
 
@@ -55,45 +56,39 @@
 
             <TextView
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="#f25b41"
-                android:gravity="center"
-                android:text="底部还有内容啊！！！" />
+                android:textSize="@dimen/txt_subhead"
+                android:textColor="@color/txt_black"
+                android:paddingLeft="@dimen/margin_medium"
+                android:layout_height="wrap_content"
+                android:text="@{vm.uiState.totalArea}" />
 
             <TextView
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="#009988"
-                android:gravity="center"
-                android:text="标签1" />
+                android:textSize="@dimen/txt_subhead"
+                android:textColor="@color/txt_black"
+                android:layout_marginTop="@dimen/margin_small"
+                android:paddingLeft="@dimen/margin_medium"
+                android:layout_height="wrap_content"
+                android:text="@{`总区块数量：` + vm.uiState.totalBlockCount}" />
 
             <TextView
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="#002288"
-                android:gravity="center"
-                android:text="标签2" />
+                android:textSize="@dimen/txt_subhead"
+                android:textColor="@color/txt_black"
+                android:layout_marginTop="@dimen/margin_small"
+                android:paddingLeft="@dimen/margin_medium"
+                android:layout_height="wrap_content"
+                android:text="@{`已探索区块：` + vm.uiState.exploreBlockCount}" />
 
             <TextView
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="#009922"
-                android:gravity="center"
-                android:text="标签3" />
+                android:textSize="@dimen/txt_subhead"
+                android:textColor="@color/txt_black"
+                android:layout_marginTop="@dimen/margin_small"
+                android:paddingLeft="@dimen/margin_medium"
+                android:layout_height="wrap_content"
+                android:text="@{`已点亮区块：` + vm.uiState.lightBlockCount}" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="#00aa88"
-                android:gravity="center"
-                android:text="标签4" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:background="#999988"
-                android:gravity="center"
-                android:text="标签5" />
         </LinearLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

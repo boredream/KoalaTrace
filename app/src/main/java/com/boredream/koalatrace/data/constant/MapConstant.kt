@@ -34,4 +34,9 @@ object MapConstant {
      */
     const val AREA_SPLIT_SQUARE_LENGTH = 1000
 
+    /**
+     * 区块点亮探索度阈值
+     */
+    const val EXPLORE_LIGHT_RATIO_THRESHOLD = 0.5f
+
 }
