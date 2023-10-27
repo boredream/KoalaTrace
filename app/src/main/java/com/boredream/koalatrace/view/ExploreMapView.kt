@@ -13,6 +13,7 @@ import com.amap.api.maps.model.Polyline
 import com.amap.api.maps.model.PolylineOptions
 import com.amap.api.maps.model.Text
 import com.amap.api.maps.model.TextOptions
+import com.boredream.koalatrace.R
 import com.boredream.koalatrace.data.ExploreAreaInfo
 import com.boredream.koalatrace.data.constant.MapConstant
 import com.boredream.koalatrace.utils.TraceUtils
@@ -70,17 +71,35 @@ open class ExploreMapView : RecordMapView {
         // 区域内每个区块
         val format = DecimalFormat("0.#")
         data.blockList.forEach { blockInfo ->
+            val zLevel = MapConstant.FROG_MAP_Z_INDEX + 1f
+            val isExploreLight = blockInfo.isExploreLight()
+
             // 绘制边界
             blockInfo.actualBoundary.split("==").forEach {
+                val actualBoundaryLatLngList = TraceUtils.str2LatLngList(it)
                 exploreOverlay.add(
                     map.addPolyline(
                         PolylineOptions()
-                            .addAll(TraceUtils.str2LatLngList(it))
-                            .color(Color.argb(255, 255, 0, 0))
+                            .addAll(actualBoundaryLatLngList)
+                            .color(resources.getColor(R.color.colorPrimaryLight))
                             .width(2f)
-                            .zIndex(MapConstant.FROG_MAP_Z_INDEX + 1f)
+                            .setDottedLine(true)
+                            .zIndex(zLevel)
                     )
                 )
+
+                // 是否为点亮区域
+                if(blockInfo.isExploreLight()) {
+                    exploreOverlay.add(
+                        map.addPolygon(
+                            PolygonOptions()
+                                .addAll(actualBoundaryLatLngList)
+                                .fillColor(resources.getColor(R.color.a30gold))
+                                .strokeWidth(0f)
+                                .zIndex(zLevel)
+                        )
+                    )
+                }
             }
 
             // 绘制探索信息
@@ -95,10 +114,10 @@ open class ExploreMapView : RecordMapView {
                         .position(center)
                         .text(format.format(blockInfo.explorePercent * 100) + "%")
                         .backgroundColor(Color.TRANSPARENT)
-                        .fontColor(Color.RED)
+                        .fontColor(resources.getColor(R.color.colorPrimary))
                         .fontSize(25)
                         .typeface(Typeface.DEFAULT_BOLD)
-                        .zIndex(MapConstant.FROG_MAP_Z_INDEX + 1f)
+                        .zIndex(zLevel)
                 )
             )
         }

@@ -45,49 +45,50 @@
             android:layout_height="wrap_content"
             android:background="@color/white"
             android:orientation="vertical"
+            android:paddingBottom="@dimen/margin_medium"
             android:visibility="@{vm.uiState != null ? View.VISIBLE : View.GONE}"
             app:behavior_peekHeight="100dp"
             app:layout_behavior="@string/bottom_sheet_behavior">
 
             <com.google.android.material.bottomsheet.BottomSheetDragHandleView
                 android:layout_width="match_parent"
-                android:background="@color/trans"
-                android:layout_height="48dp" />
+                android:layout_height="48dp"
+                android:background="@color/trans" />
 
             <TextView
                 android:layout_width="match_parent"
-                android:textSize="@dimen/txt_subhead"
-                android:textColor="@color/txt_black"
-                android:paddingLeft="@dimen/margin_medium"
                 android:layout_height="wrap_content"
-                android:text="@{vm.uiState.totalArea}" />
+                android:paddingLeft="@dimen/margin_medium"
+                android:text="@{vm.uiState.totalArea}"
+                android:textColor="@color/txt_black"
+                android:textSize="@dimen/txt_subhead" />
 
             <TextView
                 android:layout_width="match_parent"
-                android:textSize="@dimen/txt_subhead"
-                android:textColor="@color/txt_black"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin_small"
                 android:paddingLeft="@dimen/margin_medium"
-                android:layout_height="wrap_content"
-                android:text="@{`总区块数量：` + vm.uiState.totalBlockCount}" />
+                android:text="@{`总区块数量：` + vm.uiState.totalBlockCount}"
+                android:textColor="@color/txt_black"
+                android:textSize="@dimen/txt_subhead" />
 
             <TextView
                 android:layout_width="match_parent"
-                android:textSize="@dimen/txt_subhead"
-                android:textColor="@color/txt_black"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin_small"
                 android:paddingLeft="@dimen/margin_medium"
-                android:layout_height="wrap_content"
-                android:text="@{`已探索区块：` + vm.uiState.exploreBlockCount}" />
+                android:text="@{`已探索区块：` + vm.uiState.exploreBlockCount}"
+                android:textColor="@color/txt_black"
+                android:textSize="@dimen/txt_subhead" />
 
             <TextView
                 android:layout_width="match_parent"
-                android:textSize="@dimen/txt_subhead"
-                android:textColor="@color/txt_black"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin_small"
                 android:paddingLeft="@dimen/margin_medium"
-                android:layout_height="wrap_content"
-                android:text="@{`已点亮区块：` + vm.uiState.lightBlockCount}" />
+                android:text="@{`已点亮区块：` + vm.uiState.lightBlockCount}"
+                android:textColor="@color/txt_black"
+                android:textSize="@dimen/txt_subhead" />
 
         </LinearLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,9 +1,8 @@
 package com.boredream.koalatrace.data
 
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.boredream.koalatrace.base.BaseEntity
-import org.locationtech.jts.geom.Polygon
+import com.boredream.koalatrace.data.constant.MapConstant
 
 /**
  * 区域探索信息 - 区块
@@ -21,6 +20,8 @@ open class ExploreBlockInfo(
 
     // 探索度
     var explorePercent: Double = 0.0
+
+    fun isExploreLight() = explorePercent >= MapConstant.EXPLORE_LIGHT_RATIO_THRESHOLD
 
     override fun toString(): String {
         return "ExploreBlockInfo(, id=$id, areaCode='$areaCode', rectBoundary='$rectBoundary', explorePercent=$explorePercent, actualBoundary='$actualBoundary', actualArea=$actualArea)"

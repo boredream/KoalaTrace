@@ -6,6 +6,7 @@
     <color name="colorPrimary">#2196F3</color>
     <color name="colorPrimaryDark">#1580D5</color>
     <color name="colorPrimaryLight">#5CB3F8</color>
+    <color name="a50colorPrimary">#802196F3</color>
 
     <!-- 文字颜色 -->
     <color name="txt_black">#B3000000</color>
@@ -20,6 +21,7 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="green">#85C545</color>
+    <color name="a30gold">#4dffd700</color>
 
     <color name="bg_gray">#F7F7F7</color>
     <color name="bg_gray_pressed">#D8D8D8</color>
