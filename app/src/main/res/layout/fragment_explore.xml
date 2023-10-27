@@ -11,42 +11,89 @@
         <import type="android.view.View" />
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.boredream.koalatrace.view.TitleBarView
-            android:id="@+id/title_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:rightText="test"
-            app:title="区域探索情况" />
-
         <LinearLayout
-            android:id="@+id/ll_spinner"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintTop_toBottomOf="@id/title_bar">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <com.boredream.koalatrace.view.TitleBarView
+                android:id="@+id/title_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:title="区域探索情况" />
 
             <com.boredream.koalatrace.view.SpinnerView
                 android:id="@+id/spinner_area"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/title_bar" />
+                android:layout_width="match_parent"
+                android:layout_height="40dp" />
+
+            <com.boredream.koalatrace.view.ExploreMapView
+                android:id="@+id/map_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="100dp" />
+
         </LinearLayout>
 
-        <com.boredream.koalatrace.view.ExploreMapView
-            android:id="@+id/map_view"
+        <LinearLayout
+            android:id="@+id/ll_bottom"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ll_spinner" />
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:orientation="vertical"
+            app:behavior_peekHeight="100dp"
+            app:layout_behavior="@string/bottom_sheet_behavior">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+                android:layout_width="match_parent"
+                android:background="@color/trans"
+                android:layout_height="48dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="#f25b41"
+                android:gravity="center"
+                android:text="底部还有内容啊！！！" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="#009988"
+                android:gravity="center"
+                android:text="标签1" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="#002288"
+                android:gravity="center"
+                android:text="标签2" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="#009922"
+                android:gravity="center"
+                android:text="标签3" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="#00aa88"
+                android:gravity="center"
+                android:text="标签4" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="#999988"
+                android:gravity="center"
+                android:text="标签5" />
+        </LinearLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

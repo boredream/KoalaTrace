@@ -12,7 +12,7 @@ object MapConstant {
     /**
      * 绘制蒙版颜色
      */
-    val FROG_COLOR = Color.argb(100, 0, 0, 0)
+    val FROG_COLOR = Color.argb(70, 0, 0, 0)
 
     /**
      * 绘制蒙版图层zIndex

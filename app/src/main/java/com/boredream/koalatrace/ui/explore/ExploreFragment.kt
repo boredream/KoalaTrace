@@ -1,28 +1,19 @@
 package com.boredream.koalatrace.ui.explore
 
-import android.graphics.Color
-import android.graphics.Typeface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.amap.api.maps.CameraUpdateFactory
-import com.amap.api.maps.model.CameraPosition
-import com.amap.api.maps.model.LatLng
-import com.amap.api.maps.model.PolylineOptions
-import com.amap.api.maps.model.TextOptions
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.blankj.utilcode.util.CollectionUtils
 import com.blankj.utilcode.util.LogUtils
 import com.boredream.koalatrace.R
 import com.boredream.koalatrace.base.BaseFragment
-import com.boredream.koalatrace.common.SimpleUiStateObserver
 import com.boredream.koalatrace.data.ExploreAreaInfo
-import com.boredream.koalatrace.data.TraceRecordArea
-import com.boredream.koalatrace.data.constant.MapConstant
 import com.boredream.koalatrace.databinding.FragmentExploreBinding
-import com.boredream.koalatrace.utils.TraceUtils
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.bottomsheet.BottomSheetDragHandleView
 import dagger.hilt.android.AndroidEntryPoint
-import java.text.DecimalFormat
 
 
 @AndroidEntryPoint
