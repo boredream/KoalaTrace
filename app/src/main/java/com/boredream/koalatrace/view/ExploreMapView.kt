@@ -81,7 +81,7 @@ open class ExploreMapView : RecordMapView {
                     map.addPolyline(
                         PolylineOptions()
                             .addAll(actualBoundaryLatLngList)
-                            .color(resources.getColor(R.color.colorPrimaryLight))
+                            .color(resources.getColor(R.color.colorPrimary))
                             .width(2f)
                             .setDottedLine(true)
                             .zIndex(zLevel)
