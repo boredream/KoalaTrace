@@ -46,6 +46,8 @@ class BaseApplication : Application() {
                 GlobalConstant.isForeground = false
             }
         })
+
+        LogUtils.i("----------------------- start ------------------------")
     }
 
     private fun initRefresh() {
