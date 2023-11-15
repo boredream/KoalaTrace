@@ -2,15 +2,13 @@ package com.boredream.koalatrace.data.repo
 
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.model.LatLng
-import com.amap.api.services.geocoder.GeocodeAddress
 import com.amap.api.services.geocoder.RegeocodeAddress
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.constant.LocationConstant
 import com.boredream.koalatrace.data.constant.LocationConstant.MIN_VALID_DISTANCE
 import com.boredream.koalatrace.data.repo.source.LocationDataSource
 import com.boredream.koalatrace.utils.Logger
-import com.boredream.koalatrace.utils.TraceFilter
-import java.util.*
+import java.util.LinkedList
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -70,7 +68,6 @@ class LocationRepository @Inject constructor(
 
     // 追踪
     var traceList: ArrayList<TraceLocation> = ArrayList()
-    private lateinit var traceFilter: TraceFilter
     private var onTraceSuccess: LinkedList<(allTracePointList: ArrayList<TraceLocation>) -> Unit> =
         LinkedList()
 
@@ -109,7 +106,6 @@ class LocationRepository @Inject constructor(
     fun startTrace() {
         if (status == STATUS_LOCATION) {
             // 只有定位状态下才能开启追踪
-            traceFilter = TraceFilter()
             status = STATUS_TRACE
         }
     }

@@ -4,11 +4,13 @@ import android.content.Context
 import android.os.CountDownTimer
 import com.amap.api.location.AMapLocation
 import com.amap.api.services.core.LatLonPoint
-import com.amap.api.services.geocoder.*
+import com.amap.api.services.geocoder.GeocodeResult
+import com.amap.api.services.geocoder.GeocodeSearch
+import com.amap.api.services.geocoder.RegeocodeAddress
+import com.amap.api.services.geocoder.RegeocodeQuery
+import com.amap.api.services.geocoder.RegeocodeResult
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.utils.Logger
-import com.boredream.koalatrace.utils.TraceFilter
-import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -20,7 +22,6 @@ class FakeLocationDataSource @Inject constructor(
     val logger: Logger,
 ) : LocationDataSource {
 
-    private lateinit var traceFilter: TraceFilter
     private lateinit var countDownTimer: CountDownTimer
     private lateinit var moveLocation: AMapLocation
 
@@ -32,8 +33,6 @@ class FakeLocationDataSource @Inject constructor(
         moveLocation = AMapLocation("move")
         moveLocation.latitude = startLocation.latitude
         moveLocation.longitude = startLocation.longitude
-
-        traceFilter = TraceFilter()
 
         // 开启定时任务，然后挨个返回虚拟经纬度
         val total = (10 * 60 * 1000 + 100).toLong()
