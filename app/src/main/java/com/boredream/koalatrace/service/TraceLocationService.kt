@@ -4,6 +4,10 @@ import android.app.*
 import android.app.NotificationManager.IMPORTANCE_DEFAULT
 import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.PendingIntent.FLAG_UPDATE_CURRENT
+import android.app.job.JobInfo
+import android.app.job.JobScheduler
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
 import android.os.Build
@@ -32,6 +36,7 @@ class TraceLocationService : Service() {
     companion object {
         const val SERVICE_ID = 19900214
         const val CHANNEL_ID = "com.boredream.koalatrace.service.tracelocation"
+        const val LOG_JOB_ID = 1122334
     }
 
     @Inject
@@ -96,6 +101,12 @@ class TraceLocationService : Service() {
         scope.launch {
             traceUseCase.startTrace()
         }
+
+        val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        val jobInfo = JobInfo.Builder(LOG_JOB_ID, ComponentName(this, LogMonitoringJobService::class.java))
+            .setPeriodic(30 * 60 * 1000) // 设置监控任务的执行间隔，这里是半个小时（30分钟 * 60秒 * 1000毫秒）
+            .build()
+        jobScheduler.schedule(jobInfo)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

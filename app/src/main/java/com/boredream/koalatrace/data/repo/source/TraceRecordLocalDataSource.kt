@@ -115,7 +115,7 @@ class TraceRecordLocalDataSource @Inject constructor(
             queryBuilder.selection(selectionSql.toString(), selectionArgs.toArray())
             queryBuilder.orderBy("startTime desc")
             val query = queryBuilder.create()
-            logger.i(query.sql)
+            // logger.v(query.sql)
 
             val result = ArrayList<TraceRecord>()
 

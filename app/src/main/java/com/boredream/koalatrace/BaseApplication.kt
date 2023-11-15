@@ -28,6 +28,7 @@ class BaseApplication : Application() {
             .setFileFilter(LogUtils.I)
             .setDir(File(PathUtils.getInternalAppCachePath(), "log"))
             .setSaveDays(30)
+            .setLogHeadSwitch(false)
             .setBorderSwitch(false)
 
         CrashUtils.init {
