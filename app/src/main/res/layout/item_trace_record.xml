@@ -9,8 +9,6 @@
             name="bean"
             type="com.boredream.koalatrace.data.TraceRecord" />
 
-        <import type="com.blankj.utilcode.util.TimeUtils" />
-
         <import type="android.view.View" />
     </data>
 
@@ -35,7 +33,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin_tiny"
-            android:text='@{"时间：" + TimeUtils.millis2String(bean.startTime) + " ~ " + TimeUtils.millis2String(bean.endTime, "HH:mm:ss") }'
+            android:text='@{"时间：" + bean.getTimeRangeInfo() }'
             android:textColor="@color/txt_gray"
             android:textSize="@dimen/txt_caption"
             app:layout_constraintLeft_toLeftOf="parent"

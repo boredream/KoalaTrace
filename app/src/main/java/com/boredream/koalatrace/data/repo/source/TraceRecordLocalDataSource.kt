@@ -226,7 +226,7 @@ class TraceRecordLocalDataSource @Inject constructor(
             // location跟着trace record走，不用于判断同步，所以直接删除
             val deleteListCount = traceLocationDao.deleteByTraceRecordId(data.id)
             logger.i("delete location list size = $deleteListCount")
-            ResponseEntity.success(data)
+            ResponseEntity(data, 0, "删除成功")
         } catch (e: Exception) {
             ResponseEntity(null, 500, e.toString())
         }

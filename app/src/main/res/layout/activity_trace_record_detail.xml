@@ -9,8 +9,6 @@
             name="vm"
             type="com.boredream.koalatrace.ui.trace.recorddetail.TraceRecordDetailViewModel" />
 
-        <import type="com.blankj.utilcode.util.TimeUtils" />
-
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -52,7 +50,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin_small"
-                android:text='@{"时间：" + TimeUtils.millis2String(vm.uiState.startTime) + " ~ " + TimeUtils.millis2String(vm.uiState.endTime, "HH:mm:ss") }'
+                android:text='@{"时间：" + vm.uiState.getTimeRangeInfo() }'
                 tools:text="时间：" />
 
             <TextView

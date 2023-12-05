@@ -51,6 +51,11 @@ class BaseApplication : Application() {
         LogUtils.i("----------------------- start ------------------------")
     }
 
+    override fun onTerminate() {
+        LogUtils.i("----------------------- terminate ------------------------")
+        super.onTerminate()
+    }
+
     private fun initRefresh() {
         //设置全局的Header构建器
         SmartRefreshLayout.setDefaultRefreshHeaderCreator { context, layout ->

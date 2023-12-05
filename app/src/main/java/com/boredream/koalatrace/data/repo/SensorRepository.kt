@@ -87,7 +87,7 @@ class SensorRepository @Inject constructor(
                 if (notMovementCount == 0) notMovementCount = 1 // 方便除法
                 if (1f * movementCount / notMovementCount > 7) {
                     // 如果区间内多数检测结果是移动状态，则判断用户已经切换到移动
-                    logger.v("determine movement!")
+                    logger.i("determine movement!")
                     return true
                 } else {
                     logger.v("determine not movement")

@@ -172,7 +172,7 @@ class TraceUseCase @Inject constructor(
      * 更新轨迹的区域信息
      */
     fun updateRecordArea(record: TraceRecord) {
-        logger.i("start updateRecordArea = $record")
+        logger.v("start updateRecordArea = $record")
         if (record.traceList.size == 0) return
         if (!StringUtils.isEmpty(record.adminArea)) return
         if (geocodeSearchingSet.contains(record.id)) return
@@ -186,7 +186,7 @@ class TraceUseCase @Inject constructor(
                 record.locality = it?.district
                 record.subLocality = it?.township
                 traceRecordRepository.update(record)
-                logger.i(
+                logger.v(
                     "record = $record , "
                             + "adminArea = ${record.adminArea}, subAdminArea = ${record.subAdminArea}, "
                             + "locality = ${record.locality}, subLocality = ${record.subLocality}"
@@ -202,7 +202,7 @@ class TraceUseCase @Inject constructor(
             // 如果一直是一个坐标点，则代表重启过于敏感，目标还是没有移动，超过一个较低阈值后直接删除当前路线
             val stayFromStart = System.currentTimeMillis() - record.startTime
             if (stayFromStart >= locationParam.stopThresholdDuration) {
-                logger.i("stay too long~ delete trace")
+                logger.i("stay too long~ one record")
                 stopTrace()
                 return true
             }
@@ -213,7 +213,9 @@ class TraceUseCase @Inject constructor(
         val lastPreLocation = list[list.lastIndex - 1]
         val stay = lastLocation.time - lastPreLocation.time
         if (stay >= locationParam.stopThresholdDuration) {
-            logger.i("stay too long~ save trace")
+            logger.i("stay too long~")
+            // 最后一个用于check的停留点不记入轨迹
+            list.removeLast()
             stopTrace()
             return true
         }
@@ -227,9 +229,12 @@ class TraceUseCase @Inject constructor(
         locationRepository.stopTrace()
         val record = currentTraceRecord ?: return
         logger.i("stop trace: ${record.name}")
-        traceRecordRepository.updateByTraceList(record)
+        val updateResponse = traceRecordRepository.updateByTraceList(record)
         traceRecordUpdate.forEach { it.invoke(record) }
-        updateRecordArea(record)
+        if("删除成功" != updateResponse.msg) {
+            // 删除成功就不更新区域信息了
+            updateRecordArea(record)
+        }
         locationRepository.clearTraceList()
         currentTraceRecord = null
         locationRepository.removeTraceSuccessListener(onTraceSuccessListener)

@@ -3,6 +3,7 @@ package com.boredream.koalatrace.data
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
+import com.blankj.utilcode.util.TimeUtils
 import com.boredream.koalatrace.base.BaseEntity
 import com.boredream.koalatrace.base.BaseListData
 
@@ -40,6 +41,10 @@ data class TraceRecord(
         } else {
             ""
         }
+    }
+
+    fun getTimeRangeInfo(): String {
+        return TimeUtils.millis2String(startTime, "[EEE] yyyy-MM-dd HH:mm:ss") + " ~ " + TimeUtils.millis2String(endTime, "HH:mm:ss")
     }
 
     override fun getItemId() = id
