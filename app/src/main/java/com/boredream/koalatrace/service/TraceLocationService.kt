@@ -19,6 +19,7 @@ import com.boredream.koalatrace.data.constant.BundleKey
 import com.boredream.koalatrace.data.repo.LocationRepository
 import com.boredream.koalatrace.data.usecase.TraceUseCase
 import com.boredream.koalatrace.ui.main.MainTabActivity
+import com.boredream.koalatrace.utils.Logger
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
@@ -44,6 +45,9 @@ class TraceLocationService : Service() {
 
     @Inject
     lateinit var scope: CoroutineScope
+
+    @Inject
+    lateinit var logger: Logger
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -95,7 +99,7 @@ class TraceLocationService : Service() {
                 LocationRepository.STATUS_TRACE -> "STATUS_TRACE"
                 else -> "unknown"
             }
-            LogUtils.i("location status = $status")
+            logger.i("location status = $status")
         }
         traceUseCase.startLocation()
         scope.launch {
@@ -107,6 +111,8 @@ class TraceLocationService : Service() {
             .setPeriodic(30 * 60 * 1000) // 设置监控任务的执行间隔，这里是半个小时（30分钟 * 60秒 * 1000毫秒）
             .build()
         jobScheduler.schedule(jobInfo)
+
+        logger.i("Trance Location Service onCreate")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

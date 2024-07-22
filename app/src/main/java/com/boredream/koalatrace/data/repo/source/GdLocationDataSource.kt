@@ -1,7 +1,6 @@
 package com.boredream.koalatrace.data.repo.source
 
 import android.content.Context
-import android.util.Log
 import com.amap.api.location.AMapLocationClient
 import com.amap.api.location.AMapLocationClientOption
 import com.amap.api.services.core.LatLonPoint
@@ -12,19 +11,16 @@ import com.amap.api.services.geocoder.RegeocodeQuery
 import com.amap.api.services.geocoder.RegeocodeResult
 import com.boredream.koalatrace.data.TraceLocation
 import com.boredream.koalatrace.data.constant.LocationParam
+import com.boredream.koalatrace.utils.Logger
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
 
 
 class GdLocationDataSource @Inject constructor(
     @ApplicationContext val context: Context,
+    private val logger: Logger,
     private val locationParam: LocationParam,
 ) : LocationDataSource {
-
-    companion object {
-        const val TAG = "GdLocationDataSource"
-    }
 
     private var locationClient: AMapLocationClient? = null
 
@@ -36,7 +32,7 @@ class GdLocationDataSource @Inject constructor(
                 it.startLocation()
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Exception:$e")
+            logger.e("Exception:$e")
         }
     }
 
@@ -77,9 +73,9 @@ class GdLocationDataSource @Inject constructor(
                 )
                 location.extraData = "${it.locationType}_${it.accuracy}"
                 onSuccess.invoke(location)
-            } else Log.e(
-                TAG, "initClient Error, ErrCode:" + it.errorCode + ", errInfo:" + it.errorInfo
-            )
+            } else {
+                logger.e("initClient Error, ErrCode:" + it.errorCode + ", errInfo:" + it.errorInfo)
+            }
         }
 
         // 配置文档 http://a.amap.com/lbs/static/unzip/Android_Location_Doc/index.html?com/amap/api/location/class-use/AMapLocationClientOption.html

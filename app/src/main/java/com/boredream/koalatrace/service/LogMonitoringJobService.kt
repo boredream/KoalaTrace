@@ -7,9 +7,10 @@ import com.blankj.utilcode.util.LogUtils
 class LogMonitoringJobService : JobService() {
 
     override fun onStartJob(params: JobParameters): Boolean {
+        // 在这里执行你的监控逻辑，比如记录日志
         LogUtils.i("===== I AM ALIVE! =====")
 
-        // 在这里执行你的监控逻辑，比如记录日志
+        // 判断当前应用是否在运行
 
         // 任务完成后调用 jobFinished() 方法
         jobFinished(params, false)
